@@ -1,0 +1,30 @@
+﻿insert
+into article_gallery (
+    image_filename,
+    article_id
+)
+values
+(
+    '1a912ccf-0082-49d2-a743-2a3358ae78da.webp',
+    1
+),
+(
+    '33d7f61d-9db5-4ba7-8ae2-bdfef8fd4cfd.webp',
+    1
+),
+(
+    'e8ae705d-e171-47cf-8d64-0b63dcd1dc78.webp',
+    1
+),
+(
+    'ab8fb90b-6fdb-4ac8-8ef3-b384441bfada.webp',
+    2
+),
+(
+    'be6227dd-8fa8-4514-ac49-88af3b1ee00f.webp',
+    2
+),
+(
+    '75742c31-2a85-47c7-916a-5143e5301c36.webp',
+    3
+);

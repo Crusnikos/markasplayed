@@ -1,0 +1,47 @@
+version: "3.9"
+
+services:
+  ui:
+    build:
+      context: ./ui
+      dockerfile: dev.Dockerfile
+    tty: true
+    stdin_open: true
+    volumes:
+      - ./ui:/var/app
+    ports:
+      - 3000:3000
+    environment:
+      - REACT_APP_API_URL=$REACT_APP_API_URL
+      - REACT_APP_FIREBASE_KEY=$REACT_APP_FIREBASE_KEY
+      - REACT_APP_FIREBASE_DOMAIN=$REACT_APP_FIREBASE_DOMAIN
+      - REACT_APP_FIREBASE_PROJECT_ID=$REACT_APP_FIREBASE_PROJECT_ID
+      - REACT_APP_FIREBASE_STORAGE_BUCKET=$REACT_APP_FIREBASE_STORAGE_BUCKET
+      - REACT_APP_FIREBASE_SENDER_ID=$REACT_APP_FIREBASE_SENDER_ID
+      - REACT_APP_FIREBASE_APP_ID=$REACT_APP_FIREBASE_APP_ID
+
+  api:
+    build:
+      context: ./api
+      dockerfile: dev.Dockerfile
+    tty: true
+    stdin_open: true
+    volumes:
+      - ./api:/app
+    ports:
+      - 5000:80
+    depends_on:
+      - db
+    environment:
+      - ASPNETCORE_ENVIRONMENT=$ASPNETCORE_ENVIRONMENT
+      - ASPNETCORE_URLS=$ASPNETCORE_URLS
+
+  db:
+    image: postgres:14.1-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: markasplayed
+      POSTGRES_PASSWORD: markasplayed
+      POSTGRES_DB: markasplayed
+    ports:
+      - 5432:5432
