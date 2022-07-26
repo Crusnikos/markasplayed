@@ -16,7 +16,7 @@ public sealed class ImageCommand
 
     public async Task UpdateFrontImage(IFormFile file, string filePath, CancellationToken cancellationToken = default)
     {
-        if (file.Length > 0)
+        if (file.Length > 0 && Path.GetExtension(file.FileName) == ".webp")
         {
             if(!Directory.Exists(filePath))
             {
@@ -27,12 +27,19 @@ public sealed class ImageCommand
             {
                 await file.CopyToAsync(stream, cancellationToken);
             }
+
+            await new ImageResolution(
+                Path.Combine(filePath, DefaultFrontImageName)).
+                ConfigureFileResolution(ImageResolution.ResolutionHD, cancellationToken);
+
             using (var stream = File.Create(Path.Combine(filePath, DefaultSmallFrontImageName)))
             {
                 await file.CopyToAsync(stream, cancellationToken);
             }
 
-            new CreateMiniature(Path.Combine(filePath, DefaultSmallFrontImageName)).CreateMiniatureMethod();
+            await new ImageResolution(
+                Path.Combine(filePath, DefaultSmallFrontImageName)).
+                ConfigureFileResolution(ImageResolution.ResolutionNHD, cancellationToken);
 
         }
     }
@@ -84,6 +91,10 @@ public sealed class ImageCommand
             {
                 await file.CopyToAsync(stream, cancellationToken);
             }
+
+            await new ImageResolution(
+                Path.Combine(filePath, fileName)).
+                ConfigureFileResolution(ImageResolution.ResolutionFullHD, cancellationToken);
 
             await db.ArticleGallery.InsertWithInt64IdentityAsync(
                 () => new Data.Models.ArticleGallery

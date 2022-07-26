@@ -101,7 +101,7 @@ export default function AuthorsListing(props: {
   const listingDialog = (
     <Dialog open={true} onClose={closeDialog} fullWidth>
       <DialogTitle className={classes.topInfo}>
-        Autorzy na Mark as Played
+        Autorzy Mark as Played
         <IconButton
           aria-label="close"
           onClick={closeDialog}
