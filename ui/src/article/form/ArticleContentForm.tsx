@@ -273,6 +273,10 @@ export default function ArticleContentForm(props: {
           <Controller
             rules={{
               required: { value: true, message: "Pole jest wymagane" },
+              maxLength: {
+                value: 5000,
+                message: "Maksymalna długość wynosi 5000 znaków",
+              },
             }}
             name="longDescription"
             control={control}

@@ -29,13 +29,15 @@ public sealed class ArticleCommand
             if (!(request.Id is null) && db.Articles.Any(a => a.Id == request.Id))
             {
                 var oldArticleData = await db.Articles.Where(a => a.Id == request.Id).FirstOrDefaultAsync(cancellationToken);
+                var malformedLongDescription = request.LongDescription.Trim();
+                var malformedShortDescription = request.ShortDescription.Trim();
 
                 await db.Articles.Where(a => a.Id == request.Id).
                     Set(a => a.CreatedAt, oldArticleData!.CreatedAt).
                     Set(a => a.GamingPlatformId, request.PlayedOn).
                     Set(a => a.GenreId, request.Genre).
-                    Set(a => a.LongDescription, request.LongDescription).
-                    Set(a => a.ShortDescription, request.ShortDescription).
+                    Set(a => a.LongDescription, malformedLongDescription).
+                    Set(a => a.ShortDescription, malformedShortDescription).
                     Set(a => a.PlayTime, request.PlayTime).
                     Set(a => a.Producer, request.Producer).
                     Set(a => a.Title, request.Title).
@@ -69,14 +71,17 @@ public sealed class ArticleCommand
                     throw new ArgumentNullException(nameof(author));
                 }
 
+                var malformedLongDescription = request.LongDescription.Trim();
+                var malformedShortDescription = request.ShortDescription.Trim();
+
                 var identifier = await db.Articles.InsertWithInt64IdentityAsync(
                     () => new Data.Models.Article
                     {
                         Title = request.Title,
                         Producer = request.Producer,
                         PlayTime = request.PlayTime,
-                        LongDescription = request.LongDescription,
-                        ShortDescription = request.ShortDescription,
+                        LongDescription = malformedLongDescription,
+                        ShortDescription = malformedShortDescription,
                         GamingPlatformId = request.PlayedOn,
                         GenreId = request.Genre,
                         CreatedBy = author.Id

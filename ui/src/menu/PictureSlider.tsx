@@ -59,7 +59,7 @@ export function PictureSlider(props: {
     if (!pause) {
       const intervalId = setInterval(() => {
         // displays the last 5 articles
-        if (currentIndex + 1 === 5 || currentIndex === images.length) {
+        if (currentIndex + 1 === 5 || currentIndex + 1 === images.length) {
           setCurrentIndex(0);
         } else {
           setCurrentIndex(currentIndex + 1);

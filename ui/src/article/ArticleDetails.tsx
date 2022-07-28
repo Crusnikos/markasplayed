@@ -45,6 +45,11 @@ const useStyles = makeStyles()((theme) => ({
   content: {
     whiteSpace: "pre-line",
   },
+  textBox: {
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+    width: "100%",
+  },
   edit: {
     cursor: "pointer",
   },
@@ -80,6 +85,10 @@ export default function ArticleDetails(props: {
   };
 
   useEffect(() => {
+    setRequireFetch(true);
+  }, [parsedId]);
+
+  useEffect(() => {
     async function fetchArticleData() {
       if (parsedId !== null && requireFetch) {
         try {
@@ -95,7 +104,7 @@ export default function ArticleDetails(props: {
 
     void fetchArticleData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [parsedId, requireFetch]);
+  }, [requireFetch]);
 
   useEffect(() => {
     async function fetchFrontImage() {
@@ -141,7 +150,9 @@ export default function ArticleDetails(props: {
               onClick={handleClick}
             />
           </Typography>
-          <Typography variant="h6">{article.shortDescription}</Typography>
+          <Box component="div" className={classes.textBox}>
+            <Typography variant="h6">{article.shortDescription}</Typography>
+          </Box>
           <Grid container item alignItems="flex-start">
             <Typography variant="body2">
               {formatedDateDisplay(article.createdAt)} |{" "}
@@ -158,9 +169,11 @@ export default function ArticleDetails(props: {
           ) : (
             <CircularProgress />
           )}
-          <Typography variant="body1" className={classes.content}>
-            {article.longDescription}
-          </Typography>
+          <Box component="div" className={classes.textBox}>
+            <Typography variant="body1" className={classes.content} noWrap>
+              {article.longDescription}
+            </Typography>
+          </Box>
           {article.genre.name === "review" && (
             <ArticleDetailsReviewPanel
               playTime={article.playTime}

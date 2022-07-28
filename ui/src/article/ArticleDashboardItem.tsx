@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import {
+  Box,
   Card,
   CardActionArea,
   CardHeader,
@@ -65,6 +66,11 @@ const useStyles = makeStyles()((theme) => ({
     borderRadius: "10px",
     top: 10,
     left: 10,
+  },
+  textBox: {
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+    width: "98%",
   },
 }));
 
@@ -159,9 +165,11 @@ export default function ArticleDashboardItem(props: {
               </Typography>
             </Grid>
             <Grid item sm={12}>
-              <Typography className={classes.text} variant="body2">
-                {data.shortDescription}
-              </Typography>
+              <Box component="div" className={classes.textBox}>
+                <Typography className={classes.text} variant="body2">
+                  {data.shortDescription}
+                </Typography>
+              </Box>
             </Grid>
             <Grid
               item
