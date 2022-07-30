@@ -1,7 +1,8 @@
 import {
+  AlertColor,
   Button,
   Chip,
-  Dialog,
+  Dialog as DialogMUI,
   DialogContent,
   DialogContentText,
   DialogTitle,
@@ -13,15 +14,16 @@ import {
 } from "@mui/material";
 import React, { Dispatch, SetStateAction, useEffect, useState } from "react";
 import ReactDOM from "react-dom";
-import { Dialogs } from "../components/Dialogs";
+import { Dialog } from "../Dialog";
 import LoadingIndicator from "../components/LoadingIndicator";
 import {
-  ArticleCreationRequest,
-  createOrUpdateArticle,
+  ArticleFormData,
   FullArticleData,
-  GenreTypes,
-} from "./api/apiArticle";
-import { getLookup, Lookups } from "./api/apiLookup";
+  ArticleTypes,
+  updateArticle,
+  createArticle,
+} from "./api/article";
+import { getLookup, Lookups } from "./api/lookup";
 import { makeStyles } from "tss-react/mui";
 import CloseIcon from "@mui/icons-material/Close";
 import KeyboardDoubleArrowLeftIcon from "@mui/icons-material/KeyboardDoubleArrowLeft";
@@ -29,13 +31,15 @@ import KeyboardDoubleArrowRightIcon from "@mui/icons-material/KeyboardDoubleArro
 import { useNavigate } from "react-router-dom";
 import ExceptionPage from "../components/ExceptionPage";
 import {
-  ArticleImageData,
-  setArticleGallery,
+  addToGallery,
+  ImageData,
   setFrontImage,
-} from "./api/apiGallery";
+  updateGallery,
+} from "./api/files";
 import { useArticleData } from "../ArticleListProvider";
 import ArticleContentForm from "./form/ArticleContentForm";
 import ArticleGalleryForm from "./form/ArticleGalleryForm";
+import { useFirebaseAuth } from "../firebase";
 
 const useStyles = makeStyles()((theme) => ({
   closeIcon: {
@@ -70,16 +74,24 @@ const useStyles = makeStyles()((theme) => ({
 }));
 
 export default function ArticleForm(props: {
-  openDialog: Dispatch<SetStateAction<Dialogs>>;
+  openDialog: Dispatch<SetStateAction<Dialog>>;
+  responseOnSubmitForm: Dispatch<
+    SetStateAction<{
+      message: string | undefined;
+      severity: AlertColor | undefined;
+    }>
+  >;
   data?: FullArticleData;
   images?: {
-    main: ArticleImageData | undefined;
-    gallery: ArticleImageData[] | undefined;
+    main: ImageData | undefined;
+    gallery: ImageData[] | undefined;
   };
   returnFunction?: Dispatch<SetStateAction<boolean>>;
 }) {
   const { classes } = useStyles();
-  const { openDialog, data, images, returnFunction } = props;
+  const { openDialog, data, images, returnFunction, responseOnSubmitForm } =
+    props;
+  const { app } = useFirebaseAuth();
   const [[, , page], getNextPage] = useArticleData();
 
   const [loading, setLoading] = useState<boolean>(true);
@@ -87,7 +99,7 @@ export default function ArticleForm(props: {
   const [view, setView] = useState<"ARTYKUŁ" | "GALERIA">("ARTYKUŁ");
   const [lookups, setLookups] = useState<Lookups | undefined>(undefined);
   const [draftArticle, setDraftArticle] = useState<
-    { article: ArticleCreationRequest; genre: GenreTypes } | undefined
+    { article: ArticleFormData; articleType: ArticleTypes } | undefined
   >(undefined);
 
   const navigate = useNavigate();
@@ -95,16 +107,21 @@ export default function ArticleForm(props: {
   const smallView = useMediaQuery(theme.breakpoints.up("sm"));
 
   const closeDialog = () => {
-    openDialog({ type: undefined, data: undefined, images: undefined });
+    openDialog({
+      type: undefined,
+      data: undefined,
+      images: undefined,
+      returnFunction: undefined,
+    });
   };
 
   useEffect(() => {
     async function fetchLookups() {
       try {
-        const genres = await getLookup({ lookupName: "genres" });
+        const articleTypes = await getLookup({ lookupName: "articleTypes" });
         const platforms = await getLookup({ lookupName: "gamingPlatforms" });
 
-        setLookups({ genres, platforms });
+        setLookups({ articleTypes, platforms });
       } catch {
         setError(true);
       } finally {
@@ -114,21 +131,154 @@ export default function ArticleForm(props: {
     void fetchLookups();
   }, []);
 
+  async function createArticleExecution(draftArticle: {
+    article: ArticleFormData;
+    articleType: ArticleTypes;
+  }): Promise<{
+    status: string;
+    id: number | undefined;
+  }> {
+    try {
+      const token = await app!.auth().currentUser?.getIdToken();
+      if (!token) {
+        throw new Error("Nieprawidłowy token");
+      }
+
+      const id = await createArticle(
+        draftArticle.article,
+        draftArticle.articleType,
+        token
+      );
+      return { status: "success", id };
+    } catch {
+      responseOnSubmitForm({
+        message:
+          "Wystąpił problem w trakcie tworzenia artykułu, spróbuj później",
+        severity: `error`,
+      });
+      return { status: "failure", id: undefined };
+    }
+  }
+
+  async function updateArticleExecution(
+    formData: ArticleFormData,
+    articleType: ArticleTypes
+  ): Promise<{ status: string }> {
+    try {
+      const token = await app!.auth().currentUser?.getIdToken();
+      if (!token) {
+        throw new Error("Nieprawidłowy token");
+      }
+
+      await updateArticle(formData, articleType, token);
+      return { status: "success" };
+    } catch {
+      responseOnSubmitForm({
+        message: "Wystąpił problem w trakcie edycji artykułu, spróbuj później",
+        severity: `error`,
+      });
+      return { status: "failure" };
+    }
+  }
+
+  async function setFrontImageExecution(
+    id: number,
+    frontImage: File
+  ): Promise<{ status: string }> {
+    try {
+      const token = await app!.auth().currentUser?.getIdToken();
+      if (!token) {
+        throw new Error("Nieprawidłowy token");
+      }
+
+      await setFrontImage({ id: id, file: frontImage }, token);
+      return { status: "success" };
+    } catch {
+      responseOnSubmitForm({
+        message: "Wystąpił problem z edycją głównego obrazu, spróbuj później",
+        severity: `error`,
+      });
+      return { status: "failure" };
+    }
+  }
+
+  async function updateGalleryExecution(
+    id: number,
+    galleryIds: number[]
+  ): Promise<{ status: string }> {
+    try {
+      const token = await app!.auth().currentUser?.getIdToken();
+      if (!token) {
+        throw new Error("Nieprawidłowy token");
+      }
+
+      await updateGallery({ id, galleryIds }, token);
+      return { status: "success" };
+    } catch {
+      responseOnSubmitForm({
+        message: "Wystąpił problem z edycją obrazów, spróbuj później",
+        severity: `error`,
+      });
+      return { status: "failure" };
+    }
+  }
+
+  async function addToGalleryExecution(
+    articleId: number,
+    images: File[]
+  ): Promise<{ status: string }> {
+    try {
+      const token = await app!.auth().currentUser?.getIdToken();
+      if (!token) {
+        throw new Error("Nieprawidłowy token");
+      }
+
+      const responseCode = await addToGallery(
+        {
+          articleId: articleId,
+          files: images,
+        },
+        token
+      );
+      if (responseCode !== 204) {
+        responseOnSubmitForm({
+          message: "Nie wszystkie obrazy zostały dodane do galerii",
+          severity: `warning`,
+        });
+      }
+      return { status: "success" };
+    } catch {
+      responseOnSubmitForm({
+        message:
+          "Wystąpił problem w trakcie dodawania obrazów, spróbuj później",
+        severity: `error`,
+      });
+      return { status: "failure" };
+    }
+  }
+
   const onArticleSubmit = async (
-    formData: ArticleCreationRequest,
-    genre: GenreTypes
+    formData: ArticleFormData,
+    articleType: ArticleTypes
   ) => {
     if (data?.id) {
       setLoading(true);
-      await createOrUpdateArticle(formData, genre);
-      await getNextPage({ page });
-      returnFunction?.(true);
-      closeDialog();
-      return;
+
+      const response = await updateArticleExecution(formData, articleType);
+
+      if (response.status === "success") {
+        await getNextPage({ page });
+        returnFunction?.(true);
+        responseOnSubmitForm({
+          message: "Artykuł zaktualizowany",
+          severity: `success`,
+        });
+      }
+
+      return closeDialog();
     } else {
-      setDraftArticle({ article: formData, genre: genre });
+      setDraftArticle({ article: formData, articleType });
       setView("GALERIA");
-      return;
     }
   };
 
@@ -140,44 +290,87 @@ export default function ArticleForm(props: {
     setLoading(true);
 
     if (data?.id) {
-      frontImage && (await setFrontImage({ id: data?.id, file: frontImage }));
-      await setArticleGallery(
-        oldGalleryImages && { galleryIds: oldGalleryImages },
-        newGalleryImages && { articleId: data?.id, files: newGalleryImages }
-      );
-      await getNextPage({ page });
-      returnFunction?.(true);
-      closeDialog();
-      return;
-    } else {
-      if (draftArticle && frontImage) {
-        const id = await createOrUpdateArticle(
-          draftArticle.article,
-          draftArticle.genre
-        );
-
-        await setFrontImage({ id: id, file: frontImage });
-
-        newGalleryImages &&
-          (await setArticleGallery(undefined, {
-            articleId: id,
-            files: newGalleryImages,
-          }));
+      const frontImageResponse =
+        frontImage && (await setFrontImageExecution(data?.id, frontImage));
+      if (frontImageResponse && frontImageResponse.status === "failure") {
+        return closeDialog();
       }
+
+      const updateGalleryResponse =
+        oldGalleryImages &&
+        (await updateGalleryExecution(data?.id, oldGalleryImages));
+      if (updateGalleryResponse && updateGalleryResponse.status === "failure") {
+        await getNextPage({ page });
+        returnFunction?.(true);
+        return closeDialog();
+      }
+
+      const addToGalleryResponse =
+        newGalleryImages &&
+        (await addToGalleryExecution(data?.id, newGalleryImages));
+      if (addToGalleryResponse && addToGalleryResponse.status === "failure") {
+        await getNextPage({ page });
+        returnFunction?.(true);
+        return closeDialog();
+      }
+
+      responseOnSubmitForm({
+        message: "Obrazy zaaktualizowane",
+        severity: `success`,
+      });
+      returnFunction?.(true);
+      return closeDialog();
+    }
+
+    if (draftArticle && frontImage) {
+      const createArticleResponse = await createArticleExecution(draftArticle);
+      if (
+        createArticleResponse &&
+        createArticleResponse.status === "failure" &&
+        createArticleResponse.id === undefined
+      ) {
+        return closeDialog();
+      }
+
+      const frontImageResponse = await setFrontImageExecution(
+        createArticleResponse.id!,
+        frontImage
+      );
+      if (frontImageResponse && frontImageResponse.status === "failure") {
+        await getNextPage({ page: 1 });
+        navigate("/");
+        return closeDialog();
+      }
+
+      const addToGalleryResponse =
+        newGalleryImages &&
+        (await addToGalleryExecution(
+          createArticleResponse.id!,
+          newGalleryImages
+        ));
+      if (addToGalleryResponse && addToGalleryResponse.status === "failure") {
+        await getNextPage({ page: 1 });
+        navigate("/");
+        return closeDialog();
+      }
+
       await getNextPage({ page: 1 });
+      responseOnSubmitForm({
+        message: "Artykuł dodany",
+        severity: `success`,
+      });
       navigate("/");
-      closeDialog();
-      return;
+      return closeDialog();
     }
   };
 
   if (loading) {
     const loadingDialog = (
-      <Dialog open={true} onClose={closeDialog} fullWidth>
+      <DialogMUI open={true} onClose={closeDialog} fullWidth>
         <DialogContent>
           <LoadingIndicator />
         </DialogContent>
-      </Dialog>
+      </DialogMUI>
     );
 
     return ReactDOM.createPortal(
@@ -188,11 +381,11 @@ export default function ArticleForm(props: {
 
   if (error) {
     const errorDialog = (
-      <Dialog open={true} onClose={closeDialog} fullWidth>
+      <DialogMUI open={true} onClose={closeDialog} fullWidth>
         <DialogContent>
           <ExceptionPage message="Wystąpił problem z pobraniem danych" />
         </DialogContent>
-      </Dialog>
+      </DialogMUI>
     );
 
     return ReactDOM.createPortal(
@@ -202,7 +395,7 @@ export default function ArticleForm(props: {
   }
 
   const formDialog = (
-    <Dialog open={true} onClose={closeDialog} fullWidth>
+    <DialogMUI open={true} onClose={closeDialog} fullWidth>
       <DialogTitle className={classes.topInfo}>
         {data?.id ? "Edytuj artykuł" : "Dodaj nowy artykuł"}
         <IconButton
@@ -266,7 +459,7 @@ export default function ArticleForm(props: {
           />
         )}
       </DialogContent>
-    </Dialog>
+    </DialogMUI>
   );
 
   return ReactDOM.createPortal(

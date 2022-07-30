@@ -1,8 +1,8 @@
 import { Box, Divider, Grid, Typography } from "@mui/material";
 import React, { useEffect, useState } from "react";
-import { AuthorData, AuthorImageData, getAuthorImage } from "./api";
-import PersonIcon from "@mui/icons-material/Person";
+import { AuthorData, getAuthorImage } from "./api";
 import { makeStyles } from "tss-react/mui";
+import { ImageData } from "../article/api/files";
 
 const useStyles = makeStyles()(() => ({
   avatarBorder: {
@@ -21,7 +21,7 @@ const useStyles = makeStyles()(() => ({
 export default function AuthorItem(props: { data: AuthorData }): JSX.Element {
   const { classes } = useStyles();
   const { data: author } = props;
-  const [authorImage, setAuthorImage] = useState<AuthorImageData | undefined>(
+  const [authorImage, setAuthorImage] = useState<ImageData | undefined>(
     undefined
   );
 
@@ -42,15 +42,13 @@ export default function AuthorItem(props: { data: AuthorData }): JSX.Element {
           alignItems="center"
           justifyContent="center"
         >
-          {authorImage ? (
+          {authorImage && (
             <Box
               component="img"
               className={classes.avatarImage}
-              src={`${authorImage?.imageSrc}?${Date.now()}`}
+              src={`${authorImage?.imagePathName}?${Date.now()}`}
               alt={"Missing picture"}
             />
-          ) : (
-            <PersonIcon fontSize="large" />
           )}
         </Grid>
       </Grid>

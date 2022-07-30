@@ -23,13 +23,12 @@ public sealed class ArticleController : ControllerBase
     /// <summary>
     ///     Retrieves an articles listing
     /// </summary>
-    [HttpGet]
-    [Route("listing")]
+    [HttpGet("listing")]
     public async Task<IEnumerable<DashboardArticleData>> GetArticleListingAsync(
         [Range(1, int.MaxValue)]
         int? page)
     {
-        var listing = await _articleQuery.GetArticleListing(page ?? 1, HttpContext.RequestAborted);
+        var listing = await _articleQuery.GetListingAsync(page ?? 1, HttpContext.RequestAborted);
 
         Response.Headers.Add("display-page", listing.Page.ToString());
         Response.Headers.Add("articles-count", listing.Total.ToString());
@@ -40,36 +39,28 @@ public sealed class ArticleController : ControllerBase
     /// <summary>
     ///     Retrieves an article by id
     /// </summary>
-    [HttpGet]
-    public async Task<FullArticleData> GetArticleByIdAsync(
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetArticleAsync(
         [Range(1, int.MaxValue)]
         int id)
     {
-        var article = await _articleQuery.GetArticleById(id, HttpContext.RequestAborted);
+        var article = await _articleQuery.GetSingleArticleAsync(id, HttpContext.RequestAborted);
 
-        return article;
+        if(article is null)
+        {
+            return NotFound();
+        }
+
+        return Ok(article);
     }
 
     /// <summary>
-    ///     Retrieves an article lookup table
-    /// </summary>
-    [HttpGet]
-    [Route("lookup")]
-    public async Task<IEnumerable<LookupData>> GetArticleLookupTableAsync(string lookupName)
-    {
-        var lookup = await _articleQuery.GetArticleLookupTable(lookupName, HttpContext.RequestAborted);
-
-        return lookup;
-    }
-
-    /// <summary>
-    ///     Creates or updates an article
+    ///     Creates an article
     /// </summary>
     [Authorize]
-    [HttpPost]
-    public async Task<IActionResult> CreateOrUpdateArticleAsync(
+    public async Task<IActionResult> CreateArticleAsync(
         [FromBody]
-        ArticleCreateOrUpdateRequestData request)
+        ArticleRequestData request)
     {
         var userId = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier) ?? null;
         if(userId is null)
@@ -77,12 +68,25 @@ public sealed class ArticleController : ControllerBase
             return NotFound(userId);
         }
 
-        var id = await _articleCommand.CreateOrUpdateArticle(request, userId.Value, HttpContext.RequestAborted);
-        if(id == 0)
+        return Ok(await _articleCommand.CreateAsync(request, userId.Value, HttpContext.RequestAborted));
+    }
+
+    /// <summary>
+    ///     Updates an article
+    /// </summary>
+    [Authorize]
+    [HttpPut("{id}")]
+    public async Task<IActionResult> UpdateArticleAsync(
+        [FromBody]
+        ArticleRequestData request,
+        int id)
+    {
+        var result = await _articleCommand.UpdateAsync(id, request, HttpContext.RequestAborted);
+        if(result is false)
         {
-            return StatusCode(500);
+            return NotFound(id);
         }
 
-        return Ok(id);
+        return NoContent();
     }
 }

@@ -1,1 +1,19 @@
 /code garbage
+**/*.env*
+!.env.template
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+ui/npm-debug.log*
+ui/yarn-debug.log*
+ui/yarn-error.log*
+api/**/bin
+api/**/obj
+.idea
+.vscode
+.vs
+api/**/*.user
+dist
+api/**/*.xml
+*.log
+*eslintcache

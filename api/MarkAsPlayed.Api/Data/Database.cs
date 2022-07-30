@@ -17,7 +17,7 @@ public sealed class Database : DataConnection
     public ITable<Article> Articles => this.GetTable<Article>();
     public ITable<ArticleGamingPlatform> ArticleGamingPlatforms => this.GetTable<ArticleGamingPlatform>();
     public ITable<GamingPlatform> GamingPlatforms => this.GetTable<GamingPlatform>();
-    public ITable<Genre> Genres => this.GetTable<Genre>();
-    public ITable<ArticleGallery> ArticleGallery => this.GetTable<ArticleGallery>();
+    public ITable<ArticleType> ArticleTypes => this.GetTable<ArticleType>();
+    public ITable<ArticleImage> ArticleImages => this.GetTable<ArticleImage>();
     public ITable<Author> Authors => this.GetTable<Author>();
 }

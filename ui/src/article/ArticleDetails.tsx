@@ -11,14 +11,13 @@ import { makeStyles } from "tss-react/mui";
 import { useParams } from "react-router-dom";
 import { tryParseInt } from "../parsing";
 import EditIcon from "@mui/icons-material/Edit";
-import { Dialogs } from "../components/Dialogs";
+import { Dialog } from "../Dialog";
 import LoadingIndicator from "../components/LoadingIndicator";
 import ExceptionPage from "../components/ExceptionPage";
 import ArticleDetailsReviewPanel from "./details/ArticleDetailsReviewPanel";
 import ArticleDetailsGallery from "./details/ArticleDetailsGallery";
-import { ArticleImageData, getFrontImage, getGallery } from "./api/apiGallery";
-import { FullArticleData, getArticle } from "./api/apiArticle";
-import formatedDateDisplay from "./components/formatedDateDisplay";
+import { ImageData, getFrontImage, getGallery } from "./api/files";
+import { FullArticleData, getArticle } from "./api/article";
 
 const useStyles = makeStyles()((theme) => ({
   paper: {
@@ -56,19 +55,17 @@ const useStyles = makeStyles()((theme) => ({
 }));
 
 export default function ArticleDetails(props: {
-  openDialog: Dispatch<SetStateAction<Dialogs>>;
+  openDialog: Dispatch<SetStateAction<Dialog>>;
 }): JSX.Element {
   const { classes } = useStyles();
   const { openDialog } = props;
 
   const [requireFetch, setRequireFetch] = useState<boolean>(true);
   const [article, setArticle] = useState<FullArticleData | undefined>();
-  const [frontImage, setFrontImage] = useState<ArticleImageData | undefined>(
+  const [frontImage, setFrontImage] = useState<ImageData | undefined>(
     undefined
   );
-  const [gallery, setGallery] = useState<ArticleImageData[] | undefined>(
-    undefined
-  );
+  const [gallery, setGallery] = useState<ImageData[] | undefined>(undefined);
 
   const params = useParams();
   const parsedId = tryParseInt(params.id);
@@ -77,7 +74,7 @@ export default function ArticleDetails(props: {
 
   const handleClick = () => {
     openDialog({
-      type: "EditArticle",
+      type: "editArticle",
       data: article,
       images: { main: frontImage, gallery: gallery },
       returnFunction: setRequireFetch,
@@ -95,6 +92,7 @@ export default function ArticleDetails(props: {
           const fetchedResult = await getArticle({ id: parsedId });
           setArticle(fetchedResult);
         } catch {
+          setArticle(undefined);
           setLoading(false);
         }
         setLoading(false);
@@ -109,8 +107,12 @@ export default function ArticleDetails(props: {
   useEffect(() => {
     async function fetchFrontImage() {
       if (parsedId !== null && article !== undefined) {
-        const image = await getFrontImage({ id: parsedId });
-        setFrontImage(image);
+        try {
+          const image = await getFrontImage({ id: parsedId });
+          setFrontImage(image);
+        } catch (error) {
+          setFrontImage(undefined);
+        }
       }
     }
 
@@ -155,7 +157,7 @@ export default function ArticleDetails(props: {
           </Box>
           <Grid container item alignItems="flex-start">
             <Typography variant="body2">
-              {formatedDateDisplay(article.createdAt)} |{" "}
+              {new Date(article.createdAt).toLocaleDateString()} |{" "}
               {article.createdBy.name}
             </Typography>
           </Grid>
@@ -163,7 +165,7 @@ export default function ArticleDetails(props: {
             <Box
               component="img"
               className={classes.image}
-              src={`${frontImage?.imageSrc}?${Date.now()}`}
+              src={`${frontImage?.imagePathName}?${Date.now()}`}
               alt={"Missing picture"}
             />
           ) : (
@@ -174,7 +176,7 @@ export default function ArticleDetails(props: {
               {article.longDescription}
             </Typography>
           </Box>
-          {article.genre.name === "review" && (
+          {article.articleType.name === "review" && (
             <ArticleDetailsReviewPanel
               playTime={article.playTime}
               playedOn={article.playedOn}
@@ -182,7 +184,7 @@ export default function ArticleDetails(props: {
             />
           )}
           {gallery ? (
-            <ArticleDetailsGallery gallery={gallery} />
+            <ArticleDetailsGallery gallery={gallery} step={requireFetch} />
           ) : (
             <CircularProgress />
           )}

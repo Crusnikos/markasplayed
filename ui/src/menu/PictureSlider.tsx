@@ -4,7 +4,7 @@ import { makeStyles } from "tss-react/mui";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import PauseIcon from "@mui/icons-material/Pause";
 import { useNavigate } from "react-router-dom";
-import { ArticleImageData } from "../article/api/apiGallery";
+import { ImageData } from "../article/api/files";
 
 const useStyles = makeStyles()((theme) => ({
   image: {
@@ -41,9 +41,7 @@ const useStyles = makeStyles()((theme) => ({
   },
 }));
 
-export function PictureSlider(props: {
-  images: ArticleImageData[];
-}): JSX.Element {
+export function PictureSlider(props: { images: ImageData[] }): JSX.Element {
   const { classes } = useStyles();
   const { images } = props;
   const [currentIndex, setCurrentIndex] = useState<number>(0);
@@ -77,7 +75,7 @@ export function PictureSlider(props: {
         key={currentIndex}
         component="img"
         className={classes.image}
-        src={`${images[currentIndex].imageSrc}?${Date.now()}`}
+        src={`${images[currentIndex].imagePathName}?${Date.now()}`}
         alt={"Missing picture"}
         onClick={handleRedirect}
       />

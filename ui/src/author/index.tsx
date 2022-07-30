@@ -1,5 +1,5 @@
 import {
-  Dialog,
+  Dialog as DialogMUI,
   DialogActions,
   DialogContent,
   DialogTitle,
@@ -8,14 +8,14 @@ import {
 } from "@mui/material";
 import React, { Dispatch, SetStateAction, useEffect, useState } from "react";
 import ReactDOM from "react-dom";
-import { Dialogs } from "../components/Dialogs";
+import { Dialog } from "../Dialog";
 import ExceptionPage from "../components/ExceptionPage";
 import LoadingIndicator from "../components/LoadingIndicator";
 import CloseIcon from "@mui/icons-material/Close";
 import { makeStyles } from "tss-react/mui";
 import { AuthorData, getAuthorsListing } from "./api";
 import AuthorItem from "./AuthorItem";
-import CommonStepper from "../components/CommonStepper";
+import Stepper from "../components/Stepper";
 
 const useStyles = makeStyles()((theme) => ({
   closeIcon: {
@@ -41,7 +41,7 @@ const useStyles = makeStyles()((theme) => ({
 }));
 
 export default function AuthorsListing(props: {
-  openDialog: Dispatch<SetStateAction<Dialogs>>;
+  openDialog: Dispatch<SetStateAction<Dialog>>;
 }) {
   const { classes } = useStyles();
   const [loading, setLoading] = useState<boolean>(true);
@@ -70,11 +70,11 @@ export default function AuthorsListing(props: {
 
   if (loading) {
     const loadingDialog = (
-      <Dialog open={true} onClose={closeDialog} fullWidth>
+      <DialogMUI open={true} onClose={closeDialog} fullWidth>
         <DialogContent>
           <LoadingIndicator />
         </DialogContent>
-      </Dialog>
+      </DialogMUI>
     );
 
     return ReactDOM.createPortal(
@@ -85,11 +85,11 @@ export default function AuthorsListing(props: {
 
   if (error) {
     const errorDialog = (
-      <Dialog open={true} onClose={closeDialog} fullWidth>
+      <DialogMUI open={true} onClose={closeDialog} fullWidth>
         <DialogContent>
           <ExceptionPage message="Wystąpił problem z pobraniem danych" />
         </DialogContent>
-      </Dialog>
+      </DialogMUI>
     );
 
     return ReactDOM.createPortal(
@@ -99,7 +99,7 @@ export default function AuthorsListing(props: {
   }
 
   const listingDialog = (
-    <Dialog open={true} onClose={closeDialog} fullWidth>
+    <DialogMUI open={true} onClose={closeDialog} fullWidth>
       <DialogTitle className={classes.topInfo}>
         Autorzy Mark as Played
         <IconButton
@@ -119,19 +119,22 @@ export default function AuthorsListing(props: {
           spacing={1}
           className={classes.container}
         >
-          {authors?.map((author) => (
-            <AuthorItem data={author} key={author.id} />
-          ))}
+          {authors && (
+            <AuthorItem
+              data={authors[activeStep]}
+              key={authors[activeStep].id}
+            />
+          )}
         </Grid>
       </DialogContent>
       <DialogActions className={classes.navigation}>
-        <CommonStepper
+        <Stepper
           activeStep={activeStep}
           setActiveStep={setActiveStep}
           length={authors?.length ?? 0}
         />
       </DialogActions>
-    </Dialog>
+    </DialogMUI>
   );
 
   return ReactDOM.createPortal(

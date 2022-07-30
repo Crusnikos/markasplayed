@@ -1,5 +1,6 @@
 import axios from "axios";
 import { settings } from "../api";
+import { ImageData } from "../article/api/files";
 
 export async function getAuthorsListing(): Promise<AuthorData[]> {
   const response = await axios.get<AuthorData[]>(
@@ -11,22 +12,13 @@ export async function getAuthorsListing(): Promise<AuthorData[]> {
 
 export async function getAuthorImage(request: {
   id: number;
-}): Promise<AuthorImageData> {
-  const response = await axios.get<AuthorImageData>(
-    `${settings.url}/image/author`,
-    {
-      params: request,
-    }
+}): Promise<ImageData> {
+  const response = await axios.get<ImageData>(
+    `${settings.url}/files/author/${request.id}/avatar`
   );
 
   return response.data;
 }
-
-export type AuthorImageData = {
-  id: number;
-  imageName: string;
-  imageSrc: string;
-};
 
 export type AuthorData = {
   id: number;

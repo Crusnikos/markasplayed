@@ -2,10 +2,10 @@ import { Grid } from "@mui/material";
 import { makeStyles } from "tss-react/mui";
 import LoadingIndicator from "../components/LoadingIndicator";
 import { useArticleData } from "../ArticleListProvider";
-import ArticleDashboardItem from "./ArticleDashboardItem";
 import React, { useEffect, useState } from "react";
 import PagePagination from "../components/PagePagination";
 import ExceptionPage from "../components/ExceptionPage";
+import ArticleDashboardItem from "./dashboard/ArticleDashboardItem";
 
 const useStyles = makeStyles()((theme) => ({
   articleSection: {

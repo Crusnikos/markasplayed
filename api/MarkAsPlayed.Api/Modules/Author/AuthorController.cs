@@ -19,8 +19,8 @@ public sealed class AuthorController : ControllerBase
     /// </summary>
     [HttpGet]
     [Route("listing")]
-    public async Task<IEnumerable<AuthorData>> GetArticleListingAsync()
+    public List<AuthorData> GetArticleListing()
     {
-        return await _authorQuery.GetAuthorsListing(HttpContext.RequestAborted);
+        return _authorQuery.GetAuthors();
     }
 }

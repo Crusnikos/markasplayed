@@ -2,7 +2,7 @@ import React, { Dispatch, SetStateAction, useState } from "react";
 import ReactDOM from "react-dom";
 import {
   Button,
-  Dialog,
+  Dialog as DialogMUI,
   DialogContent,
   DialogContentText,
   DialogTitle,
@@ -12,10 +12,10 @@ import {
   Stack,
   TextField,
 } from "@mui/material";
-import { Dialogs } from "../components/Dialogs";
+import { Dialog } from "../Dialog";
 import { makeStyles } from "tss-react/mui";
 import { Controller, useForm } from "react-hook-form";
-import { LoginRequest, SignIn } from "./firebase";
+import { LoginRequest, useFirebaseAuth } from "../firebase";
 import CloseIcon from "@mui/icons-material/Close";
 import LoadingIndicator from "../components/LoadingIndicator";
 
@@ -44,9 +44,10 @@ const useStyles = makeStyles()((theme) => ({
 }));
 
 export default function Login(props: {
-  openDialog: Dispatch<SetStateAction<Dialogs>>;
+  openDialog: Dispatch<SetStateAction<Dialog>>;
 }) {
   const { classes } = useStyles();
+  const { app } = useFirebaseAuth();
   const [loading, setLoading] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const { openDialog } = props;
@@ -74,7 +75,9 @@ export default function Login(props: {
   const onSubmit = async (formData: LoginRequest) => {
     setLoading(true);
     try {
-      await SignIn({ formData });
+      await app!
+        .auth()
+        .signInWithEmailAndPassword(formData.email, formData.password);
       closeDialog();
     } catch {
       setErrorMessage(
@@ -85,13 +88,13 @@ export default function Login(props: {
   };
 
   const login = loading ? (
-    <Dialog open={true} onClose={closeDialog} fullWidth>
+    <DialogMUI open={true} onClose={closeDialog} fullWidth>
       <DialogContent>
         <LoadingIndicator message="Proszę czekać, trwa logowanie" />
       </DialogContent>
-    </Dialog>
+    </DialogMUI>
   ) : (
-    <Dialog open={true} onClose={closeDialog} fullWidth>
+    <DialogMUI open={true} onClose={closeDialog} fullWidth>
       <DialogTitle>
         Login
         <IconButton
@@ -179,7 +182,7 @@ export default function Login(props: {
           </FormControl>
         </form>
       </DialogContent>
-    </Dialog>
+    </DialogMUI>
   );
 
   return ReactDOM.createPortal(

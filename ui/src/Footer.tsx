@@ -29,7 +29,10 @@ export default function Footer(): JSX.Element {
       </Typography>
       <Box sx={{ flexGrow: 1 }} />
       <Typography className={classes.text}>
-        Site created by Michał Kubrak, michalkubrak.90@gmail.com
+        {`Site created by Michał Kubrak, `}
+        <a href="mailto:michalkubrak.90@gmail.com" className={classes.link}>
+          michalkubrak.90@gmail.com
+        </a>
       </Typography>
     </Grid>
   );

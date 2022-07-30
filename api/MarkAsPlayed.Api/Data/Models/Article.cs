@@ -15,8 +15,8 @@ public sealed class Article
     [NotNull]
     public string Title { get; set; } = default!;
 
-    [Column("played_on")]
-    public int? GamingPlatformId { get; set; }
+    [Column("played_on_gaming_platform_id")]
+    public int? PlayedOnGamingPlatformId { get; set; }
 
     [Column("producer")]
     public string? Producer { get; set; }
@@ -24,9 +24,9 @@ public sealed class Article
     [Column("play_time")]
     public int? PlayTime { get; set; }
 
-    [Column("genre_id")]
+    [Column("article_type_id")]
     [NotNull]
-    public int GenreId { get; set; }
+    public int ArticleTypeId { get; set; }
 
     [Column("created_at")]
     [NotNull]
@@ -40,7 +40,7 @@ public sealed class Article
     [NotNull]
     public string LongDescription { get; set; } = default!;
 
-    [Column("created_by")]
+    [Column("created_by_author_id")]
     [NotNull]
     public int CreatedBy { get; set; }
 }

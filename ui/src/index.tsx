@@ -1,14 +1,15 @@
 import React from "react";
 import ReactDOM from "react-dom";
 import App from "./App";
-import UserProvider from "./UserProvider";
 import ArticlesListProvider from "./ArticleListProvider";
+import { FirebaseAuthProvider } from "./firebase";
+import { firebaseConfig } from "./api";
 
 ReactDOM.render(
-  <UserProvider>
+  <FirebaseAuthProvider config={firebaseConfig}>
     <ArticlesListProvider>
       <App />
     </ArticlesListProvider>
-  </UserProvider>,
+  </FirebaseAuthProvider>,
   document.getElementById("root")
 );

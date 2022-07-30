@@ -2,6 +2,7 @@
 using MarkAsPlayed.Api.Data;
 using LinqToDB;
 using MarkAsPlayed.Api.Pagination;
+using MarkAsPlayed.Api.Lookups;
 
 namespace MarkAsPlayed.Api.Modules.Article.Queries;
 
@@ -15,56 +16,16 @@ public sealed class ArticleQuery
         _databaseFactory = databaseFactory;
     }
 
-    public async Task<IEnumerable<LookupData>> GetArticleLookupTable(
-        string lookupName,
-        CancellationToken cancellationToken = default)
-    {
-        await using var db = _databaseFactory();
-
-        var result = lookupName switch
-        {
-            "genres" => await db.Genres.
-                Select(g => new LookupData 
-                { 
-                    Id = g.Id, 
-                    Name = g.Name 
-                }).
-                ToListAsync(cancellationToken),
-            "gamingPlatforms" => await db.GamingPlatforms.
-                Select(gp => new LookupData 
-                { 
-                    Id = gp.Id, 
-                    Name = gp.Name 
-                }).
-                ToListAsync(cancellationToken),
-            _ => throw new InvalidOperationException(lookupName)
-        };
-
-        return new List<LookupData>(result);
-    }
-
-    public async Task<FullArticleData> GetArticleById(
+    public async Task<FullArticleData?> GetSingleArticleAsync(
         int articleId,
         CancellationToken cancellationToken = default)
     {
         await using var db = _databaseFactory();
 
-        var platformsSubquery =
-            from articlePlatforms in db.ArticleGamingPlatforms
-            where articlePlatforms.ArticleId == articleId
-            from platforms in db.GamingPlatforms.InnerJoin(l => l.Id == articlePlatforms.GamingPlatformId)
-            select new LookupData 
-            { 
-                Id = platforms.Id, 
-                Name = platforms.Name 
-            };
-
-        var platformsList = await platformsSubquery.ToListAsync(cancellationToken);
-
         var articleData = await (
             from article in db.Articles.Where(a => a.Id == articleId)
-            from playedOn in db.GamingPlatforms.InnerJoin(gp => gp.Id == article.GamingPlatformId).DefaultIfEmpty()
-            from genre in db.Genres.InnerJoin(g => g.Id == article.GenreId)
+            from playedOn in db.GamingPlatforms.InnerJoin(gp => gp.Id == article.PlayedOnGamingPlatformId).DefaultIfEmpty()
+            from articleType in db.ArticleTypes.InnerJoin(g => g.Id == article.ArticleTypeId)
             from author in db.Authors.InnerJoin(a => a.Id == article.CreatedBy)
             select new
             {
@@ -74,10 +35,10 @@ public sealed class ArticleQuery
                     Id = playedOn.Id,
                     Name = playedOn.Name
                 },
-                genre = new LookupData
+                articleType = new LookupData
                 {
-                    Id = genre.Id,
-                    Name = genre.Name
+                    Id = articleType.Id,
+                    Name = articleType.Name
                 },
                 author = new LookupData
                 {
@@ -88,8 +49,20 @@ public sealed class ArticleQuery
 
         if (articleData is null)
         {
-            throw new ArgumentNullException(nameof(articleData));
+            return null;
         }
+
+        var platformsSubquery =
+            from articlePlatforms in db.ArticleGamingPlatforms
+            where articlePlatforms.ArticleId == articleId
+            from platforms in db.GamingPlatforms.InnerJoin(l => l.Id == articlePlatforms.GamingPlatformId)
+            select new LookupData
+            {
+                Id = platforms.Id,
+                Name = platforms.Name
+            };
+
+        var platformsList = await platformsSubquery.ToListAsync(cancellationToken);
 
         return new FullArticleData
         {
@@ -102,12 +75,12 @@ public sealed class ArticleQuery
             CreatedAt = articleData.article.CreatedAt,
             ShortDescription = articleData.article.ShortDescription,
             LongDescription = articleData.article.LongDescription,
-            Genre = articleData.genre,
+            ArticleType = articleData.articleType,
             CreatedBy = articleData.author
         };
     }
 
-    public async Task<Paginated<DashboardArticleData>> GetArticleListing(
+    public async Task<Paginated<DashboardArticleData>> GetListingAsync(
         int requestPage,
         CancellationToken cancellationToken = default)
     {
@@ -125,8 +98,8 @@ public sealed class ArticleQuery
 
         var articleSubquery =
             from article in db.Articles
-            from playedOn in db.GamingPlatforms.InnerJoin(gp => gp.Id == article.GamingPlatformId).DefaultIfEmpty()
-            from genre in db.Genres.InnerJoin(g => g.Id == article.GenreId)
+            from playedOn in db.GamingPlatforms.InnerJoin(gp => gp.Id == article.PlayedOnGamingPlatformId).DefaultIfEmpty()
+            from articleType in db.ArticleTypes.InnerJoin(g => g.Id == article.ArticleTypeId)
             from author in db.Authors.InnerJoin(a => a.Id == article.CreatedBy)
             select new
             {
@@ -136,16 +109,23 @@ public sealed class ArticleQuery
                     Id = playedOn.Id,
                     Name = playedOn.Name
                 },
-                genre = new LookupData
+                articleType = new LookupData
                 {
-                    Id = genre.Id,
-                    Name = genre.Name
+                    Id = articleType.Id,
+                    Name = articleType.Name
                 },
                 author = new LookupData
                 {
                     Id= author.Id,
                     Name= author.Name
-                }
+                },
+                platforms = platformsSubquery.
+                    Where(ps => ps.ArticleId == article.Id).
+                    Select(q => new LookupData
+                    {
+                        Id = q.PlatformId,
+                        Name = q.PlatformName
+                    }).ToList()
             };
 
         var pageOffset = DefaultPageSize * (requestPage - 1);
@@ -163,11 +143,11 @@ public sealed class ArticleQuery
                 Id = q.article.Id,
                 Title = q.article.Title,
                 PlayedOn = q.playedOn,
-                AvailableOn = AssignPlatformsToArticle(q.article.Id, platformsSubquery),
+                AvailableOn = q.platforms,
                 Producer = q.article.Producer,
                 CreatedAt = q.article.CreatedAt,
                 ShortDescription = q.article.ShortDescription,
-                Genre = q.genre,
+                ArticleType = q.articleType,
             }).
             OrderByDescending(q => q.Id).
             Skip(pageOffset).
@@ -175,16 +155,5 @@ public sealed class ArticleQuery
             ToListAsync(cancellationToken);
 
         return new Paginated<DashboardArticleData>(listing, requestPage, count.Result);
-    }
-
-    public IEnumerable<LookupData> AssignPlatformsToArticle(long articleId, IQueryable<PlatformData> subquery)
-    {
-        return 
-            subquery.Where(s => s.ArticleId == articleId).
-                Select(s => new LookupData
-                {
-                    Id = s.PlatformId,
-                    Name = s.PlatformName
-                }).ToList();
     }
 }
