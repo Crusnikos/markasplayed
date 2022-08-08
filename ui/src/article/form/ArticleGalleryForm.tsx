@@ -16,11 +16,11 @@ import {
   Typography,
 } from "@mui/material";
 import AddPhotoAlternateIcon from "@mui/icons-material/AddPhotoAlternate";
-import { ArticleImageData } from "../api/apiGallery";
-import { useAuth } from "../../UserProvider";
-import galleryReducer from "./components/galleryReducer";
+import { ImageData } from "../api/files";
+import galleryReducer from "./galleryReducer";
 import ClearIcon from "@mui/icons-material/Clear";
-import CommonStepper from "../../components/CommonStepper";
+import Stepper from "../../components/Stepper";
+import { useFirebaseAuth } from "../../firebase";
 
 const useStyles = makeStyles()((theme) => ({
   helperMargin: {
@@ -79,8 +79,8 @@ const useStyles = makeStyles()((theme) => ({
 }));
 
 export default function ArticleGalleryForm(props: {
-  frontImage?: ArticleImageData | undefined;
-  gallery?: ArticleImageData[] | undefined;
+  frontImage?: ImageData | undefined;
+  gallery?: ImageData[] | undefined;
   onGallerySubmit: (
     frontImage?: File,
     oldGalleryImages?: number[],
@@ -89,14 +89,14 @@ export default function ArticleGalleryForm(props: {
 }): JSX.Element {
   const { classes } = useStyles();
   const { frontImage, gallery, onGallerySubmit } = props;
-  const { authenticated } = useAuth();
+  const { authenticated } = useFirebaseAuth();
 
   const [activeStep, setActiveStep] = useState(0);
 
   const [imagesState, imagesDispatch] = useReducer(galleryReducer, {
     mainImage: {
       file: undefined,
-      preview: frontImage?.imageSrc ?? undefined,
+      preview: frontImage?.imagePathName ?? undefined,
       error: undefined,
     },
     gallery: {
@@ -105,7 +105,7 @@ export default function ArticleGalleryForm(props: {
         ? [
             ...gallery.map((i) => ({
               id: i.id,
-              link: i.imageSrc,
+              link: i.imagePathName,
               isActive: true,
               isNew: false,
             })),
@@ -154,35 +154,34 @@ export default function ArticleGalleryForm(props: {
   }
 
   function displayFrontImage(): JSX.Element {
-    //display actual front image preview
-    if (imagesState.mainImage.preview) {
-      return (
-        <CardActionArea component="label" className={classes.container}>
-          <input
-            hidden
-            accept="image/webp"
-            type="file"
-            onChange={(event) =>
-              imagesDispatch({
-                type: "setFrontImage",
-                data: event.currentTarget.files,
-              })
-            }
-          />
-          <CardMedia
-            component="img"
-            src={
-              imagesState.mainImage.file
-                ? imagesState.mainImage.preview
-                : `${imagesState.mainImage.preview}?${Date.now()}`
-            }
-            alt="main image"
-            className={classes.image}
-          />
-        </CardActionArea>
-      );
-    }
-    //display add new front image
+    return (
+      <CardActionArea component="label" className={classes.container}>
+        <input
+          hidden
+          accept="image/webp"
+          type="file"
+          onChange={(event) =>
+            imagesDispatch({
+              type: "setFrontImage",
+              data: event.currentTarget.files,
+            })
+          }
+        />
+        <CardMedia
+          component="img"
+          src={
+            imagesState.mainImage.file
+              ? imagesState.mainImage.preview
+              : `${imagesState.mainImage.preview}?${Date.now()}`
+          }
+          alt="main image"
+          className={classes.image}
+        />
+      </CardActionArea>
+    );
+  }
+
+  function displayAddNewFrontImage(): JSX.Element {
     return (
       <CardActionArea
         component="label"
@@ -204,75 +203,84 @@ export default function ArticleGalleryForm(props: {
     );
   }
 
-  function displayGalleryImage(index: number): JSX.Element {
-    //display exisiting image
+  function displayGalleryImage(index: number) {
     if (
       index !== imagesState.gallery.previews.length - 1 &&
       !imagesState.gallery.previews[index].isNew
     ) {
-      return (
-        <Box position="relative">
-          <FormControlLabel
-            control={
-              <Switch
-                checked={imagesState.gallery.previews[activeStep].isActive}
-                onChange={() =>
-                  imagesDispatch({
-                    type: "setGalleryImageAsConcealed",
-                    data: imagesState.gallery.previews[activeStep].id as number,
-                  })
-                }
-              />
-            }
-            label={
-              <Typography fontSize="large">
-                {imagesState.gallery.previews[activeStep].isActive
-                  ? "AKTYWNE"
-                  : "UKRYTE"}
-              </Typography>
-            }
-            labelPlacement="start"
-            className={classes.switch}
-          />
-          <CardMedia
-            component="img"
-            src={imagesState.gallery.previews[activeStep].link}
-            alt="gallery image"
-            className={classes.image}
-          />
-        </Box>
-      );
+      return displayExistingGalleryImage();
     }
-    //display new image
     if (index !== imagesState.gallery.previews.length - 1) {
-      return (
-        <Box position="relative">
-          <IconButton
-            disableRipple
-            onClick={() =>
-              imagesDispatch({
-                type: "deleteNewGalleryImage",
-                data: {
-                  fileIndex: activeStep - (gallery?.length ?? 0),
-                  previewIndex: activeStep,
-                },
-              })
-            }
-            className={classes.delete}
-          >
-            <Typography>USUŃ</Typography>
-            <ClearIcon fontSize="medium" />
-          </IconButton>
-          <CardMedia
-            component="img"
-            src={imagesState.gallery.previews[activeStep].link}
-            alt="gallery image"
-            className={classes.image}
-          />
-        </Box>
-      );
+      return displayWaitingGalleryImage();
     }
-    //display add new image
+    return displayAddNewGalleryImage();
+  }
+
+  function displayExistingGalleryImage(): JSX.Element {
+    return (
+      <Box position="relative">
+        <FormControlLabel
+          control={
+            <Switch
+              checked={imagesState.gallery.previews[activeStep].isActive}
+              onChange={() =>
+                imagesDispatch({
+                  type: "setGalleryImageAsConcealed",
+                  data: imagesState.gallery.previews[activeStep].id as number,
+                })
+              }
+            />
+          }
+          label={
+            <Typography fontSize="large">
+              {imagesState.gallery.previews[activeStep].isActive
+                ? "AKTYWNE"
+                : "UKRYTE"}
+            </Typography>
+          }
+          labelPlacement="start"
+          className={classes.switch}
+        />
+        <CardMedia
+          component="img"
+          src={imagesState.gallery.previews[activeStep].link}
+          alt="gallery image"
+          className={classes.image}
+        />
+      </Box>
+    );
+  }
+
+  function displayWaitingGalleryImage(): JSX.Element {
+    return (
+      <Box position="relative">
+        <IconButton
+          disableRipple
+          onClick={() =>
+            imagesDispatch({
+              type: "deleteNewGalleryImage",
+              data: {
+                fileIndex: activeStep - (gallery?.length ?? 0),
+                previewIndex: activeStep,
+              },
+            })
+          }
+          className={classes.delete}
+        >
+          <Typography>USUŃ</Typography>
+          <ClearIcon fontSize="medium" />
+        </IconButton>
+        <CardMedia
+          component="img"
+          src={imagesState.gallery.previews[activeStep].link}
+          alt="gallery image"
+          className={classes.image}
+        />
+      </Box>
+    );
+  }
+
+  function displayAddNewGalleryImage(): JSX.Element {
     return (
       <CardActionArea
         component="label"
@@ -308,7 +316,9 @@ export default function ArticleGalleryForm(props: {
             className={classes.topInfo}
             titleTypographyProps={{ variant: "h6" }}
           />
-          {displayFrontImage()}
+          {imagesState.mainImage.preview
+            ? displayFrontImage()
+            : displayAddNewFrontImage()}
           <CardContent className={classes.bottomInfo}>
             <Typography variant="body1">
               Akceptowany wyłącznie format webp i zalecana rozdzielczość
@@ -326,7 +336,7 @@ export default function ArticleGalleryForm(props: {
             titleTypographyProps={{ variant: "h6" }}
           />
           {displayGalleryImage(activeStep)}
-          <CommonStepper
+          <Stepper
             activeStep={activeStep}
             setActiveStep={setActiveStep}
             length={imagesState.gallery.previews.length}

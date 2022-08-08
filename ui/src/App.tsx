@@ -1,14 +1,16 @@
 import CssBaseline from "@mui/material/CssBaseline";
-import { createTheme, ThemeProvider } from "@mui/material";
+import { AlertColor, createTheme, ThemeProvider } from "@mui/material";
 import { BrowserRouter } from "react-router-dom";
 import createCache from "@emotion/cache";
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { CacheProvider } from "@emotion/react";
 import MainPanel from "./MainPanel";
 import Login from "./user/Login";
-import { Dialogs } from "./components/Dialogs";
+import { Dialog } from "./Dialog";
 import ArticleForm from "./article/ArticleForm";
 import AuthorsListing from "./author";
+import SnackbarDialog from "./components/SnackbarDialog";
+import { useFirebaseAuth } from "./firebase";
 
 export const muiCache = createCache({
   key: "mui",
@@ -36,31 +38,57 @@ const theme = createTheme({
 });
 
 export default function App(): JSX.Element {
-  const [openDialog, setOpenDialog] = useState<Dialogs>({
+  const [openDialog, setOpenDialog] = useState<Dialog>({
     type: undefined,
     data: undefined,
     images: undefined,
   });
+  const { user } = useFirebaseAuth();
+  const [userNotification, setUserNotification] = useState<{
+    message: string | undefined;
+    severity: AlertColor | undefined;
+  }>({ message: undefined, severity: `info` });
 
   function dialog() {
     switch (openDialog.type) {
-      case "AddArticle":
-        return <ArticleForm openDialog={setOpenDialog} />;
-      case "EditArticle":
+      case undefined:
+        return;
+      case "addArticle":
+        return (
+          <ArticleForm
+            openDialog={setOpenDialog}
+            responseOnSubmitForm={setUserNotification}
+          />
+        );
+      case "editArticle":
         return (
           <ArticleForm
             openDialog={setOpenDialog}
             data={openDialog.data}
             images={openDialog.images}
             returnFunction={openDialog.returnFunction}
+            responseOnSubmitForm={setUserNotification}
           />
         );
-      case "Authors":
+      case "authors":
         return <AuthorsListing openDialog={setOpenDialog} />;
-      case "LoginUser":
+      case "loginUser":
         return <Login openDialog={setOpenDialog} />;
     }
   }
+
+  const isFirstRun = useRef(true);
+  useEffect(() => {
+    if (isFirstRun.current) {
+      isFirstRun.current = false;
+      return;
+    }
+
+    setUserNotification({
+      message: user ? "Jesteś zalogowany" : "Jesteś wylogowany",
+      severity: `info`,
+    });
+  }, [user]);
 
   return (
     <React.Fragment>
@@ -70,6 +98,13 @@ export default function App(): JSX.Element {
           <ThemeProvider theme={theme}>
             {dialog()}
             <MainPanel openDialog={setOpenDialog} />
+            {userNotification.message && (
+              <SnackbarDialog
+                message={userNotification.message}
+                clearMessage={setUserNotification}
+                severity={userNotification.severity}
+              />
+            )}
           </ThemeProvider>
         </CacheProvider>
       </BrowserRouter>

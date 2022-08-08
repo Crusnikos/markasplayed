@@ -13,9 +13,8 @@ import { Link } from "react-router-dom";
 import { makeStyles } from "tss-react/mui";
 import { AccountCircle } from "@mui/icons-material";
 import MenuItem from "@mui/material/MenuItem";
-import { Dialogs } from "../components/Dialogs";
-import { useAuth } from "../UserProvider";
-import { SignOut } from "../user/firebase";
+import { Dialog } from "../Dialog";
+import { useFirebaseAuth } from "../firebase";
 
 const useStyles = makeStyles()((theme) => ({
   toolbar: {
@@ -25,12 +24,12 @@ const useStyles = makeStyles()((theme) => ({
 }));
 
 export default function TopMenu(props: {
-  openDialog: Dispatch<SetStateAction<Dialogs>>;
+  openDialog: Dispatch<SetStateAction<Dialog>>;
 }): JSX.Element {
   const { classes } = useStyles();
   const { openDialog } = props;
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const { authenticated } = useAuth();
+  const { app, authenticated } = useFirebaseAuth();
 
   const theme = useTheme();
   const logo = useMediaQuery(theme.breakpoints.up("sm")) ? "MAPlayed" : "MAP";
@@ -45,22 +44,22 @@ export default function TopMenu(props: {
 
   const handleAddArticleClick = () => {
     setAnchorEl(null);
-    openDialog({ type: "AddArticle", data: undefined, images: undefined });
+    openDialog({ type: "addArticle", data: undefined, images: undefined });
   };
 
   const handleAuthorsClick = () => {
     setAnchorEl(null);
-    openDialog({ type: "Authors", data: undefined, images: undefined });
+    openDialog({ type: "authors", data: undefined, images: undefined });
   };
 
   const handleLoginClick = () => {
     setAnchorEl(null);
-    openDialog({ type: "LoginUser", data: undefined, images: undefined });
+    openDialog({ type: "loginUser", data: undefined, images: undefined });
   };
 
   const handleLogoutClick = async () => {
     setAnchorEl(null);
-    await SignOut();
+    await app!.auth().signOut();
   };
 
   return (

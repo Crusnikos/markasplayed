@@ -1,9 +1,9 @@
 import { Grid } from "@mui/material";
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { makeStyles } from "tss-react/mui";
-import { ArticleImageData, getSliderImages } from "../article/api/apiGallery";
+import { ImageData, getSliderImages } from "../article/api/files";
 import { useArticleData } from "../ArticleListProvider";
-import { Dialogs } from "../components/Dialogs";
+import { Dialog } from "../Dialog";
 import { DefaultPicture, PictureSlider } from "./PictureSlider";
 import TopMenu from "./TopMenu";
 
@@ -17,13 +17,13 @@ const useStyles = makeStyles()((theme) => ({
 }));
 
 export default function Menu(props: {
-  openDialog: Dispatch<SetStateAction<Dialogs>>;
+  openDialog: Dispatch<SetStateAction<Dialog>>;
 }): JSX.Element {
   const { classes } = useStyles();
   const [[, count]] = useArticleData();
-  const [sliderImages, setSliderImages] = useState<
-    ArticleImageData[] | undefined
-  >(undefined);
+  const [sliderImages, setSliderImages] = useState<ImageData[] | undefined>(
+    undefined
+  );
 
   useEffect(() => {
     async function fetchSliderImages() {

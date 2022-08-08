@@ -10,7 +10,7 @@ import {
   ArticleDataRequest,
   ArticleDataResponse,
   getArticlesListing,
-} from "./article/api/apiArticle";
+} from "./article/api/article";
 
 type ArticleDataContextType = [
   ArticleDataResponse,

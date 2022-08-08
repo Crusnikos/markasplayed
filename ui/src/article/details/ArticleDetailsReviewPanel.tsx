@@ -8,8 +8,8 @@ import {
   Typography,
 } from "@mui/material";
 import { makeStyles } from "tss-react/mui";
-import { whiteIconSelector } from "../components/platformIconSelector";
-import { LookupData } from "../api/apiLookup";
+import { whiteIconSelector } from "../platformIconSelector";
+import { LookupData } from "../api/lookup";
 
 const useStyles = makeStyles()((theme) => ({
   platformIcons: {

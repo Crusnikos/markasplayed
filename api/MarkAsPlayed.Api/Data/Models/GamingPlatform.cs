@@ -3,15 +3,8 @@
 namespace MarkAsPlayed.Api.Data.Models;
 
 [Table("gaming_platform")]
-public sealed class GamingPlatform
+public sealed class GamingPlatform : LookupItem
 {
     [Column("gaming_platform_id")]
-    [NotNull]
-    [PrimaryKey]
-    [Identity]
-    public int Id { get; set; }
-
-    [Column("gaming_platform_name")]
-    [NotNull]
-    public string Name { get; set; } = default!;
+    public override int Id { get; set; }
 }

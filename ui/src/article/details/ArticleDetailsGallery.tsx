@@ -1,8 +1,8 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { makeStyles } from "tss-react/mui";
 import { Card, CardHeader, CardMedia } from "@mui/material";
-import { ArticleImageData } from "../api/apiGallery";
-import CommonStepper from "../../components/CommonStepper";
+import { ImageData } from "../api/files";
+import Stepper from "../../components/Stepper";
 
 const useStyles = makeStyles()((theme) => ({
   info: {
@@ -18,11 +18,18 @@ const useStyles = makeStyles()((theme) => ({
 }));
 
 export default function ArticleDetailsGallery(props: {
-  gallery: ArticleImageData[] | undefined;
+  gallery: ImageData[] | undefined;
+  step?: boolean;
 }): JSX.Element {
   const { classes } = useStyles();
   const { gallery } = props;
   const [activeStep, setActiveStep] = React.useState(0);
+
+  useEffect(() => {
+    if (props.step === true) {
+      setActiveStep(0);
+    }
+  }, [props.step]);
 
   if (gallery === undefined || gallery.length === 0) {
     return <React.Fragment></React.Fragment>;
@@ -35,9 +42,9 @@ export default function ArticleDetailsGallery(props: {
         className={classes.image}
         component="img"
         alt={"Missing picture"}
-        image={gallery[activeStep].imageSrc}
+        image={gallery[activeStep].imagePathName}
       />
-      <CommonStepper
+      <Stepper
         activeStep={activeStep}
         setActiveStep={setActiveStep}
         length={gallery.length}

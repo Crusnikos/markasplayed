@@ -7,18 +7,13 @@ import {
   TextField,
 } from "@mui/material";
 import React, { useEffect, useState } from "react";
-import { Controller, useForm } from "react-hook-form";
-import {
-  ArticleCreationRequest,
-  FullArticleData,
-  GenreTypes,
-} from "../api/apiArticle";
-import { Lookups } from "../api/apiLookup";
+import { Controller, FieldError, useForm } from "react-hook-form";
+import { ArticleFormData, FullArticleData, ArticleTypes } from "../api/article";
+import { Lookups } from "../api/lookup";
 import { makeStyles } from "tss-react/mui";
-import { useAuth } from "../../UserProvider";
 import KeyboardDoubleArrowRightIcon from "@mui/icons-material/KeyboardDoubleArrowRight";
-import defaultFormValues from "./components/defaultFormValues";
-import errorMessageFromArray from "./components/errorMessageFromArray";
+import defaultFormValues from "./defaultFormValues";
+import { useFirebaseAuth } from "../../firebase";
 
 const useStyles = makeStyles()(() => ({
   helperMargin: {
@@ -26,53 +21,59 @@ const useStyles = makeStyles()(() => ({
   },
 }));
 
+function errorMessageFromArray(
+  error: FieldError[] | undefined
+): (string | undefined)[] {
+  return (Array.isArray(error) ? error : [error])?.map((e) => e?.message);
+}
+
 export default function ArticleContentForm(props: {
   data?: FullArticleData;
-  draft?: ArticleCreationRequest;
+  draft?: ArticleFormData;
   onArticleSubmit: (
-    formData: ArticleCreationRequest,
-    genre: GenreTypes
+    formData: ArticleFormData,
+    articleType: ArticleTypes
   ) => Promise<void>;
   lookups: Lookups | undefined;
 }): JSX.Element {
   const { data, draft, onArticleSubmit, lookups } = props;
   const { classes } = useStyles();
-  const [genre, setGenre] = useState<GenreTypes>(undefined);
-  const { authenticated } = useAuth();
+  const [articleType, setArticleType] = useState<ArticleTypes>(undefined);
+  const { authenticated } = useFirebaseAuth();
 
   const {
     handleSubmit,
     control,
     formState: { errors },
     watch,
-  } = useForm<ArticleCreationRequest>({
+  } = useForm<ArticleFormData>({
     defaultValues: defaultFormValues({ data, draft }),
   });
 
-  const articleType = watch("genre");
+  const type = watch("articleType");
   useEffect(() => {
-    switch (articleType) {
+    switch (type) {
       case 1:
-        setGenre("review");
+        setArticleType("review");
         return;
       case 2:
-        setGenre("news");
+        setArticleType("news");
         return;
       case 3:
-        setGenre("other");
+        setArticleType("other");
         return;
       default:
-        setGenre(undefined);
+        setArticleType(undefined);
         return;
     }
-  }, [articleType]);
+  }, [type]);
 
   return (
     <form
       autoComplete="off"
       noValidate
       onSubmit={handleSubmit((formData) => {
-        onArticleSubmit(formData, genre);
+        onArticleSubmit(formData, articleType);
       })}
     >
       <FormControl fullWidth variant="outlined">
@@ -81,7 +82,7 @@ export default function ArticleContentForm(props: {
             rules={{
               required: { value: true, message: "Pole jest wymagane" },
             }}
-            name="genre"
+            name="articleType"
             control={control}
             render={({ field }) => (
               <React.Fragment>
@@ -92,14 +93,14 @@ export default function ArticleContentForm(props: {
                   select
                   {...field}
                 >
-                  {lookups?.genres.map((g) => (
+                  {lookups?.articleTypes.map((g) => (
                     <MenuItem key={g.id} value={g.id}>
                       {g.name}
                     </MenuItem>
                   ))}
                 </TextField>
                 <FormHelperText error className={classes.helperMargin}>
-                  {errors.genre?.message}
+                  {errors.articleType?.message}
                 </FormHelperText>
               </React.Fragment>
             )}
@@ -128,7 +129,7 @@ export default function ArticleContentForm(props: {
               </React.Fragment>
             )}
           />
-          {genre !== "news" && genre !== "other" && (
+          {articleType !== "news" && articleType !== "other" && (
             <Controller
               rules={{
                 required: { value: true, message: "Pole jest wymagane" },
@@ -157,7 +158,7 @@ export default function ArticleContentForm(props: {
               )}
             />
           )}
-          {genre !== "other" && (
+          {articleType !== "other" && (
             <Controller
               rules={{
                 required: { value: true, message: "Pole jest wymagane" },
@@ -190,7 +191,7 @@ export default function ArticleContentForm(props: {
               )}
             />
           )}
-          {genre !== "news" && genre !== "other" && (
+          {articleType !== "news" && articleType !== "other" && (
             <Controller
               rules={{
                 required: { value: true, message: "Pole jest wymagane" },
@@ -216,7 +217,7 @@ export default function ArticleContentForm(props: {
               )}
             />
           )}
-          {genre !== "news" && genre !== "other" && (
+          {articleType !== "news" && articleType !== "other" && (
             <Controller
               rules={{
                 required: { value: true, message: "Pole jest wymagane" },

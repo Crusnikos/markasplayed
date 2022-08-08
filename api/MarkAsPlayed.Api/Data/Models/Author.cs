@@ -11,19 +11,19 @@ public class Author
     [Identity]
     public int Id { get; set; }
 
-    [Column("author_firebase_id")]
+    [Column("firebase_id")]
     [NotNull]
     public string FirebaseId { get; set; } = default!;
 
-    [Column("author_name")]
+    [Column("name")]
     [NotNull]
     public string Name { get; set; } = default!;
 
-    [Column("author_description_pl")]
+    [Column("description_pl")]
     [NotNull]
     public string DescriptionPl { get; set; } = default!;
 
-    [Column("author_description_en")]
+    [Column("description_en")]
     [NotNull]
     public string DescriptionEn { get; set; } = default!;
 }

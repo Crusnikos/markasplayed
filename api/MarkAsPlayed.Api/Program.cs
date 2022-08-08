@@ -1,7 +1,8 @@
 using MarkAsPlayed.Api.Data;
+using MarkAsPlayed.Api.Lookups;
 using MarkAsPlayed.Api.Modules.Article;
 using MarkAsPlayed.Api.Modules.Author;
-using MarkAsPlayed.Api.Modules.Image;
+using MarkAsPlayed.Api.Modules.Files;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
@@ -64,8 +65,9 @@ builder.Services.
 // Setting modules
 
 ArticleConfiguration.ConfigureModule(builder.Services);
-ImageConfiguration.ConfigureModule(builder.Services);
+FilesConfiguration.ConfigureModule(builder.Services);
 AuthorConfiguration.ConfigureModule(builder.Services);
+LookupConfiguration.ConfigureModule(builder.Services);
 
 var app = builder.Build();
 
