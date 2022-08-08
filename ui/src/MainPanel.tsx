@@ -9,6 +9,7 @@ import { tryParseInt } from "./parsing";
 import { useArticleData } from "./ArticleListProvider";
 import ArticleDashboard from "./article/ArticleDashboard";
 import ArticleDetails from "./article/ArticleDetails";
+import i18next from "i18next";
 
 const useStyles = makeStyles()((theme) => ({
   content: {
@@ -66,8 +67,7 @@ export default function MainPanel(props: {
               element={
                 <React.Fragment>
                   <Typography>
-                    Nie udało się wyświetlić żadanej strony i zostałeś
-                    przeniesionny do głównego panelu
+                    {i18next.t("routing.error.missingPage")}
                   </Typography>
                   <ArticleDashboard />
                 </React.Fragment>

@@ -16,6 +16,7 @@ import { makeStyles } from "tss-react/mui";
 import { AuthorData, getAuthorsListing } from "./api";
 import AuthorItem from "./AuthorItem";
 import Stepper from "../components/Stepper";
+import i18next from "i18next";
 
 const useStyles = makeStyles()((theme) => ({
   closeIcon: {
@@ -72,7 +73,7 @@ export default function AuthorsListing(props: {
     const loadingDialog = (
       <DialogMUI open={true} onClose={closeDialog} fullWidth>
         <DialogContent>
-          <LoadingIndicator />
+          <LoadingIndicator message={i18next.t("loading")} />
         </DialogContent>
       </DialogMUI>
     );
@@ -87,7 +88,7 @@ export default function AuthorsListing(props: {
     const errorDialog = (
       <DialogMUI open={true} onClose={closeDialog} fullWidth>
         <DialogContent>
-          <ExceptionPage message="Wystąpił problem z pobraniem danych" />
+          <ExceptionPage message={i18next.t("author.error.retrieve")} />
         </DialogContent>
       </DialogMUI>
     );
@@ -101,7 +102,7 @@ export default function AuthorsListing(props: {
   const listingDialog = (
     <DialogMUI open={true} onClose={closeDialog} fullWidth>
       <DialogTitle className={classes.topInfo}>
-        Autorzy Mark as Played
+        {i18next.t("title.authors")} Mark as Played
         <IconButton
           aria-label="close"
           onClick={closeDialog}

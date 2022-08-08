@@ -21,6 +21,7 @@ import galleryReducer from "./galleryReducer";
 import ClearIcon from "@mui/icons-material/Clear";
 import Stepper from "../../components/Stepper";
 import { useFirebaseAuth } from "../../firebase";
+import i18next from "i18next";
 
 const useStyles = makeStyles()((theme) => ({
   helperMargin: {
@@ -123,7 +124,7 @@ export default function ArticleGalleryForm(props: {
     if (!imagesState.mainImage.preview) {
       imagesDispatch({
         type: "setFrontImageError",
-        data: "Nie wybrałeś zdjęcia",
+        data: i18next.t("form.error.frontImage.notSelected"),
       });
       return;
     }
@@ -139,7 +140,7 @@ export default function ArticleGalleryForm(props: {
     ) {
       imagesDispatch({
         type: "setFrontImageAndGalleryError",
-        data: "Brak zmian do wykonania",
+        data: i18next.t("form.error.frontImage.notSelected"),
       });
       return;
     }
@@ -174,7 +175,7 @@ export default function ArticleGalleryForm(props: {
               ? imagesState.mainImage.preview
               : `${imagesState.mainImage.preview}?${Date.now()}`
           }
-          alt="main image"
+          alt={i18next.t("image.missing")}
           className={classes.image}
         />
       </CardActionArea>
@@ -234,8 +235,8 @@ export default function ArticleGalleryForm(props: {
           label={
             <Typography fontSize="large">
               {imagesState.gallery.previews[activeStep].isActive
-                ? "AKTYWNE"
-                : "UKRYTE"}
+                ? i18next.t("form.label.gallery.active")
+                : i18next.t("form.label.gallery.hidden")}
             </Typography>
           }
           labelPlacement="start"
@@ -244,7 +245,7 @@ export default function ArticleGalleryForm(props: {
         <CardMedia
           component="img"
           src={imagesState.gallery.previews[activeStep].link}
-          alt="gallery image"
+          alt={i18next.t("image.missing")}
           className={classes.image}
         />
       </Box>
@@ -267,13 +268,13 @@ export default function ArticleGalleryForm(props: {
           }
           className={classes.delete}
         >
-          <Typography>USUŃ</Typography>
+          <Typography>{i18next.t("form.label.gallery.delete")}</Typography>
           <ClearIcon fontSize="medium" />
         </IconButton>
         <CardMedia
           component="img"
           src={imagesState.gallery.previews[activeStep].link}
-          alt="gallery image"
+          alt={i18next.t("image.missing")}
           className={classes.image}
         />
       </Box>
@@ -312,7 +313,7 @@ export default function ArticleGalleryForm(props: {
       <Stack direction="column">
         <Card>
           <CardHeader
-            title="Główne zdjęcie"
+            title={i18next.t("title.mainPicture")}
             className={classes.topInfo}
             titleTypographyProps={{ variant: "h6" }}
           />
@@ -321,8 +322,7 @@ export default function ArticleGalleryForm(props: {
             : displayAddNewFrontImage()}
           <CardContent className={classes.bottomInfo}>
             <Typography variant="body1">
-              Akceptowany wyłącznie format webp i zalecana rozdzielczość
-              1280x720
+              {i18next.t("subtitle.mainPicture")}
             </Typography>
           </CardContent>
         </Card>
@@ -331,7 +331,7 @@ export default function ArticleGalleryForm(props: {
         </FormHelperText>
         <Card>
           <CardHeader
-            title="Galeria"
+            title={i18next.t("title.gallery")}
             className={classes.topInfo}
             titleTypographyProps={{ variant: "h6" }}
           />
@@ -349,11 +349,13 @@ export default function ArticleGalleryForm(props: {
         </FormHelperText>
         {authenticated ? (
           <Button type="submit" variant="contained">
-            {frontImage ? "Edytuj galerię" : "Dodaj"}
+            {frontImage
+              ? i18next.t("form.submit.gallery.edit")
+              : i18next.t("form.submit.gallery.add")}
           </Button>
         ) : (
           <Button type="submit" variant="contained" disabled>
-            Nie dostępne
+            {i18next.t("form.submit.notAvailable")}
           </Button>
         )}
       </Stack>

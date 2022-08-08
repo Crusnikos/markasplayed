@@ -40,6 +40,7 @@ import { useArticleData } from "../ArticleListProvider";
 import ArticleContentForm from "./form/ArticleContentForm";
 import ArticleGalleryForm from "./form/ArticleGalleryForm";
 import { useFirebaseAuth } from "../firebase";
+import i18next from "i18next";
 
 const useStyles = makeStyles()((theme) => ({
   closeIcon: {
@@ -96,7 +97,7 @@ export default function ArticleForm(props: {
 
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<boolean>(false);
-  const [view, setView] = useState<"ARTYKUŁ" | "GALERIA">("ARTYKUŁ");
+  const [view, setView] = useState<"article" | "gallery">("article");
   const [lookups, setLookups] = useState<Lookups | undefined>(undefined);
   const [draftArticle, setDraftArticle] = useState<
     { article: ArticleFormData; articleType: ArticleTypes } | undefined
@@ -141,7 +142,7 @@ export default function ArticleForm(props: {
     try {
       const token = await app!.auth().currentUser?.getIdToken();
       if (!token) {
-        throw new Error("Nieprawidłowy token");
+        throw new Error();
       }
 
       const id = await createArticle(
@@ -152,8 +153,7 @@ export default function ArticleForm(props: {
       return { status: "success", id };
     } catch {
       responseOnSubmitForm({
-        message:
-          "Wystąpił problem w trakcie tworzenia artykułu, spróbuj później",
+        message: i18next.t("form.error.article.create"),
         severity: `error`,
       });
       return { status: "failure", id: undefined };
@@ -167,14 +167,14 @@ export default function ArticleForm(props: {
     try {
       const token = await app!.auth().currentUser?.getIdToken();
       if (!token) {
-        throw new Error("Nieprawidłowy token");
+        throw new Error();
       }
 
       await updateArticle(formData, articleType, token);
       return { status: "success" };
     } catch {
       responseOnSubmitForm({
-        message: "Wystąpił problem w trakcie edycji artykułu, spróbuj później",
+        message: i18next.t("form.error.article.update"),
         severity: `error`,
       });
       return { status: "failure" };
@@ -188,14 +188,14 @@ export default function ArticleForm(props: {
     try {
       const token = await app!.auth().currentUser?.getIdToken();
       if (!token) {
-        throw new Error("Nieprawidłowy token");
+        throw new Error();
       }
 
       await setFrontImage({ id: id, file: frontImage }, token);
       return { status: "success" };
     } catch {
       responseOnSubmitForm({
-        message: "Wystąpił problem z edycją głównego obrazu, spróbuj później",
+        message: i18next.t("form.error.frontImage.set"),
         severity: `error`,
       });
       return { status: "failure" };
@@ -209,14 +209,14 @@ export default function ArticleForm(props: {
     try {
       const token = await app!.auth().currentUser?.getIdToken();
       if (!token) {
-        throw new Error("Nieprawidłowy token");
+        throw new Error();
       }
 
       await updateGallery({ id, galleryIds }, token);
       return { status: "success" };
     } catch {
       responseOnSubmitForm({
-        message: "Wystąpił problem z edycją obrazów, spróbuj później",
+        message: i18next.t("form.error.gallery.update"),
         severity: `error`,
       });
       return { status: "failure" };
@@ -230,7 +230,7 @@ export default function ArticleForm(props: {
     try {
       const token = await app!.auth().currentUser?.getIdToken();
       if (!token) {
-        throw new Error("Nieprawidłowy token");
+        throw new Error();
       }
 
       const responseCode = await addToGallery(
@@ -242,15 +242,14 @@ export default function ArticleForm(props: {
       );
       if (responseCode !== 204) {
         responseOnSubmitForm({
-          message: "Nie wszystkie obrazy zostały dodane do galerii",
+          message: i18next.t("form.warning.gallery.partiallyAdd"),
           severity: `warning`,
         });
       }
       return { status: "success" };
     } catch {
       responseOnSubmitForm({
-        message:
-          "Wystąpił problem w trakcie dodawania obrazów, spróbuj później",
+        message: i18next.t("form.error.gallery.add"),
         severity: `error`,
       });
       return { status: "failure" };
@@ -270,7 +269,7 @@ export default function ArticleForm(props: {
         await getNextPage({ page });
         returnFunction?.(true);
         responseOnSubmitForm({
-          message: "Artykuł zaktualizowany",
+          message: i18next.t("form.success.article.update"),
           severity: `success`,
         });
       }
@@ -278,7 +277,7 @@ export default function ArticleForm(props: {
       return closeDialog();
     } else {
       setDraftArticle({ article: formData, articleType });
-      setView("GALERIA");
+      setView("gallery");
     }
   };
 
@@ -315,7 +314,7 @@ export default function ArticleForm(props: {
       }
 
       responseOnSubmitForm({
-        message: "Obrazy zaaktualizowane",
+        message: i18next.t("form.success.gallery.update"),
         severity: `success`,
       });
       returnFunction?.(true);
@@ -356,7 +355,7 @@ export default function ArticleForm(props: {
 
       await getNextPage({ page: 1 });
       responseOnSubmitForm({
-        message: "Artykuł dodany",
+        message: i18next.t("form.success.article.add"),
         severity: `success`,
       });
       navigate("/");
@@ -368,7 +367,7 @@ export default function ArticleForm(props: {
     const loadingDialog = (
       <DialogMUI open={true} onClose={closeDialog} fullWidth>
         <DialogContent>
-          <LoadingIndicator />
+          <LoadingIndicator message={i18next.t("loading")} />
         </DialogContent>
       </DialogMUI>
     );
@@ -383,7 +382,7 @@ export default function ArticleForm(props: {
     const errorDialog = (
       <DialogMUI open={true} onClose={closeDialog} fullWidth>
         <DialogContent>
-          <ExceptionPage message="Wystąpił problem z pobraniem danych" />
+          <ExceptionPage message={i18next.t("form.error.lookup.retrieve")} />
         </DialogContent>
       </DialogMUI>
     );
@@ -397,7 +396,7 @@ export default function ArticleForm(props: {
   const formDialog = (
     <DialogMUI open={true} onClose={closeDialog} fullWidth>
       <DialogTitle className={classes.topInfo}>
-        {data?.id ? "Edytuj artykuł" : "Dodaj nowy artykuł"}
+        {i18next.t(data?.id ? "title.editArticle" : "title.addArticle")}
         <IconButton
           aria-label="close"
           onClick={closeDialog}
@@ -416,23 +415,34 @@ export default function ArticleForm(props: {
           <Grid item container xs={3} justifyContent="center">
             <Button
               className={classes.button}
-              disabled={view === "ARTYKUŁ"}
-              onClick={() => setView("ARTYKUŁ")}
+              disabled={view === "article"}
+              onClick={() => setView("article")}
             >
               <KeyboardDoubleArrowLeftIcon />
-              {smallView && <Typography fontSize="medium">ARTYKUŁ</Typography>}
+              {smallView && (
+                <Typography fontSize="medium">
+                  {i18next.t("form.view.article")}
+                </Typography>
+              )}
             </Button>
           </Grid>
           <Grid item container xs={6} justifyContent="center">
-            <Chip label={view} className={classes.navChip} />
+            <Chip
+              label={i18next.t(`form.view.${view}`)}
+              className={classes.navChip}
+            />
           </Grid>
           <Grid item container xs={3} justifyContent="center">
             <Button
               className={classes.button}
-              disabled={view === "GALERIA" || data?.id === undefined}
-              onClick={() => setView("GALERIA")}
+              disabled={view === "gallery" || data?.id === undefined}
+              onClick={() => setView("gallery")}
             >
-              {smallView && <Typography fontSize="medium">GALERIA</Typography>}
+              {smallView && (
+                <Typography fontSize="medium">
+                  {i18next.t("form.view.gallery")}
+                </Typography>
+              )}
               <KeyboardDoubleArrowRightIcon />
             </Button>
           </Grid>
@@ -440,10 +450,9 @@ export default function ArticleForm(props: {
       </DialogTitle>
       <DialogContent>
         <DialogContentText className={classes.warning}>
-          Zapisywanie oraz edytowanie formularza dostępne tylko dla zalogowanych
-          użytkowników.
+          {i18next.t("subtitle.article")}
         </DialogContentText>
-        {view === "ARTYKUŁ" && (
+        {view === "article" && (
           <ArticleContentForm
             data={data}
             draft={draftArticle?.article}
@@ -451,7 +460,7 @@ export default function ArticleForm(props: {
             lookups={lookups}
           />
         )}
-        {view === "GALERIA" && (
+        {view === "gallery" && (
           <ArticleGalleryForm
             frontImage={images?.main}
             gallery={images?.gallery}

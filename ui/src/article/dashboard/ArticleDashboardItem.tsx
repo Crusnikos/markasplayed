@@ -15,6 +15,7 @@ import AnnouncementIcon from "@mui/icons-material/Announcement";
 import { DashboardArticleData } from "../api/article";
 import { getFrontImage, ImageData } from "../api/files";
 import { colorIconSelector, whiteIconSelector } from "../platformIconSelector";
+import i18next from "i18next";
 
 const useStyles = makeStyles()((theme) => ({
   article: {
@@ -109,7 +110,7 @@ export default function ArticleDashboardItem(props: {
               <CardMedia
                 className={classes.image}
                 component="img"
-                alt="game front picture"
+                alt={i18next.t("image.missing")}
                 image={`${frontImage.imagePathName}?${Date.now()}`}
               />
               <Typography
@@ -140,7 +141,7 @@ export default function ArticleDashboardItem(props: {
                     <CardMedia
                       component="img"
                       image={platform}
-                      alt="platform"
+                      alt={i18next.t("image.missing")}
                       height="64"
                     />
                   ) : (
@@ -180,14 +181,16 @@ export default function ArticleDashboardItem(props: {
               className={classes.footer}
             >
               {data.availableOn.length > 0 && (
-                <Typography variant="body2">dostępne na:</Typography>
+                <Typography variant="body2">
+                  {i18next.t("dashboard.item.availableOn")}
+                </Typography>
               )}
               {data.availableOn.map((icon) => (
                 <CardMedia
                   key={icon.id}
                   className={classes.gamingPlatformMinis}
                   component="img"
-                  alt="platform available"
+                  alt={i18next.t("image.missing")}
                   image={colorIconSelector(icon)}
                 />
               ))}

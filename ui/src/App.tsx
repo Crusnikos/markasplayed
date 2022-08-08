@@ -11,6 +11,9 @@ import ArticleForm from "./article/ArticleForm";
 import AuthorsListing from "./author";
 import SnackbarDialog from "./components/SnackbarDialog";
 import { useFirebaseAuth } from "./firebase";
+import i18next from "i18next";
+import { useTranslation } from "react-i18next";
+import LoadingIndicator from "./components/LoadingIndicator";
 
 export const muiCache = createCache({
   key: "mui",
@@ -48,6 +51,7 @@ export default function App(): JSX.Element {
     message: string | undefined;
     severity: AlertColor | undefined;
   }>({ message: undefined, severity: `info` });
+  const { ready } = useTranslation();
 
   function dialog() {
     switch (openDialog.type) {
@@ -85,10 +89,16 @@ export default function App(): JSX.Element {
     }
 
     setUserNotification({
-      message: user ? "Jesteś zalogowany" : "Jesteś wylogowany",
+      message: user
+        ? i18next.t("user.notification.login")
+        : i18next.t("user.notification.logout"),
       severity: `info`,
     });
   }, [user]);
+
+  if (!ready) {
+    return <LoadingIndicator />;
+  }
 
   return (
     <React.Fragment>

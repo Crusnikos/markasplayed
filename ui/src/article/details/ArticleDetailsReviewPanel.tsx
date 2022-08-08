@@ -10,6 +10,7 @@ import {
 import { makeStyles } from "tss-react/mui";
 import { whiteIconSelector } from "../platformIconSelector";
 import { LookupData } from "../api/lookup";
+import i18next from "i18next";
 
 const useStyles = makeStyles()((theme) => ({
   platformIcons: {
@@ -54,9 +55,13 @@ export default function ArticleDetailsReviewPanel(props: {
             md={6}
             className={classes.infoBoxItem}
           >
-            <Typography variant="h6">Czas gry</Typography>
+            <Typography variant="h6">
+              {i18next.t("details.reviewPanel.gameTime")}
+            </Typography>
             <Divider className={classes.divider} flexItem />
-            <Typography variant="h6">{playTime} godzin</Typography>
+            <Typography variant="h6">
+              {playTime} {i18next.t("details.reviewPanel.hours")}
+            </Typography>
           </Grid>
           <Grid
             container
@@ -67,12 +72,14 @@ export default function ArticleDetailsReviewPanel(props: {
             md={6}
             className={classes.infoBoxItem}
           >
-            <Typography variant="h6">Grałem na</Typography>
+            <Typography variant="h6">
+              {i18next.t("details.reviewPanel.playedOn")}
+            </Typography>
             <Divider className={classes.divider} flexItem />
             <CardMedia
               className={classes.platformIcons}
               component="img"
-              alt="played on"
+              alt={i18next.t("image.missing")}
               image={whiteIconSelector(playedOn)}
             />
           </Grid>
@@ -85,7 +92,9 @@ export default function ArticleDetailsReviewPanel(props: {
             md={12}
             className={classes.infoBoxItem}
           >
-            <Typography variant="h6">Dostępne na</Typography>
+            <Typography variant="h6">
+              {i18next.t("details.reviewPanel.availableOn")}
+            </Typography>
             <Divider className={classes.divider} flexItem />
             <Grid container item direction="row" justifyContent="center">
               {availableOn.map((platform) => (
@@ -93,7 +102,7 @@ export default function ArticleDetailsReviewPanel(props: {
                   key={platform.id}
                   className={classes.platformIcons}
                   component="img"
-                  alt="played on"
+                  alt={i18next.t("image.missing")}
                   image={whiteIconSelector(platform)}
                 />
               ))}

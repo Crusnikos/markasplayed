@@ -6,6 +6,7 @@ import React, { useEffect, useState } from "react";
 import PagePagination from "../components/PagePagination";
 import ExceptionPage from "../components/ExceptionPage";
 import ArticleDashboardItem from "./dashboard/ArticleDashboardItem";
+import i18next from "i18next";
 
 const useStyles = makeStyles()((theme) => ({
   articleSection: {
@@ -41,19 +42,17 @@ export default function ArticleDashboard(): JSX.Element {
   }, [articleData]);
 
   if (loading) {
-    return <LoadingIndicator />;
+    return <LoadingIndicator message={i18next.t("loading")} />;
   }
 
   if (articleData instanceof Error) {
-    return (
-      <ExceptionPage message="Wystąpił błąd podczas pobierania artykułów, prosze odśwież stronę" />
-    );
+    return <ExceptionPage message={i18next.t("dashboard.error.retrieve")} />;
   }
 
   if (isArticleDataEmpty) {
     return (
       <React.Fragment>
-        <ExceptionPage message="Podana strona nie istnieje, skorzystaj z nawigatora poniżej" />
+        <ExceptionPage message={i18next.t("dashboard.error.missingPage")} />
         <Grid item className={classes.paginationSection}>
           <PagePagination onPageChange={onPageChange} />
         </Grid>

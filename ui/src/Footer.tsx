@@ -1,4 +1,5 @@
 import { Box, Grid, Typography } from "@mui/material";
+import i18next from "i18next";
 import React from "react";
 import { makeStyles } from "tss-react/mui";
 
@@ -22,14 +23,14 @@ export default function Footer(): JSX.Element {
   return (
     <Grid className={classes.footer}>
       <Typography className={classes.text}>
-        Icons downloaded from{" "}
+        {i18next.t("footer.icons")}
         <a href="https://icons8.com/" className={classes.link}>
           {url}
         </a>
       </Typography>
       <Box sx={{ flexGrow: 1 }} />
       <Typography className={classes.text}>
-        {`Site created by Michał Kubrak, `}
+        {i18next.t("footer.author")}
         <a href="mailto:michalkubrak.90@gmail.com" className={classes.link}>
           michalkubrak.90@gmail.com
         </a>

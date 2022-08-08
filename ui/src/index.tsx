@@ -4,6 +4,7 @@ import App from "./App";
 import ArticlesListProvider from "./ArticleListProvider";
 import { FirebaseAuthProvider } from "./firebase";
 import { firebaseConfig } from "./api";
+import "./i18n";
 
 ReactDOM.render(
   <FirebaseAuthProvider config={firebaseConfig}>

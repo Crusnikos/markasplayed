@@ -1,3 +1,5 @@
+import i18next from "i18next";
+
 type GalleryPreview = {
   id: number | undefined;
   link: string;
@@ -101,8 +103,7 @@ function setGalleryImageAsConcealed(state: InitState, requestedId: number) {
           : image
       ),
       error: undefined,
-      message:
-        "Zdjęcie oznaczone jako ukryte zostanę zdezaktywowane po zatwierdzeniu edycji galerii",
+      message: i18next.t("form.warning.gallery.setHidden"),
     },
   };
 }
