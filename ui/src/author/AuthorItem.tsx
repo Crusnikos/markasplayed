@@ -3,6 +3,8 @@ import React, { useEffect, useState } from "react";
 import { AuthorData, getAuthorImage } from "./api";
 import { makeStyles } from "tss-react/mui";
 import { ImageData } from "../article/api/files";
+import i18next from "i18next";
+import { useTranslation } from "react-i18next";
 
 const useStyles = makeStyles()(() => ({
   avatarBorder: {
@@ -18,12 +20,25 @@ const useStyles = makeStyles()(() => ({
   },
 }));
 
+function descriptionSelector(
+  language: string,
+  author: AuthorData
+): JSX.Element {
+  switch (language) {
+    case "pl":
+      return <Typography variant="body1">{author.descriptionPl}</Typography>;
+    default:
+      return <Typography variant="body1">{author.descriptionEn}</Typography>;
+  }
+}
+
 export default function AuthorItem(props: { data: AuthorData }): JSX.Element {
   const { classes } = useStyles();
   const { data: author } = props;
   const [authorImage, setAuthorImage] = useState<ImageData | undefined>(
     undefined
   );
+  const { i18n } = useTranslation();
 
   useEffect(() => {
     async function fetchAuthors() {
@@ -47,7 +62,7 @@ export default function AuthorItem(props: { data: AuthorData }): JSX.Element {
               component="img"
               className={classes.avatarImage}
               src={`${authorImage?.imagePathName}?${Date.now()}`}
-              alt={"Missing picture"}
+              alt={i18next.t("image.missing")}
             />
           )}
         </Grid>
@@ -55,14 +70,7 @@ export default function AuthorItem(props: { data: AuthorData }): JSX.Element {
       <Grid item>
         <Typography variant="h5">{author.name}</Typography>
       </Grid>
-      <Grid item>
-        <Divider textAlign="left">Polski</Divider>
-        <Typography variant="body1">{author.descriptionPl}</Typography>
-      </Grid>
-      <Grid item>
-        <Divider textAlign="left">English</Divider>
-        <Typography variant="body1">{author.descriptionEn}</Typography>
-      </Grid>
+      <Grid item>{descriptionSelector(i18n.resolvedLanguage, author)}</Grid>
     </React.Fragment>
   );
 }

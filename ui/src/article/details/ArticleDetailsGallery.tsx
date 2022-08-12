@@ -3,6 +3,7 @@ import { makeStyles } from "tss-react/mui";
 import { Card, CardHeader, CardMedia } from "@mui/material";
 import { ImageData } from "../api/files";
 import Stepper from "../../components/Stepper";
+import i18next from "i18next";
 
 const useStyles = makeStyles()((theme) => ({
   info: {
@@ -37,11 +38,14 @@ export default function ArticleDetailsGallery(props: {
 
   return (
     <Card className={classes.galleryBox}>
-      <CardHeader title="Galeria" className={classes.info} />
+      <CardHeader
+        title={i18next.t("details.title.gallery")}
+        className={classes.info}
+      />
       <CardMedia
         className={classes.image}
         component="img"
-        alt={"Missing picture"}
+        alt={i18next.t("image.missing")}
         image={gallery[activeStep].imagePathName}
       />
       <Stepper

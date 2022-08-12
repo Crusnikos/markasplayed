@@ -18,6 +18,7 @@ import { Controller, useForm } from "react-hook-form";
 import { LoginRequest, useFirebaseAuth } from "../firebase";
 import CloseIcon from "@mui/icons-material/Close";
 import LoadingIndicator from "../components/LoadingIndicator";
+import i18next from "i18next";
 
 const useStyles = makeStyles()((theme) => ({
   warning: {
@@ -80,9 +81,7 @@ export default function Login(props: {
         .signInWithEmailAndPassword(formData.email, formData.password);
       closeDialog();
     } catch {
-      setErrorMessage(
-        "Nie udało się zalogować, sprawdź poprawność danych i spróbuj ponownie"
-      );
+      setErrorMessage(i18next.t("form.error.login"));
       setLoading(false);
     }
   };
@@ -90,13 +89,13 @@ export default function Login(props: {
   const login = loading ? (
     <DialogMUI open={true} onClose={closeDialog} fullWidth>
       <DialogContent>
-        <LoadingIndicator message="Proszę czekać, trwa logowanie" />
+        <LoadingIndicator message={i18next.t("loading")} />
       </DialogContent>
     </DialogMUI>
   ) : (
     <DialogMUI open={true} onClose={closeDialog} fullWidth>
       <DialogTitle>
-        Login
+        {i18next.t("title.login")}
         <IconButton
           aria-label="close"
           onClick={closeDialog}
@@ -109,22 +108,25 @@ export default function Login(props: {
         <DialogContentText
           className={errorMessage ? classes.error : classes.warning}
         >
-          {errorMessage ??
-            "Logowanie dostępne tylko dla użytkowników administracji"}
+          {errorMessage ?? i18next.t("subtitle.login")}
         </DialogContentText>
         <form autoComplete="off" noValidate onSubmit={handleSubmit(onSubmit)}>
           <FormControl fullWidth variant="outlined">
             <Stack direction="column">
               <Controller
                 rules={{
-                  required: { value: true, message: "Pole jest wymagane" },
+                  required: {
+                    value: true,
+                    message: i18next.t("form.rules.required"),
+                  },
                   maxLength: {
                     value: 50,
-                    message: "Maksymalna długość wynosi 50 znaków",
+                    message: i18next.t("form.rules.max50Length"),
                   },
                   validate: {
                     isEmail: (value) =>
-                      checkEmailFormat(value) || "Niepoprawny adres email",
+                      checkEmailFormat(value) ||
+                      i18next.t("form.rules.invalidEmailFormat").toString(),
                   },
                 }}
                 name="email"
@@ -134,7 +136,7 @@ export default function Login(props: {
                     <TextField
                       autoComplete="username"
                       type="email"
-                      label="Email"
+                      label={i18next.t("form.label.user.email")}
                       InputLabelProps={{ shrink: true }}
                       size="small"
                       {...field}
@@ -147,14 +149,17 @@ export default function Login(props: {
               />
               <Controller
                 rules={{
-                  required: { value: true, message: "Pole jest wymagane" },
+                  required: {
+                    value: true,
+                    message: i18next.t("form.rules.required"),
+                  },
                   minLength: {
                     value: 6,
-                    message: "Minimalna długość wynosi 6 znaków",
+                    message: i18next.t("form.rules.min6Length"),
                   },
                   maxLength: {
                     value: 50,
-                    message: "Maksymalna długość wynosi 50 znaków",
+                    message: i18next.t("form.rules.max50Length"),
                   },
                 }}
                 name="password"
@@ -164,7 +169,7 @@ export default function Login(props: {
                     <TextField
                       autoComplete="current-password"
                       type="password"
-                      label="Password"
+                      label={i18next.t("form.label.user.password")}
                       InputLabelProps={{ shrink: true }}
                       size="small"
                       {...field}
@@ -176,7 +181,7 @@ export default function Login(props: {
                 )}
               />
               <Button type="submit" variant="contained">
-                Zaloguj
+                {i18next.t("form.submit.login")}
               </Button>
             </Stack>
           </FormControl>

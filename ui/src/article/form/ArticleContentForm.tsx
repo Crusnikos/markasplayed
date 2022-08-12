@@ -14,6 +14,7 @@ import { makeStyles } from "tss-react/mui";
 import KeyboardDoubleArrowRightIcon from "@mui/icons-material/KeyboardDoubleArrowRight";
 import defaultFormValues from "./defaultFormValues";
 import { useFirebaseAuth } from "../../firebase";
+import i18next from "i18next";
 
 const useStyles = makeStyles()(() => ({
   helperMargin: {
@@ -80,14 +81,17 @@ export default function ArticleContentForm(props: {
         <Stack direction="column">
           <Controller
             rules={{
-              required: { value: true, message: "Pole jest wymagane" },
+              required: {
+                value: true,
+                message: i18next.t("form.rules.required"),
+              },
             }}
             name="articleType"
             control={control}
             render={({ field }) => (
               <React.Fragment>
                 <TextField
-                  label="Typ Artykułu"
+                  label={i18next.t("form.label.article.articleType")}
                   InputLabelProps={{ shrink: true }}
                   size="small"
                   select
@@ -107,10 +111,13 @@ export default function ArticleContentForm(props: {
           />
           <Controller
             rules={{
-              required: { value: true, message: "Pole jest wymagane" },
+              required: {
+                value: true,
+                message: i18next.t("form.rules.required"),
+              },
               maxLength: {
                 value: 50,
-                message: "Maksymalna długość wynosi 50 znaków",
+                message: i18next.t("form.rules.max50Length"),
               },
             }}
             name="title"
@@ -118,7 +125,7 @@ export default function ArticleContentForm(props: {
             render={({ field }) => (
               <React.Fragment>
                 <TextField
-                  label="Tytuł"
+                  label={i18next.t("form.label.article.title")}
                   InputLabelProps={{ shrink: true }}
                   size="small"
                   {...field}
@@ -132,14 +139,17 @@ export default function ArticleContentForm(props: {
           {articleType !== "news" && articleType !== "other" && (
             <Controller
               rules={{
-                required: { value: true, message: "Pole jest wymagane" },
+                required: {
+                  value: true,
+                  message: i18next.t("form.rules.required"),
+                },
               }}
               name="playedOn"
               control={control}
               render={({ field }) => (
                 <React.Fragment>
                   <TextField
-                    label="Grane na"
+                    label={i18next.t("form.label.article.playedOn")}
                     InputLabelProps={{ shrink: true }}
                     size="small"
                     select
@@ -161,14 +171,17 @@ export default function ArticleContentForm(props: {
           {articleType !== "other" && (
             <Controller
               rules={{
-                required: { value: true, message: "Pole jest wymagane" },
+                required: {
+                  value: true,
+                  message: i18next.t("form.rules.required"),
+                },
               }}
               name="availableOn"
               control={control}
               render={({ field }) => (
                 <React.Fragment>
                   <TextField
-                    label="Dostępne na"
+                    label={i18next.t("form.label.article.availableOn")}
                     InputLabelProps={{ shrink: true }}
                     size="small"
                     select
@@ -194,10 +207,13 @@ export default function ArticleContentForm(props: {
           {articleType !== "news" && articleType !== "other" && (
             <Controller
               rules={{
-                required: { value: true, message: "Pole jest wymagane" },
+                required: {
+                  value: true,
+                  message: i18next.t("form.rules.required"),
+                },
                 maxLength: {
                   value: 50,
-                  message: "Maksymalna długość wynosi 50 znaków",
+                  message: i18next.t("form.rules.max50Length"),
                 },
               }}
               name="producer"
@@ -205,7 +221,7 @@ export default function ArticleContentForm(props: {
               render={({ field }) => (
                 <React.Fragment>
                   <TextField
-                    label="Producent"
+                    label={i18next.t("form.label.article.producer")}
                     InputLabelProps={{ shrink: true }}
                     size="small"
                     {...field}
@@ -220,11 +236,14 @@ export default function ArticleContentForm(props: {
           {articleType !== "news" && articleType !== "other" && (
             <Controller
               rules={{
-                required: { value: true, message: "Pole jest wymagane" },
-                min: { value: 1, message: "Minimalna wartość wynosi 1" },
+                required: {
+                  value: true,
+                  message: i18next.t("form.rules.required"),
+                },
+                min: { value: 1, message: i18next.t("form.rules.min1Value") },
                 max: {
                   value: 1000,
-                  message: "Maksymalna wartość wynosi 1000",
+                  message: i18next.t("form.rules.max1000Value"),
                 },
               }}
               name="playTime"
@@ -232,7 +251,7 @@ export default function ArticleContentForm(props: {
               render={({ field }) => (
                 <React.Fragment>
                   <TextField
-                    label="Czas gry"
+                    label={i18next.t("form.label.article.playTime")}
                     InputLabelProps={{ shrink: true }}
                     InputProps={{ type: "number" }}
                     size="small"
@@ -247,10 +266,13 @@ export default function ArticleContentForm(props: {
           )}
           <Controller
             rules={{
-              required: { value: true, message: "Pole jest wymagane" },
+              required: {
+                value: true,
+                message: i18next.t("form.rules.required"),
+              },
               maxLength: {
                 value: 400,
-                message: "Maksymalna długość wynosi 400 znaków",
+                message: i18next.t("form.rules.max400Length"),
               },
             }}
             name="shortDescription"
@@ -260,7 +282,7 @@ export default function ArticleContentForm(props: {
                 <TextField
                   multiline
                   rows={4}
-                  label="Wstęp do artykułu"
+                  label={i18next.t("form.label.article.shortDescription")}
                   InputLabelProps={{ shrink: true }}
                   size="small"
                   {...field}
@@ -273,10 +295,13 @@ export default function ArticleContentForm(props: {
           />
           <Controller
             rules={{
-              required: { value: true, message: "Pole jest wymagane" },
+              required: {
+                value: true,
+                message: i18next.t("form.rules.required"),
+              },
               maxLength: {
                 value: 5000,
-                message: "Maksymalna długość wynosi 5000 znaków",
+                message: i18next.t("form.rules.max5000Length"),
               },
             }}
             name="longDescription"
@@ -286,7 +311,7 @@ export default function ArticleContentForm(props: {
                 <TextField
                   multiline
                   rows={10}
-                  label="Artykuł"
+                  label={i18next.t("form.label.article.longDescription")}
                   InputLabelProps={{ shrink: true }}
                   size="small"
                   {...field}
@@ -300,16 +325,17 @@ export default function ArticleContentForm(props: {
           {authenticated ? (
             <Button type="submit" variant="contained">
               {data?.id ? (
-                "Edytuj artykuł"
+                i18next.t("form.submit.article.edit")
               ) : (
                 <React.Fragment>
-                  Zapisz <KeyboardDoubleArrowRightIcon />
+                  {i18next.t("form.submit.article.save")}{" "}
+                  <KeyboardDoubleArrowRightIcon />
                 </React.Fragment>
               )}
             </Button>
           ) : (
             <Button type="submit" variant="contained" disabled>
-              Nie dostępne
+              {i18next.t("form.submit.notAvailable")}
             </Button>
           )}
         </Stack>

@@ -5,6 +5,7 @@ import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import PauseIcon from "@mui/icons-material/Pause";
 import { useNavigate } from "react-router-dom";
 import { ImageData } from "../article/api/files";
+import i18next from "i18next";
 
 const useStyles = makeStyles()((theme) => ({
   image: {
@@ -76,7 +77,7 @@ export function PictureSlider(props: { images: ImageData[] }): JSX.Element {
         component="img"
         className={classes.image}
         src={`${images[currentIndex].imagePathName}?${Date.now()}`}
-        alt={"Missing picture"}
+        alt={i18next.t("image.missing")}
         onClick={handleRedirect}
       />
       <IconButton
@@ -98,7 +99,7 @@ export function DefaultPicture(): JSX.Element {
       component="img"
       className={classes.image}
       src={`/logo.jpg`}
-      alt={"Missing picture"}
+      alt={i18next.t("image.missing")}
     />
   );
 }

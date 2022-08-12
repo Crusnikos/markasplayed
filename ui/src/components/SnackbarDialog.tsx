@@ -3,7 +3,7 @@ import Snackbar from "@mui/material/Snackbar";
 import { Alert, AlertColor } from "@mui/material";
 import { makeStyles } from "tss-react/mui";
 
-const useStyles = makeStyles()((theme) => ({
+const useStyles = makeStyles()(() => ({
   alert: {
     width: "100%",
   },

@@ -15,6 +15,7 @@ import { AccountCircle } from "@mui/icons-material";
 import MenuItem from "@mui/material/MenuItem";
 import { Dialog } from "../Dialog";
 import { useFirebaseAuth } from "../firebase";
+import i18next from "i18next";
 
 const useStyles = makeStyles()((theme) => ({
   toolbar: {
@@ -95,14 +96,20 @@ export default function TopMenu(props: {
           open={Boolean(anchorEl)}
           onClose={handleClose}
         >
-          <MenuItem onClick={handleAddArticleClick}>Dodaj artykuł</MenuItem>
-          <MenuItem onClick={handleAuthorsClick}>Autorzy</MenuItem>
+          <MenuItem onClick={handleAddArticleClick}>
+            {i18next.t("title.addArticle")}
+          </MenuItem>
+          <MenuItem onClick={handleAuthorsClick}>
+            {i18next.t("title.authors")}
+          </MenuItem>
           {!authenticated ? (
             <MenuItem onClick={handleLoginClick}>
-              Zaloguj(administracja)
+              {i18next.t("title.login")}
             </MenuItem>
           ) : (
-            <MenuItem onClick={handleLogoutClick}>Wyloguj</MenuItem>
+            <MenuItem onClick={handleLogoutClick}>
+              {i18next.t("title.logout")}
+            </MenuItem>
           )}
         </Menu>
       </Toolbar>

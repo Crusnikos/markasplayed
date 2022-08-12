@@ -2,6 +2,7 @@ import { KeyboardArrowLeft, KeyboardArrowRight } from "@mui/icons-material";
 import { Button, MobileStepper, useMediaQuery, useTheme } from "@mui/material";
 import React, { Dispatch, SetStateAction } from "react";
 import { makeStyles } from "tss-react/mui";
+import i18next from "i18next";
 
 const useStyles = makeStyles()((theme) => ({
   stepperRoot: {
@@ -53,7 +54,7 @@ export default function Stepper(props: {
             root: classes.buttonActive,
           }}
         >
-          {smallView && "Następny"}
+          {smallView && i18next.t("stepper.next")}
           {theme.direction === "rtl" ? (
             <KeyboardArrowLeft />
           ) : (
@@ -75,7 +76,7 @@ export default function Stepper(props: {
           ) : (
             <KeyboardArrowLeft />
           )}
-          {smallView && "Poprzedni"}
+          {smallView && i18next.t("stepper.back")}
         </Button>
       }
     />

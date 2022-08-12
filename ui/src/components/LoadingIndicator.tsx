@@ -22,9 +22,7 @@ export default function LoadingIndicator(props: {
       spacing={2}
     >
       <CircularProgress />
-      <Typography variant="h5">
-        {props.message ?? "Proszę czekać, trwa pobieranie danych..."}
-      </Typography>
+      <Typography variant="h5">{props.message ?? "Loading data..."}</Typography>
     </Stack>
   );
 }

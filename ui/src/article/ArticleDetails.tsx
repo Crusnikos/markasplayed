@@ -18,6 +18,7 @@ import ArticleDetailsReviewPanel from "./details/ArticleDetailsReviewPanel";
 import ArticleDetailsGallery from "./details/ArticleDetailsGallery";
 import { ImageData, getFrontImage, getGallery } from "./api/files";
 import { FullArticleData, getArticle } from "./api/article";
+import i18next from "i18next";
 
 const useStyles = makeStyles()((theme) => ({
   paper: {
@@ -137,7 +138,9 @@ export default function ArticleDetails(props: {
   }
 
   if (article === undefined) {
-    return <ExceptionPage message="Podany artykuł nie istnieje" />;
+    return (
+      <ExceptionPage message={i18next.t("details.error.missingArticle")} />
+    );
   }
 
   return (
@@ -166,7 +169,7 @@ export default function ArticleDetails(props: {
               component="img"
               className={classes.image}
               src={`${frontImage?.imagePathName}?${Date.now()}`}
-              alt={"Missing picture"}
+              alt={i18next.t("image.missing")}
             />
           ) : (
             <CircularProgress />

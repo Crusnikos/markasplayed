@@ -1,0 +1,161 @@
+{
+  "author": {
+    "error": {
+      "retrieve": "Failed to retrieve authors data"
+    }
+  },
+
+  "dashboard": {
+    "error": {
+      "missingPage": "The page you are trying to reach is not avaliable, please navigate below",
+      "retrieve": "Failed to retrieve articles data, please reload page"
+    },
+    "item": {
+      "availableOn": "available on:"
+    }
+  },
+
+  "details": {
+    "error": {
+      "missingArticle": "Requested article not exist"
+    },
+    "reviewPanel": {
+      "availableOn": "Available on",
+      "gameTime": "Game time",
+      "hours": "hours",
+      "playedOn": "Played on"
+    },
+    "title": {
+      "gallery": "Gallery"
+    }
+  },
+
+  "footer": {
+    "author": "Site created by Michał Kubrak, ",
+    "icons": "Icons downloaded from "
+  },
+
+  "form": {
+    "error": {
+      "article": {
+        "create": "Failed while creating article, please try again later",
+        "update": "Failed while updating article, please try again later"
+      },
+      "frontImage": {
+        "notSelected": "You have not selected a photo",
+        "set": "Failed while saving front image, please try again later"
+      },
+      "gallery": {
+        "add": "Failed while adding to gallery, please try again later",
+        "noChange": "No changes to be made",
+        "update": "Failed while updating gallery, please try again later"
+      },
+      "login": "Failed to login, please check your data and try again",
+      "lookup": {
+        "retrieve": "Failed to retrieve lookups"
+      }
+    },
+    "label": {
+      "article": {
+        "articleType": "Article type",
+        "availableOn": "Available on",
+        "longDescription": "Article",
+        "playedOn": "Played on",
+        "playTime": "Play time",
+        "producer": "Producer",
+        "shortDescription": "Short description",
+        "title": "Title"
+      },
+      "gallery": {
+        "active": "Active",
+        "delete": "Delete",
+        "hidden": "Hidden"
+      },
+      "user": {
+        "email": "Email",
+        "password": "Password"
+      }
+    },
+    "rules": {
+      "invalidEmailFormat": "Incorrect email address format",
+      "max50Length": "Maximum length is 50 characters",
+      "max400Length": "Maximum length is 400 characters",
+      "max1000Value": "Maximum is 1000 hours",
+      "max5000Length": "Maximum length is 5000 characters",
+      "min1Value": "Minimum is 1 hour",
+      "min6Length": "Minimum length is 6 characters",
+      "required": "Required field"
+    },
+    "submit": {
+      "article": {
+        "edit": "Edit article",
+        "save": "Save"
+      },
+      "gallery": {
+        "add": "Add article",
+        "edit": "Edit images"
+      },
+      "login": "Login",
+      "notAvailable": "Not available"
+    },
+    "success": {
+      "article": {
+        "add": "Article added",
+        "update": "Article updated"
+      },
+      "gallery": {
+        "update": "Images updated"
+      }
+    },
+    "view": {
+      "article": "ARTICLE",
+      "gallery": "GALLERY"
+    },
+    "warning": {
+      "gallery": {
+        "partiallyAdd": "Not all images have been added to the gallery",
+        "setHidden": "After editing the gallery photos marked as hidden will be deactivated"
+      }
+    }
+  },
+
+  "image": {
+    "missing": "Missing picture"
+  },
+
+  "loading": "Please wait...",
+
+  "routing": {
+    "error": {
+      "missingPage": "The page you are trying to reach is not avaliable and you have been moved to main panel"
+    }
+  },
+
+  "stepper": {
+    "back": "back",
+    "next": "next"
+  },
+
+  "subtitle": {
+    "article": "Saving and editing form available only to administration users",
+    "login": "Login available only to administration users",
+    "mainPicture": "Only webp format is accepted and 1280x720 resolution is recommended"
+  },
+
+  "title": {
+    "addArticle": "Add article",
+    "authors": "Authors",
+    "editArticle": "Edit article",
+    "gallery": "Gallery",
+    "login": "Login",
+    "logout": "Logout",
+    "mainPicture": "Main picture"
+  },
+
+  "user": {
+    "notification": {
+      "login": "You are logged in",
+      "logout": "You are logged out"
+    }
+  }
+}
