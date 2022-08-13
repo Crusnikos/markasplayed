@@ -162,5 +162,17 @@ function deleteNewGalleryImage(
   state.gallery.files?.splice(fileIndex, 1);
   state.gallery.previews?.splice(previewIndex, 1);
 
+  if (state.gallery.files?.length === 0) {
+    return {
+      mainImage: {
+        ...state.mainImage,
+      },
+      gallery: {
+        ...state.gallery,
+        files: undefined,
+      },
+    };
+  }
+
   return { ...state };
 }
