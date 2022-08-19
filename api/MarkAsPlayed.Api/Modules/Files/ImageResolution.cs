@@ -3,26 +3,23 @@ using SixLabors.ImageSharp.Processing;
 
 namespace MarkAsPlayed.Api.Modules.Files;
 
-public class Resolution
+public sealed record Resolution(int Width, int Height)
 {
-    public int Width { get; set; }
-    public int Height { get; set; }
+    public static Resolution NHD { get; } = new(640, 360);
+    public static Resolution HD { get; } = new(1280, 720);
+    public static Resolution FullHD { get; } = new(1920, 1080);
 }
 
 public sealed class ImageResolution
 {
     private string _filePathName;
 
-    public static Resolution ResolutionNHD = new() { Width = 640, Height = 360 };
-    public static Resolution ResolutionHD = new() { Width = 1280, Height = 720 };
-    public static Resolution ResolutionFullHD = new() { Width = 1920, Height = 1080 };
-
     public ImageResolution(string filePathName)
     {
         _filePathName = filePathName;
     }
 
-    public async Task OverwriteFileResolution(Resolution type, CancellationToken cancellationToken)
+    public async Task OverwriteFileResolution(Resolution resolution, CancellationToken cancellationToken)
     {
         using var image = await SixLabors.ImageSharp.Image.LoadAsync(_filePathName, cancellationToken);
 
@@ -31,42 +28,46 @@ public sealed class ImageResolution
             throw new ImageProcessingException(nameof(_filePathName));
         }
 
-        if (image.Width != type.Width || image.Height != type.Height)
+        if (image.Width != resolution.Width || image.Height != resolution.Height)
         {
             if (image.Width / 16 == image.Height / 9)
             {
-                image.Mutate(x => x.Resize(type.Width, type.Height));
-                await image.SaveAsync(_filePathName, cancellationToken);
+                using var resized = MutateImageResolution(
+                    resolution, 
+                    image
+                    );
+                await resized.SaveAsync(_filePathName, cancellationToken);
             }
             else
             {
                 var widthMultiplier = image.Width / 16;
                 var heightMultiplier = image.Height / 9;
 
-                if (widthMultiplier >= heightMultiplier)
-                {
-                    var width = heightMultiplier * 16;
-                    var height = heightMultiplier * 9;
-
-                    image.Mutate(x =>
-                        x.Crop(new Rectangle(0, 0, width, height)).
-                        Resize(type.Width, type.Height));
-
-                    await image.SaveAsync(_filePathName, cancellationToken);
-                }
-                else
-                {
-                    var width = widthMultiplier * 16;
-                    var height = widthMultiplier * 9;
-
-                    image.Mutate(x =>
-                        x.Crop(new Rectangle(0, 0, width, height)).
-                        Resize(type.Width, type.Height));
-
-                    await image.SaveAsync(_filePathName, cancellationToken);
-
-                }
+                using var resized = MutateImageResolution(
+                    resolution, 
+                    image, 
+                    widthMultiplier >= heightMultiplier ? heightMultiplier : widthMultiplier
+                    );
+                await resized.SaveAsync(_filePathName, cancellationToken);
             }
         }
+    }
+
+    private Image MutateImageResolution(Resolution resolution, Image image, int? multiplier = null)
+    {
+        if(multiplier is null)
+        {
+            image.Mutate(x => x.Resize(resolution.Width, resolution.Height));
+            return image;
+        }
+
+        var width = (int)(multiplier * 16);
+        var height = (int)(multiplier * 9);
+
+        image.Mutate(x =>
+            x.Crop(new Rectangle(0, 0, width, height)).
+            Resize(resolution.Width, resolution.Height));
+
+        return image;
     }
 }

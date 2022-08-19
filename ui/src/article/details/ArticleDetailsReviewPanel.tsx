@@ -8,14 +8,14 @@ import {
   Typography,
 } from "@mui/material";
 import { makeStyles } from "tss-react/mui";
-import { whiteIconSelector } from "../platformIconSelector";
+import IconSelector from "../IconSelector";
 import { LookupData } from "../api/lookup";
 import i18next from "i18next";
 
 const useStyles = makeStyles()((theme) => ({
   platformIcons: {
-    width: "32px",
-    height: "32px",
+    width: theme.spacing(4),
+    height: theme.spacing(4),
     marginRight: theme.spacing(2),
     marginLeft: theme.spacing(2),
   },
@@ -29,7 +29,7 @@ const useStyles = makeStyles()((theme) => ({
   },
   divider: {
     borderColor: theme.palette.secondary.light,
-    borderWidth: "2px",
+    borderWidth: theme.spacing(0.2),
     marginBottom: theme.spacing(1),
   },
 }));
@@ -80,7 +80,7 @@ export default function ArticleDetailsReviewPanel(props: {
               className={classes.platformIcons}
               component="img"
               alt={i18next.t("image.missing")}
-              image={whiteIconSelector(playedOn)}
+              image={IconSelector(playedOn.id, "white")}
             />
           </Grid>
           <Grid
@@ -103,7 +103,7 @@ export default function ArticleDetailsReviewPanel(props: {
                   className={classes.platformIcons}
                   component="img"
                   alt={i18next.t("image.missing")}
-                  image={whiteIconSelector(platform)}
+                  image={IconSelector(platform.id, "white")}
                 />
               ))}
             </Grid>

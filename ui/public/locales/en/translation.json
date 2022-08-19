@@ -31,7 +31,8 @@
   },
 
   "footer": {
-    "author": "Site created by Michał Kubrak, ",
+    "author": "Site created by Michał Kubrak ",
+    "git": "Source code available on ",
     "icons": "Icons downloaded from "
   },
 

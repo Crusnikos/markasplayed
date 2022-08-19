@@ -1,7 +1,8 @@
-import React, { Dispatch, SetStateAction, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Box,
   CircularProgress,
+  Container,
   Grid,
   Paper,
   Stack,
@@ -10,8 +11,6 @@ import {
 import { makeStyles } from "tss-react/mui";
 import { useParams } from "react-router-dom";
 import { tryParseInt } from "../parsing";
-import EditIcon from "@mui/icons-material/Edit";
-import { Dialog } from "../Dialog";
 import LoadingIndicator from "../components/LoadingIndicator";
 import ExceptionPage from "../components/ExceptionPage";
 import ArticleDetailsReviewPanel from "./details/ArticleDetailsReviewPanel";
@@ -19,6 +18,8 @@ import ArticleDetailsGallery from "./details/ArticleDetailsGallery";
 import { ImageData, getFrontImage, getGallery } from "./api/files";
 import { FullArticleData, getArticle } from "./api/article";
 import i18next from "i18next";
+import ArticleForm from "./ArticleForm";
+import { DispatchSnackbar } from "../components/SnackbarDialog";
 
 const useStyles = makeStyles()((theme) => ({
   paper: {
@@ -26,10 +27,6 @@ const useStyles = makeStyles()((theme) => ({
     marginTop: theme.spacing(1),
     marginBottom: theme.spacing(1),
     padding: theme.spacing(2),
-    width: "1200px",
-    [theme.breakpoints.down("lg")]: {
-      width: "98vw",
-    },
   },
   image: {
     width: "100%",
@@ -50,16 +47,12 @@ const useStyles = makeStyles()((theme) => ({
     textOverflow: "ellipsis",
     width: "100%",
   },
-  edit: {
-    cursor: "pointer",
-  },
 }));
 
 export default function ArticleDetails(props: {
-  openDialog: Dispatch<SetStateAction<Dialog>>;
+  displaySnackbar: DispatchSnackbar;
 }): JSX.Element {
   const { classes } = useStyles();
-  const { openDialog } = props;
 
   const [requireFetch, setRequireFetch] = useState<boolean>(true);
   const [article, setArticle] = useState<FullArticleData | undefined>();
@@ -73,22 +66,12 @@ export default function ArticleDetails(props: {
 
   const [loading, setLoading] = useState<boolean>(true);
 
-  const handleClick = () => {
-    openDialog({
-      type: "editArticle",
-      data: article,
-      images: { main: frontImage, gallery: gallery },
-      returnFunction: setRequireFetch,
-    });
-  };
-
-  useEffect(() => {
-    setRequireFetch(true);
-  }, [parsedId]);
-
   useEffect(() => {
     async function fetchArticleData() {
-      if (parsedId !== null && requireFetch) {
+      if (parsedId === null) {
+        return;
+      }
+      if (requireFetch || parsedId !== article?.id) {
         try {
           const fetchedResult = await getArticle({ id: parsedId });
           setArticle(fetchedResult);
@@ -103,7 +86,7 @@ export default function ArticleDetails(props: {
 
     void fetchArticleData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [requireFetch]);
+  }, [requireFetch, parsedId]);
 
   useEffect(() => {
     async function fetchFrontImage() {
@@ -144,15 +127,16 @@ export default function ArticleDetails(props: {
   }
 
   return (
-    <Paper elevation={6} className={classes.paper}>
-      {article !== undefined && (
+    <Container disableGutters={true}>
+      <Paper elevation={6} className={classes.paper}>
         <Stack spacing={2} alignItems="center">
           <Typography variant="h4">
             {article.title}
-            <EditIcon
-              fontSize="large"
-              className={classes.edit}
-              onClick={handleClick}
+            <ArticleForm
+              data={article}
+              images={{ main: frontImage, gallery: gallery }}
+              returnFunction={setRequireFetch}
+              responseOnSubmitForm={props.displaySnackbar}
             />
           </Typography>
           <Box component="div" className={classes.textBox}>
@@ -192,7 +176,7 @@ export default function ArticleDetails(props: {
             <CircularProgress />
           )}
         </Stack>
-      )}
-    </Paper>
+      </Paper>
+    </Container>
   );
 }

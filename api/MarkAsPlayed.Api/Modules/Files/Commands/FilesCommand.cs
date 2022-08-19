@@ -10,8 +10,8 @@ public sealed class FilesCommand
     private const string DefaultSmallFrontImageFileName = "MainSmall.webp";
 
     (string Name, Resolution Resolution)[] ResolutionsMatchedWithNames = { 
-        (DefaultFrontImageFileName, ImageResolution.ResolutionHD), 
-        (DefaultSmallFrontImageFileName, ImageResolution.ResolutionNHD) 
+        (DefaultFrontImageFileName, Resolution.HD), 
+        (DefaultSmallFrontImageFileName, Resolution.NHD) 
     };
 
     public FilesCommand(Database.Factory databaseFactory)
@@ -21,25 +21,26 @@ public sealed class FilesCommand
 
     public async Task UpdateFrontImageAsync(IFormFile file, string filePathName, CancellationToken cancellationToken = default)
     {
-        if (file.Length > 0 && Path.GetExtension(file.FileName) == ".webp")
+        if (file.Length == 0 || Path.GetExtension(file.FileName) != ".webp")
         {
-            if(!Directory.Exists(filePathName))
+            return;
+        }
+
+        if (!Directory.Exists(filePathName))
+        {
+            Directory.CreateDirectory(filePathName);
+        }
+
+        foreach (var item in ResolutionsMatchedWithNames)
+        {
+            using (var stream = File.Create(Path.Combine(filePathName, item.Name)))
             {
-                Directory.CreateDirectory(filePathName);
+                await file.CopyToAsync(stream, cancellationToken);
             }
 
-            foreach (var item in ResolutionsMatchedWithNames)
-            {
-                using (var stream = File.Create(Path.Combine(filePathName, item.Name)))
-                {
-                    await file.CopyToAsync(stream, cancellationToken);
-                }
-
-                await new ImageResolution(
-                    Path.Combine(filePathName, item.Name)).
-                    OverwriteFileResolution(item.Resolution, cancellationToken);
-            }
-
+            await new ImageResolution(
+                Path.Combine(filePathName, item.Name)).
+                OverwriteFileResolution(item.Resolution, cancellationToken);
         }
     }
 
@@ -51,9 +52,9 @@ public sealed class FilesCommand
 
         await using var transaction = await db.BeginTransactionAsync(cancellationToken);
 
-        var images = db.ArticleImages.Where(ag => updateIds.Contains((int)ag.Id)).ToListAsync(cancellationToken);
+        var images = await db.ArticleImages.Where(ag => updateIds.Contains((int)ag.Id)).ToListAsync(cancellationToken);
 
-        foreach (var image in images.Result)
+        foreach (var image in images)
         {
             await db.ArticleImages.Where(ag => ag.Id == image.Id).
                 Set(ag => ag.IsActive, false).
@@ -65,7 +66,7 @@ public sealed class FilesCommand
 
     public async Task<bool?> AddToGalleryAsync(
         IReadOnlyList<IFormFile> files,
-        string filePathName,
+        string pathName,
         int articleId,
         CancellationToken cancellationToken = default)
     {
@@ -73,9 +74,9 @@ public sealed class FilesCommand
         await using var transaction = await db.BeginTransactionAsync(cancellationToken);
         var successfulFilesUploadSum = files.Count;
 
-        if (!Directory.Exists(filePathName))
+        if (!Directory.Exists(pathName))
         {
-            Directory.CreateDirectory(filePathName);
+            Directory.CreateDirectory(pathName);
         }
 
         foreach (var file in files.Where(
@@ -84,17 +85,17 @@ public sealed class FilesCommand
             )
         {
             var fileName = Guid.NewGuid().ToString() + ".webp";
+            var fileFullPath = Path.Combine(pathName, fileName);
 
             try
             {
-                using (var stream = File.Create(Path.Combine(filePathName, fileName)))
+                using (var stream = File.Create(fileFullPath))
                 {
                     await file.CopyToAsync(stream, cancellationToken);
                 }
 
-                await new ImageResolution(
-                    Path.Combine(filePathName, fileName)).
-                    OverwriteFileResolution(ImageResolution.ResolutionFullHD, cancellationToken);
+                await new ImageResolution(fileFullPath).
+                    OverwriteFileResolution(Resolution.FullHD, cancellationToken);
 
                 await db.ArticleImages.InsertWithInt64IdentityAsync(
                     () => new Data.Models.ArticleImage
@@ -106,12 +107,17 @@ public sealed class FilesCommand
                     cancellationToken
                 );
             }
-            catch (Exception)
+            catch (Exception exception)
             {
-                if(File.Exists(Path.Combine(filePathName, fileName)) is true)
+                Console.WriteLine($"File {file.FileName} failed on upload");
+                Console.WriteLine($"Exception: {exception.Message}");
+
+                if (File.Exists(fileFullPath) is true)
                 {
-                    File.Delete(Path.Combine(filePathName, fileName));
+                    File.Delete(fileFullPath);
                 }
+
+                Console.WriteLine($"File {file.FileName} successfully removed");
 
                 successfulFilesUploadSum--;
             }

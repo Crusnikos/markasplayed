@@ -1,23 +1,23 @@
-import { Grid } from "@mui/material";
-import { Dispatch, SetStateAction, useEffect, useState } from "react";
+import React, { Fragment, useEffect, useState } from "react";
 import { makeStyles } from "tss-react/mui";
 import { ImageData, getSliderImages } from "../article/api/files";
 import { useArticleData } from "../ArticleListProvider";
-import { Dialog } from "../Dialog";
+import { DispatchSnackbar } from "../components/SnackbarDialog";
 import { DefaultPicture, PictureSlider } from "./PictureSlider";
 import TopMenu from "./TopMenu";
 
 const useStyles = makeStyles()((theme) => ({
-  topSection: {
-    width: "1200px",
-    [theme.breakpoints.down("lg")]: {
-      width: "100vw",
-    },
+  header: {
+    marginTop: theme.spacing(1),
+    marginBottom: theme.spacing(1),
+  },
+  nav: {
+    marginBottom: theme.spacing(1),
   },
 }));
 
 export default function Menu(props: {
-  openDialog: Dispatch<SetStateAction<Dialog>>;
+  displaySnackbar: DispatchSnackbar;
 }): JSX.Element {
   const { classes } = useStyles();
   const [[, count]] = useArticleData();
@@ -37,13 +37,17 @@ export default function Menu(props: {
   }, [count]);
 
   return (
-    <Grid item className={classes.topSection}>
-      {sliderImages ? (
-        <PictureSlider images={sliderImages} />
-      ) : (
-        <DefaultPicture />
-      )}
-      <TopMenu openDialog={props.openDialog} />
-    </Grid>
+    <Fragment>
+      <header className={classes.header}>
+        {sliderImages ? (
+          <PictureSlider images={sliderImages} />
+        ) : (
+          <DefaultPicture />
+        )}
+      </header>
+      <nav className={classes.nav}>
+        <TopMenu displaySnackbar={props.displaySnackbar} />
+      </nav>
+    </Fragment>
   );
 }

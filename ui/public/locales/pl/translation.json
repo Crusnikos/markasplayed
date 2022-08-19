@@ -31,7 +31,8 @@
   },
 
   "footer": {
-    "author": "Strona stworzona przez Michał Kubrak, ",
+    "author": "Strona stworzona przez Michał Kubrak ",
+    "git": "Kod żródłowy dostępny na ",
     "icons": "Ikony pobrane z "
   },
 

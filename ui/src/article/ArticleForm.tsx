@@ -1,5 +1,4 @@
 import {
-  AlertColor,
   Button,
   Chip,
   Dialog as DialogMUI,
@@ -8,13 +7,12 @@ import {
   DialogTitle,
   Grid,
   IconButton,
+  MenuItem,
   Typography,
   useMediaQuery,
   useTheme,
 } from "@mui/material";
 import React, { Dispatch, SetStateAction, useEffect, useState } from "react";
-import ReactDOM from "react-dom";
-import { Dialog } from "../Dialog";
 import LoadingIndicator from "../components/LoadingIndicator";
 import {
   ArticleFormData,
@@ -41,13 +39,13 @@ import ArticleContentForm from "./form/ArticleContentForm";
 import ArticleGalleryForm from "./form/ArticleGalleryForm";
 import { useFirebaseAuth } from "../firebase";
 import i18next from "i18next";
+import { AxiosError } from "axios";
+import EditIcon from "@mui/icons-material/Edit";
+import { DispatchSnackbar } from "../components/SnackbarDialog";
 
 const useStyles = makeStyles()((theme) => ({
   closeIcon: {
-    position: "absolute",
     color: theme.palette.common.white,
-    right: 8,
-    top: 8,
   },
   topInfo: {
     backgroundColor: theme.palette.primary.main,
@@ -70,28 +68,25 @@ const useStyles = makeStyles()((theme) => ({
     padding: theme.spacing(2),
     marginTop: theme.spacing(1),
     marginBottom: theme.spacing(2),
-    borderRadius: "10px",
+    borderRadius: theme.spacing(1),
+  },
+  edit: {
+    cursor: "pointer",
   },
 }));
 
 export default function ArticleForm(props: {
-  openDialog: Dispatch<SetStateAction<Dialog>>;
-  responseOnSubmitForm: Dispatch<
-    SetStateAction<{
-      message: string | undefined;
-      severity: AlertColor | undefined;
-    }>
-  >;
+  responseOnSubmitForm: DispatchSnackbar;
   data?: FullArticleData;
   images?: {
     main: ImageData | undefined;
     gallery: ImageData[] | undefined;
   };
   returnFunction?: Dispatch<SetStateAction<boolean>>;
+  setAnchorEl?: Dispatch<SetStateAction<null | HTMLElement>>;
 }) {
   const { classes } = useStyles();
-  const { openDialog, data, images, returnFunction, responseOnSubmitForm } =
-    props;
+  const { data, images, returnFunction, responseOnSubmitForm } = props;
   const { app } = useFirebaseAuth();
   const [[, , page], getNextPage] = useArticleData();
 
@@ -107,13 +102,9 @@ export default function ArticleForm(props: {
   const theme = useTheme();
   const smallView = useMediaQuery(theme.breakpoints.up("sm"));
 
+  const [open, setOpen] = useState<boolean>(false);
   const closeDialog = () => {
-    openDialog({
-      type: undefined,
-      data: undefined,
-      images: undefined,
-      returnFunction: undefined,
-    });
+    setOpen(false);
   };
 
   useEffect(() => {
@@ -129,8 +120,13 @@ export default function ArticleForm(props: {
         setLoading(false);
       }
     }
+
+    if (!open) {
+      return;
+    }
+
     void fetchLookups();
-  }, []);
+  }, [open]);
 
   async function createArticleExecution(draftArticle: {
     article: ArticleFormData;
@@ -233,26 +229,40 @@ export default function ArticleForm(props: {
         throw new Error();
       }
 
-      const responseCode = await addToGallery(
+      await addToGallery(
         {
           articleId: articleId,
           files: images,
         },
         token
       );
-      if (responseCode !== 204) {
-        responseOnSubmitForm({
-          message: i18next.t("form.warning.gallery.partiallyAdd"),
-          severity: `warning`,
-        });
-      }
       return { status: "success" };
-    } catch {
-      responseOnSubmitForm({
-        message: i18next.t("form.error.gallery.add"),
-        severity: `error`,
-      });
-      return { status: "failure" };
+    } catch (err) {
+      const error = err as AxiosError;
+      if (!error.isAxiosError) {
+        responseOnSubmitForm({
+          message: i18next.t("form.error.gallery.add"),
+          severity: `error`,
+        });
+        return { status: "failure" };
+      }
+
+      switch (error.response?.status) {
+        case 409: {
+          responseOnSubmitForm({
+            message: i18next.t("form.warning.gallery.partiallyAdd"),
+            severity: `warning`,
+          });
+          return { status: "success" };
+        }
+        default: {
+          responseOnSubmitForm({
+            message: i18next.t("form.error.gallery.add"),
+            severity: `error`,
+          });
+          return { status: "failure" };
+        }
+      }
     }
   }
 
@@ -318,6 +328,7 @@ export default function ArticleForm(props: {
         severity: `success`,
       });
       returnFunction?.(true);
+      setView("article");
       return closeDialog();
     }
 
@@ -359,120 +370,146 @@ export default function ArticleForm(props: {
         severity: `success`,
       });
       navigate("/");
+      setDraftArticle(undefined);
+      setView("article");
       return closeDialog();
     }
   };
 
-  if (loading) {
-    const loadingDialog = (
-      <DialogMUI open={true} onClose={closeDialog} fullWidth>
-        <DialogContent>
-          <LoadingIndicator message={i18next.t("loading")} />
-        </DialogContent>
-      </DialogMUI>
-    );
+  const editButton = (
+    <EditIcon
+      fontSize="large"
+      className={classes.edit}
+      onClick={() => setOpen(true)}
+    />
+  );
 
-    return ReactDOM.createPortal(
-      loadingDialog,
-      document.getElementById(`dialog-window`)!
+  const createMenuItem = (
+    <MenuItem
+      onClick={() => {
+        props.setAnchorEl!(null);
+        setOpen(true);
+      }}
+    >
+      {i18next.t("title.addArticle")}
+    </MenuItem>
+  );
+
+  if (loading) {
+    return (
+      <React.Fragment>
+        {data ? editButton : createMenuItem}
+        <DialogMUI open={open} onClose={closeDialog} fullWidth>
+          <DialogContent>
+            <LoadingIndicator message={i18next.t("loading")} />
+          </DialogContent>
+        </DialogMUI>
+      </React.Fragment>
     );
   }
 
   if (error) {
-    const errorDialog = (
-      <DialogMUI open={true} onClose={closeDialog} fullWidth>
-        <DialogContent>
-          <ExceptionPage message={i18next.t("form.error.lookup.retrieve")} />
-        </DialogContent>
-      </DialogMUI>
-    );
-
-    return ReactDOM.createPortal(
-      errorDialog,
-      document.getElementById(`dialog-window`)!
+    return (
+      <React.Fragment>
+        {data ? editButton : createMenuItem}
+        <DialogMUI open={open} onClose={closeDialog} fullWidth>
+          <DialogContent>
+            <ExceptionPage message={i18next.t("form.error.lookup.retrieve")} />
+          </DialogContent>
+        </DialogMUI>
+      </React.Fragment>
     );
   }
 
-  const formDialog = (
-    <DialogMUI open={true} onClose={closeDialog} fullWidth>
-      <DialogTitle className={classes.topInfo}>
-        {i18next.t(data?.id ? "title.editArticle" : "title.addArticle")}
-        <IconButton
-          aria-label="close"
-          onClick={closeDialog}
-          className={classes.closeIcon}
-        >
-          <CloseIcon />
-        </IconButton>
-      </DialogTitle>
-      <DialogTitle className={classes.nav}>
-        <Grid
-          container
-          justifyContent="space-between"
-          wrap="nowrap"
-          alignItems="center"
-        >
-          <Grid item container xs={3} justifyContent="center">
-            <Button
-              className={classes.button}
-              disabled={view === "article"}
-              onClick={() => setView("article")}
-            >
-              <KeyboardDoubleArrowLeftIcon />
-              {smallView && (
-                <Typography fontSize="medium">
-                  {i18next.t("form.view.article")}
-                </Typography>
-              )}
-            </Button>
+  return (
+    <React.Fragment>
+      {data ? editButton : createMenuItem}
+      <DialogMUI open={open} onClose={closeDialog} fullWidth>
+        <DialogTitle className={classes.topInfo}>
+          <Grid
+            container
+            direction="row"
+            justifyContent="space-between"
+            alignItems="flex-start"
+          >
+            <Grid>
+              {i18next.t(data?.id ? "title.editArticle" : "title.addArticle")}
+            </Grid>
+            <Grid>
+              <IconButton
+                aria-label="close"
+                onClick={closeDialog}
+                className={classes.closeIcon}
+              >
+                <CloseIcon />
+              </IconButton>
+            </Grid>
           </Grid>
-          <Grid item container xs={6} justifyContent="center">
-            <Chip
-              label={i18next.t(`form.view.${view}`)}
-              className={classes.navChip}
+        </DialogTitle>
+        <DialogTitle className={classes.nav}>
+          <Grid
+            container
+            justifyContent="space-between"
+            wrap="nowrap"
+            alignItems="center"
+          >
+            <Grid item container xs={3} justifyContent="center">
+              <Button
+                className={classes.button}
+                disabled={view === "article"}
+                onClick={() => setView("article")}
+              >
+                <KeyboardDoubleArrowLeftIcon />
+                {smallView && (
+                  <Typography fontSize="medium">
+                    {i18next.t("form.view.article")}
+                  </Typography>
+                )}
+              </Button>
+            </Grid>
+            <Grid item container xs={6} justifyContent="center">
+              <Chip
+                label={i18next.t(`form.view.${view}`)}
+                className={classes.navChip}
+              />
+            </Grid>
+            <Grid item container xs={3} justifyContent="center">
+              <Button
+                className={classes.button}
+                disabled={view === "gallery" || data?.id === undefined}
+                onClick={() => setView("gallery")}
+              >
+                {smallView && (
+                  <Typography fontSize="medium">
+                    {i18next.t("form.view.gallery")}
+                  </Typography>
+                )}
+                <KeyboardDoubleArrowRightIcon />
+              </Button>
+            </Grid>
+          </Grid>
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText className={classes.warning}>
+            {i18next.t("subtitle.article")}
+          </DialogContentText>
+          {view === "article" && (
+            <ArticleContentForm
+              data={data}
+              draft={draftArticle?.article}
+              onArticleSubmit={onArticleSubmit}
+              lookups={lookups}
             />
-          </Grid>
-          <Grid item container xs={3} justifyContent="center">
-            <Button
-              className={classes.button}
-              disabled={view === "gallery" || data?.id === undefined}
-              onClick={() => setView("gallery")}
-            >
-              {smallView && (
-                <Typography fontSize="medium">
-                  {i18next.t("form.view.gallery")}
-                </Typography>
-              )}
-              <KeyboardDoubleArrowRightIcon />
-            </Button>
-          </Grid>
-        </Grid>
-      </DialogTitle>
-      <DialogContent>
-        <DialogContentText className={classes.warning}>
-          {i18next.t("subtitle.article")}
-        </DialogContentText>
-        {view === "article" && (
-          <ArticleContentForm
-            data={data}
-            draft={draftArticle?.article}
-            onArticleSubmit={onArticleSubmit}
-            lookups={lookups}
-          />
-        )}
-        {view === "gallery" && (
-          <ArticleGalleryForm
-            frontImage={images?.main}
-            gallery={images?.gallery}
-            onGallerySubmit={onGallerySubmit}
-          />
-        )}
-      </DialogContent>
-    </DialogMUI>
-  );
-
-  return ReactDOM.createPortal(
-    formDialog,
-    document.getElementById(`dialog-window`)!
+          )}
+          {view === "gallery" && (
+            <ArticleGalleryForm
+              frontImage={images?.main}
+              gallery={images?.gallery}
+              onGallerySubmit={onGallerySubmit}
+            />
+          )}
+        </DialogContent>
+      </DialogMUI>
+    </React.Fragment>
   );
 }

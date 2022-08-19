@@ -1,19 +1,18 @@
+import React, { Fragment, useEffect, useRef, useState } from "react";
 import CssBaseline from "@mui/material/CssBaseline";
 import { AlertColor, createTheme, ThemeProvider } from "@mui/material";
 import { BrowserRouter } from "react-router-dom";
 import createCache from "@emotion/cache";
-import React, { useEffect, useRef, useState } from "react";
 import { CacheProvider } from "@emotion/react";
 import MainPanel from "./MainPanel";
-import Login from "./user/Login";
-import { Dialog } from "./Dialog";
-import ArticleForm from "./article/ArticleForm";
-import AuthorsListing from "./author";
 import SnackbarDialog from "./components/SnackbarDialog";
 import { useFirebaseAuth } from "./firebase";
 import i18next from "i18next";
 import { useTranslation } from "react-i18next";
 import LoadingIndicator from "./components/LoadingIndicator";
+import Footer from "./footer";
+import Menu from "./menu";
+import FlexWrapper from "./components/FlexWrapper";
 
 export const muiCache = createCache({
   key: "mui",
@@ -23,8 +22,8 @@ export const muiCache = createCache({
 const theme = createTheme({
   palette: {
     primary: {
-      main: "#2e7d32",
-      light: "#7ab06d",
+      main: "#519657",
+      light: "#81c784",
     },
     secondary: {
       main: "#efebe9",
@@ -41,11 +40,6 @@ const theme = createTheme({
 });
 
 export default function App(): JSX.Element {
-  const [openDialog, setOpenDialog] = useState<Dialog>({
-    type: undefined,
-    data: undefined,
-    images: undefined,
-  });
   const { user } = useFirebaseAuth();
   const [userNotification, setUserNotification] = useState<{
     message: string | undefined;
@@ -53,32 +47,14 @@ export default function App(): JSX.Element {
   }>({ message: undefined, severity: `info` });
   const { ready } = useTranslation();
 
-  function dialog() {
-    switch (openDialog.type) {
-      case undefined:
-        return;
-      case "addArticle":
-        return (
-          <ArticleForm
-            openDialog={setOpenDialog}
-            responseOnSubmitForm={setUserNotification}
-          />
-        );
-      case "editArticle":
-        return (
-          <ArticleForm
-            openDialog={setOpenDialog}
-            data={openDialog.data}
-            images={openDialog.images}
-            returnFunction={openDialog.returnFunction}
-            responseOnSubmitForm={setUserNotification}
-          />
-        );
-      case "authors":
-        return <AuthorsListing openDialog={setOpenDialog} />;
-      case "loginUser":
-        return <Login openDialog={setOpenDialog} />;
-    }
+  function notification() {
+    return (
+      <SnackbarDialog
+        message={userNotification.message}
+        clearMessage={setUserNotification}
+        severity={userNotification.severity}
+      />
+    );
   }
 
   const isFirstRun = useRef(true);
@@ -101,23 +77,20 @@ export default function App(): JSX.Element {
   }
 
   return (
-    <React.Fragment>
+    <Fragment>
       <CssBaseline />
       <BrowserRouter>
         <CacheProvider value={muiCache}>
           <ThemeProvider theme={theme}>
-            {dialog()}
-            <MainPanel openDialog={setOpenDialog} />
-            {userNotification.message && (
-              <SnackbarDialog
-                message={userNotification.message}
-                clearMessage={setUserNotification}
-                severity={userNotification.severity}
-              />
-            )}
+            {userNotification.message && notification()}
+            <FlexWrapper>
+              <Menu displaySnackbar={setUserNotification} />
+              <MainPanel displaySnackbar={setUserNotification} />
+            </FlexWrapper>
+            <Footer />
           </ThemeProvider>
         </CacheProvider>
       </BrowserRouter>
-    </React.Fragment>
+    </Fragment>
   );
 }

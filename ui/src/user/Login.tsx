@@ -1,5 +1,4 @@
 import React, { Dispatch, SetStateAction, useState } from "react";
-import ReactDOM from "react-dom";
 import {
   Button,
   Dialog as DialogMUI,
@@ -8,11 +7,12 @@ import {
   DialogTitle,
   FormControl,
   FormHelperText,
+  Grid,
   IconButton,
+  MenuItem,
   Stack,
   TextField,
 } from "@mui/material";
-import { Dialog } from "../Dialog";
 import { makeStyles } from "tss-react/mui";
 import { Controller, useForm } from "react-hook-form";
 import { LoginRequest, useFirebaseAuth } from "../firebase";
@@ -25,35 +25,31 @@ const useStyles = makeStyles()((theme) => ({
     backgroundColor: theme.palette.warning.light,
     padding: theme.spacing(2),
     marginBottom: theme.spacing(2),
-    borderRadius: "10px",
+    borderRadius: theme.spacing(1),
   },
   error: {
     backgroundColor: theme.palette.error.light,
     padding: theme.spacing(2),
     marginBottom: theme.spacing(2),
-    borderRadius: "10px",
+    borderRadius: theme.spacing(1),
     color: theme.palette.common.white,
   },
   helperMargin: {
-    marginBottom: "16px",
-  },
-  closeIcon: {
-    position: "absolute",
-    right: 10,
-    top: 10,
+    marginBottom: theme.spacing(2),
   },
 }));
 
 export default function Login(props: {
-  openDialog: Dispatch<SetStateAction<Dialog>>;
+  setAnchorEl?: Dispatch<SetStateAction<null | HTMLElement>>;
 }) {
   const { classes } = useStyles();
   const { app } = useFirebaseAuth();
   const [loading, setLoading] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const { openDialog } = props;
+
+  const [open, setOpen] = useState<boolean>(false);
   const closeDialog = () => {
-    openDialog({ type: undefined, data: undefined, images: undefined });
+    setOpen(false);
   };
 
   function checkEmailFormat(value: string): boolean {
@@ -86,112 +82,131 @@ export default function Login(props: {
     }
   };
 
-  const login = loading ? (
-    <DialogMUI open={true} onClose={closeDialog} fullWidth>
-      <DialogContent>
-        <LoadingIndicator message={i18next.t("loading")} />
-      </DialogContent>
-    </DialogMUI>
-  ) : (
-    <DialogMUI open={true} onClose={closeDialog} fullWidth>
-      <DialogTitle>
-        {i18next.t("title.login")}
-        <IconButton
-          aria-label="close"
-          onClick={closeDialog}
-          className={classes.closeIcon}
-        >
-          <CloseIcon />
-        </IconButton>
-      </DialogTitle>
-      <DialogContent>
-        <DialogContentText
-          className={errorMessage ? classes.error : classes.warning}
-        >
-          {errorMessage ?? i18next.t("subtitle.login")}
-        </DialogContentText>
-        <form autoComplete="off" noValidate onSubmit={handleSubmit(onSubmit)}>
-          <FormControl fullWidth variant="outlined">
-            <Stack direction="column">
-              <Controller
-                rules={{
-                  required: {
-                    value: true,
-                    message: i18next.t("form.rules.required"),
-                  },
-                  maxLength: {
-                    value: 50,
-                    message: i18next.t("form.rules.max50Length"),
-                  },
-                  validate: {
-                    isEmail: (value) =>
-                      checkEmailFormat(value) ||
-                      i18next.t("form.rules.invalidEmailFormat").toString(),
-                  },
-                }}
-                name="email"
-                control={control}
-                render={({ field }) => (
-                  <React.Fragment>
-                    <TextField
-                      autoComplete="username"
-                      type="email"
-                      label={i18next.t("form.label.user.email")}
-                      InputLabelProps={{ shrink: true }}
-                      size="small"
-                      {...field}
-                    />
-                    <FormHelperText error className={classes.helperMargin}>
-                      {errors.email?.message}
-                    </FormHelperText>
-                  </React.Fragment>
-                )}
-              />
-              <Controller
-                rules={{
-                  required: {
-                    value: true,
-                    message: i18next.t("form.rules.required"),
-                  },
-                  minLength: {
-                    value: 6,
-                    message: i18next.t("form.rules.min6Length"),
-                  },
-                  maxLength: {
-                    value: 50,
-                    message: i18next.t("form.rules.max50Length"),
-                  },
-                }}
-                name="password"
-                control={control}
-                render={({ field }) => (
-                  <React.Fragment>
-                    <TextField
-                      autoComplete="current-password"
-                      type="password"
-                      label={i18next.t("form.label.user.password")}
-                      InputLabelProps={{ shrink: true }}
-                      size="small"
-                      {...field}
-                    />
-                    <FormHelperText error className={classes.helperMargin}>
-                      {errors.password?.message}
-                    </FormHelperText>
-                  </React.Fragment>
-                )}
-              />
-              <Button type="submit" variant="contained">
-                {i18next.t("form.submit.login")}
-              </Button>
-            </Stack>
-          </FormControl>
-        </form>
-      </DialogContent>
-    </DialogMUI>
+  const loginMenuItem = (
+    <MenuItem
+      onClick={() => {
+        props.setAnchorEl!(null);
+        setOpen(true);
+      }}
+    >
+      {i18next.t("title.login")}
+    </MenuItem>
   );
 
-  return ReactDOM.createPortal(
-    login,
-    document.getElementById(`dialog-window`)!
+  if (loading) {
+    return (
+      <React.Fragment>
+        {loginMenuItem}
+        <DialogMUI open={open} onClose={closeDialog} fullWidth>
+          <DialogContent>
+            <LoadingIndicator message={i18next.t("loading")} />
+          </DialogContent>
+        </DialogMUI>
+      </React.Fragment>
+    );
+  }
+
+  return (
+    <React.Fragment>
+      {loginMenuItem}
+      <DialogMUI open={open} onClose={closeDialog} fullWidth>
+        <DialogTitle>
+          <Grid
+            container
+            direction="row"
+            justifyContent="space-between"
+            alignItems="flex-start"
+          >
+            {i18next.t("title.login")}
+            <IconButton aria-label="close" onClick={closeDialog}>
+              <CloseIcon />
+            </IconButton>
+          </Grid>
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText
+            className={errorMessage ? classes.error : classes.warning}
+          >
+            {errorMessage ?? i18next.t("subtitle.login")}
+          </DialogContentText>
+          <form autoComplete="off" noValidate onSubmit={handleSubmit(onSubmit)}>
+            <FormControl fullWidth variant="outlined">
+              <Stack direction="column">
+                <Controller
+                  rules={{
+                    required: {
+                      value: true,
+                      message: i18next.t("form.rules.required"),
+                    },
+                    maxLength: {
+                      value: 50,
+                      message: i18next.t("form.rules.max50Length"),
+                    },
+                    validate: {
+                      isEmail: (value) =>
+                        checkEmailFormat(value) ||
+                        i18next.t("form.rules.invalidEmailFormat").toString(),
+                    },
+                  }}
+                  name="email"
+                  control={control}
+                  render={({ field }) => (
+                    <React.Fragment>
+                      <TextField
+                        autoComplete="username"
+                        type="email"
+                        label={i18next.t("form.label.user.email")}
+                        InputLabelProps={{ shrink: true }}
+                        size="small"
+                        {...field}
+                      />
+                      <FormHelperText error className={classes.helperMargin}>
+                        {errors.email?.message}
+                      </FormHelperText>
+                    </React.Fragment>
+                  )}
+                />
+                <Controller
+                  rules={{
+                    required: {
+                      value: true,
+                      message: i18next.t("form.rules.required"),
+                    },
+                    minLength: {
+                      value: 6,
+                      message: i18next.t("form.rules.min6Length"),
+                    },
+                    maxLength: {
+                      value: 50,
+                      message: i18next.t("form.rules.max50Length"),
+                    },
+                  }}
+                  name="password"
+                  control={control}
+                  render={({ field }) => (
+                    <React.Fragment>
+                      <TextField
+                        autoComplete="current-password"
+                        type="password"
+                        label={i18next.t("form.label.user.password")}
+                        InputLabelProps={{ shrink: true }}
+                        size="small"
+                        {...field}
+                      />
+                      <FormHelperText error className={classes.helperMargin}>
+                        {errors.password?.message}
+                      </FormHelperText>
+                    </React.Fragment>
+                  )}
+                />
+                <Button type="submit" variant="contained">
+                  {i18next.t("form.submit.login")}
+                </Button>
+              </Stack>
+            </FormControl>
+          </form>
+        </DialogContent>
+      </DialogMUI>
+    </React.Fragment>
   );
 }

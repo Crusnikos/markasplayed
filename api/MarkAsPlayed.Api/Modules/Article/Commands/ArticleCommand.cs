@@ -14,7 +14,7 @@ public sealed class ArticleCommand
         _databaseFactory = databaseFactory;
     }
 
-    public async Task<long> CreateAsync(
+    public async Task<ArticleCreationResponse> CreateAsync(
         ArticleRequestData request,
         string authorOfRequest,
         CancellationToken cancellationToken = default)
@@ -29,11 +29,16 @@ public sealed class ArticleCommand
 
             if (author is null)
             {
-                throw new ArgumentNullException(nameof(author));
+                return new ArticleCreationResponse 
+                { 
+                    Identifier = null, 
+                    Status = ArticleStatus.NotFound, 
+                    ExceptionCaptured = null 
+                };
             }
 
-            var malformedLongDescription = request.LongDescription.Trim();
-            var malformedShortDescription = request.ShortDescription.Trim();
+            var trimmedLongDescription = request.LongDescription.Trim();
+            var trimmedShortDescription = request.ShortDescription.Trim();
 
             var identifier = await db.Articles.InsertWithInt64IdentityAsync(
                 () => new Data.Models.Article
@@ -41,8 +46,8 @@ public sealed class ArticleCommand
                     Title = request.Title,
                     Producer = request.Producer,
                     PlayTime = request.PlayTime,
-                    LongDescription = malformedLongDescription,
-                    ShortDescription = malformedShortDescription,
+                    LongDescription = trimmedLongDescription,
+                    ShortDescription = trimmedShortDescription,
                     PlayedOnGamingPlatformId = request.PlayedOn,
                     ArticleTypeId = request.ArticleType,
                     CreatedBy = author.Id
@@ -66,45 +71,60 @@ public sealed class ArticleCommand
 
             await transaction.CommitAsync(cancellationToken);
 
-            return identifier;
+            return new ArticleCreationResponse 
+            { 
+                Identifier = identifier, 
+                Status = ArticleStatus.OK, 
+                ExceptionCaptured = null 
+            };
         } 
-        catch (Exception)
+        catch (Exception exception)
         {
-            throw new Exception("Failed to create article");
+            return new ArticleCreationResponse 
+            { 
+                Identifier = null, 
+                Status = ArticleStatus.InternalError, 
+                ExceptionCaptured = exception 
+            };
         }
     }
 
-    public async Task<bool> UpdateAsync(
+    public async Task<ArticleUpdateResponse> UpdateAsync(
         int id,
         ArticleRequestData request,
         CancellationToken cancellationToken = default)
     {
         await using var db = _databaseFactory();
 
-        if (!db.Articles.Any(a => a.Id == id))
-        {
-            return false;
-        }
-
         try
         {
             await using var transaction = await db.BeginTransactionAsync(cancellationToken);
 
             var oldArticleData = await db.Articles.Where(a => a.Id == id).FirstOrDefaultAsync(cancellationToken);
-            var malformedLongDescription = request.LongDescription.Trim();
-            var malformedShortDescription = request.ShortDescription.Trim();
+            var trimmedLongDescription = request.LongDescription.Trim();
+            var trimmedShortDescription = request.ShortDescription.Trim();
 
-            await db.Articles.Where(a => a.Id == id).
+            var updatedRecords = await db.Articles.Where(a => a.Id == id).
                 Set(a => a.CreatedAt, oldArticleData!.CreatedAt).
                 Set(a => a.PlayedOnGamingPlatformId, request.PlayedOn).
                 Set(a => a.ArticleTypeId, request.ArticleType).
-                Set(a => a.LongDescription, malformedLongDescription).
-                Set(a => a.ShortDescription, malformedShortDescription).
+                Set(a => a.LongDescription, trimmedLongDescription).
+                Set(a => a.ShortDescription, trimmedShortDescription).
                 Set(a => a.PlayTime, request.PlayTime).
                 Set(a => a.Producer, request.Producer).
                 Set(a => a.Title, request.Title).
                 Set(a => a.CreatedBy, oldArticleData!.CreatedBy).
                 UpdateAsync(cancellationToken);
+
+            if (updatedRecords == 0)
+            {
+                return new ArticleUpdateResponse
+                {
+                    Identifier = null,
+                    Status = ArticleStatus.Forbidden,
+                    ExceptionCaptured = null
+                };
+            }
 
             await db.ArticleGamingPlatforms.DeleteAsync(p => p.ArticleId == id, cancellationToken);
 
@@ -124,11 +144,21 @@ public sealed class ArticleCommand
 
             await transaction.CommitAsync(cancellationToken);
 
-            return true;
+            return new ArticleUpdateResponse
+            {
+                Identifier = null,
+                Status = ArticleStatus.NoContent,
+                ExceptionCaptured = null
+            };
         }
-        catch (Exception)
+        catch (Exception exception)
         {
-            throw new Exception($"Failed to update id:{id} article");
+            return new ArticleUpdateResponse
+            {
+                Identifier = id,
+                Status = ArticleStatus.InternalError,
+                ExceptionCaptured = exception
+            };
         }
     }
 }

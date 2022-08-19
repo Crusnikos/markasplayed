@@ -62,6 +62,17 @@ builder.Services.
         };
     });
 
+var loggingConfiguration = builder.Configuration.GetSection("Logging");
+builder.Services.
+    AddLogging(builder =>
+    {
+        builder
+            .AddDebug()
+            .AddConsole()
+            .AddConfiguration(loggingConfiguration)
+            .SetMinimumLevel(LogLevel.Information);
+    });
+
 // Setting modules
 
 ArticleConfiguration.ConfigureModule(builder.Services);

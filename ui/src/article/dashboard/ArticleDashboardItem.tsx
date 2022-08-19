@@ -14,16 +14,30 @@ import { useNavigate } from "react-router-dom";
 import AnnouncementIcon from "@mui/icons-material/Announcement";
 import { DashboardArticleData } from "../api/article";
 import { getFrontImage, ImageData } from "../api/files";
-import { colorIconSelector, whiteIconSelector } from "../platformIconSelector";
+import IconSelector from "../IconSelector";
 import i18next from "i18next";
 
 const useStyles = makeStyles()((theme) => ({
-  article: {
+  articleItem: {
     marginTop: theme.spacing(1),
     backgroundColor: theme.palette.secondary.main,
   },
-  text: {
-    padding: "16px 26px 16px 16px",
+  imageSection: {
+    display: "grid",
+  },
+  imageSectionTypeItem: {
+    margin: theme.spacing(1.5),
+    gridRowStart: 1,
+    gridColumnStart: 1,
+    zIndex: 2,
+  },
+  imageSectionImageItem: {
+    gridRowStart: 1,
+    gridColumnStart: 1,
+    zIndex: 1,
+  },
+  shortDescription: {
+    padding: theme.spacing(2),
   },
   image: {
     minHeight: "270px",
@@ -43,28 +57,26 @@ const useStyles = makeStyles()((theme) => ({
     color: theme.palette.common.white,
   },
   date: {
-    padding: "16px 26px 0px 16px",
+    padding: theme.spacing(2),
   },
   gamingPlatformMinis: {
-    height: "32px",
-    width: "32px",
+    height: theme.spacing(4),
+    width: theme.spacing(4),
   },
   announcementIcon: {
-    fontSize: "64px",
+    fontSize: 64,
   },
-  footer: {
-    padding: "16px 26px 16px 16px",
+  footerIcons: {
+    padding: theme.spacing(2),
   },
   articleType: {
     background: `linear-gradient(90deg, ${theme.palette.warning.dark} 50%, rgba(1,36,0,0) 100%)`,
     color: theme.palette.common.white,
-    padding: "5px 5px 5px 15px",
+    padding: theme.spacing(1),
     width: "130px",
-    borderRadius: "10px",
-    top: 10,
-    left: 10,
+    borderRadius: theme.spacing(1),
   },
-  textBox: {
+  shortDescriptionTextBox: {
     overflow: "hidden",
     textOverflow: "ellipsis",
     width: "98%",
@@ -79,7 +91,7 @@ export default function ArticleDashboardItem(props: {
   const [frontImage, setFrontImage] = useState<ImageData | undefined>(
     undefined
   );
-  const platform = whiteIconSelector(data.playedOn);
+  const platform = IconSelector(data.playedOn.id, "white");
   const navigate = useNavigate();
 
   const handleClick = () => {
@@ -90,7 +102,7 @@ export default function ArticleDashboardItem(props: {
   useEffect(() => {
     async function fetchFrontImage() {
       try {
-        const image = await getFrontImage({ id: data.id, small: true });
+        const image = await getFrontImage({ id: data.id, size: "Small" });
         setFrontImage(image);
       } catch (error) {
         setFrontImage(undefined);
@@ -102,30 +114,39 @@ export default function ArticleDashboardItem(props: {
   }, []);
 
   return (
-    <Card className={classes.article}>
+    <Card className={classes.articleItem}>
       <CardActionArea onClick={handleClick}>
         <Grid container>
           {frontImage ? (
-            <Grid item sm={4}>
-              <CardMedia
-                className={classes.image}
-                component="img"
-                alt={i18next.t("image.missing")}
-                image={`${frontImage.imagePathName}?${Date.now()}`}
-              />
-              <Typography
-                variant="h6"
-                position="absolute"
-                className={classes.articleType}
-              >
-                {data.articleType.name}
-              </Typography>
+            <Grid
+              item
+              container
+              lg={4}
+              md={5}
+              sm={12}
+              className={classes.imageSection}
+            >
+              <Grid item className={classes.imageSectionTypeItem}>
+                <Typography variant="body1" className={classes.articleType}>
+                  {data.articleType.name}
+                </Typography>
+              </Grid>
+              <Grid item className={classes.imageSectionImageItem}>
+                <CardMedia
+                  className={classes.image}
+                  component="img"
+                  alt={i18next.t("image.missing")}
+                  image={`${frontImage.imagePathName}?${Date.now()}`}
+                />
+              </Grid>
             </Grid>
           ) : (
             <Grid
               item
               container
-              sm={4}
+              lg={4}
+              md={5}
+              sm={12}
               justifyContent="center"
               alignItems="center"
               className={classes.loading}
@@ -133,7 +154,7 @@ export default function ArticleDashboardItem(props: {
               <CircularProgress />
             </Grid>
           )}
-          <Grid container item sm={8}>
+          <Grid container item lg={8} md={7} sm={12}>
             <Grid container item lg={8} className={classes.header}>
               <CardHeader
                 avatar={
@@ -166,8 +187,11 @@ export default function ArticleDashboardItem(props: {
               </Typography>
             </Grid>
             <Grid item sm={12}>
-              <Box component="div" className={classes.textBox}>
-                <Typography className={classes.text} variant="body2">
+              <Box component="div" className={classes.shortDescriptionTextBox}>
+                <Typography
+                  className={classes.shortDescription}
+                  variant="body2"
+                >
                   {data.shortDescription}
                 </Typography>
               </Box>
@@ -178,7 +202,7 @@ export default function ArticleDashboardItem(props: {
               sm={12}
               justifyContent="flex-end"
               alignItems="center"
-              className={classes.footer}
+              className={classes.footerIcons}
             >
               {data.availableOn.length > 0 && (
                 <Typography variant="body2">
@@ -191,7 +215,7 @@ export default function ArticleDashboardItem(props: {
                   className={classes.gamingPlatformMinis}
                   component="img"
                   alt={i18next.t("image.missing")}
-                  image={colorIconSelector(icon)}
+                  image={IconSelector(icon.id, "color")}
                 />
               ))}
             </Grid>

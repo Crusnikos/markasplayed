@@ -12,7 +12,7 @@ export async function getAuthorsListing(): Promise<AuthorData[]> {
 
 export async function getAuthorImage(request: {
   id: number;
-}): Promise<ImageData> {
+}): Promise<ImageData | null> {
   const response = await axios.get<ImageData>(
     `${settings.url}/files/author/${request.id}/avatar`
   );

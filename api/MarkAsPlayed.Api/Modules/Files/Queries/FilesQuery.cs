@@ -4,6 +4,12 @@ using MarkAsPlayed.Api.Modules.Files.Models;
 
 namespace MarkAsPlayed.Api.Modules.Files.Queries;
 
+public enum Size
+{
+    Small,
+    Large
+}
+
 public sealed class FilesQuery
 {
     private readonly Database.Factory _databaseFactory;
@@ -19,7 +25,7 @@ public sealed class FilesQuery
     public async Task<ImageData?> GetFrontImageAsync(
         int articleId,
         Uri baseUri,
-        bool small)
+        Size size)
     {
         await using var db = _databaseFactory();
 
@@ -28,7 +34,7 @@ public sealed class FilesQuery
             return null;
         }
 
-        var imageSize = small ? DefaultSmallFrontImageFileName : DefaultFrontImageFileName;
+        var imageSize = size == 0 ? DefaultSmallFrontImageFileName : DefaultFrontImageFileName;
 
         return new ImageData
         {
@@ -63,12 +69,7 @@ public sealed class FilesQuery
     {
         await using var db = _databaseFactory();
 
-        if (!db.Articles.Any(a => a.Id == articleId))
-        {
-            return Enumerable.Empty<ImageData>();
-        }
-
-        return await db.ArticleImages.
+        var gallery = await db.ArticleImages.
             Where(ag => ag.ArticleId == articleId).
             Where(ag => ag.IsActive == true).
             Select(
@@ -79,9 +80,18 @@ public sealed class FilesQuery
                 ImagePathName = new Uri(baseUri, $"/Image/{articleId}/Gallery/{i.FileName}").AbsoluteUri
             }).
             ToListAsync(cancellationToken);
+
+        if(gallery.Count > 0)
+        {
+            return gallery;
+        }
+        else
+        {
+            return Enumerable.Empty<ImageData>();
+        }
     }
 
-    public async Task<ImageData> GetAuthorImageAsync(
+    public async Task<ImageData?> GetAuthorImageAsync(
         int authorId,
         Uri baseUri)
     {
@@ -89,7 +99,7 @@ public sealed class FilesQuery
 
         if (!db.Authors.Any(a => a.Id == authorId))
         {
-            throw new ArgumentNullException(nameof(authorId));
+            return null;
         }
 
         return new ImageData

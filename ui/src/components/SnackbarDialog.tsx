@@ -9,14 +9,16 @@ const useStyles = makeStyles()(() => ({
   },
 }));
 
+export type DispatchSnackbar = Dispatch<
+  SetStateAction<{
+    message: string | undefined;
+    severity: AlertColor | undefined;
+  }>
+>;
+
 export default function SnackbarDialog(props: {
   message: string | undefined;
-  clearMessage: Dispatch<
-    SetStateAction<{
-      message: string | undefined;
-      severity: AlertColor | undefined;
-    }>
-  >;
+  clearMessage: DispatchSnackbar;
   severity?: AlertColor;
 }): JSX.Element {
   const { classes } = useStyles();
