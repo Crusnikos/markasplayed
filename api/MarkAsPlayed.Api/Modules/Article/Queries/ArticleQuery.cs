@@ -24,7 +24,7 @@ public sealed class ArticleQuery
 
         var articleData = await (
             from article in db.Articles.Where(a => a.Id == articleId)
-            from playedOn in db.GamingPlatforms.InnerJoin(gp => gp.Id == article.PlayedOnGamingPlatformId).DefaultIfEmpty()
+            from playedOn in db.GamingPlatforms.LeftJoin(gp => gp.Id == article.PlayedOnGamingPlatformId)
             from articleType in db.ArticleTypes.InnerJoin(g => g.Id == article.ArticleTypeId)
             from author in db.Authors.InnerJoin(a => a.Id == article.CreatedBy)
             select new
@@ -98,7 +98,7 @@ public sealed class ArticleQuery
 
         var articleSubquery =
             from article in db.Articles
-            from playedOn in db.GamingPlatforms.InnerJoin(gp => gp.Id == article.PlayedOnGamingPlatformId).DefaultIfEmpty()
+            from playedOn in db.GamingPlatforms.LeftJoin(gp => gp.Id == article.PlayedOnGamingPlatformId)
             from articleType in db.ArticleTypes.InnerJoin(g => g.Id == article.ArticleTypeId)
             from author in db.Authors.InnerJoin(a => a.Id == article.CreatedBy)
             select new

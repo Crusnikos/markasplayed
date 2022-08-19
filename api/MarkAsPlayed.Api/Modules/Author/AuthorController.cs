@@ -19,7 +19,7 @@ public sealed class AuthorController : ControllerBase
     /// </summary>
     [HttpGet]
     [Route("listing")]
-    public List<AuthorData> GetArticleListing()
+    public List<AuthorData> GetAuthorsListing()
     {
         return _authorQuery.GetAuthors();
     }

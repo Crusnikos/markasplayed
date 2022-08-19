@@ -5,10 +5,11 @@ import {
   DialogTitle,
   Grid,
   IconButton,
+  MenuItem,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
 import React, { Dispatch, SetStateAction, useEffect, useState } from "react";
-import ReactDOM from "react-dom";
-import { Dialog } from "../Dialog";
 import ExceptionPage from "../components/ExceptionPage";
 import LoadingIndicator from "../components/LoadingIndicator";
 import CloseIcon from "@mui/icons-material/Close";
@@ -20,10 +21,7 @@ import i18next from "i18next";
 
 const useStyles = makeStyles()((theme) => ({
   closeIcon: {
-    position: "absolute",
     color: theme.palette.common.white,
-    right: 8,
-    top: 8,
   },
   topInfo: {
     backgroundColor: theme.palette.primary.main,
@@ -42,17 +40,22 @@ const useStyles = makeStyles()((theme) => ({
 }));
 
 export default function AuthorsListing(props: {
-  openDialog: Dispatch<SetStateAction<Dialog>>;
+  setAnchorEl?: Dispatch<SetStateAction<null | HTMLElement>>;
 }) {
   const { classes } = useStyles();
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<boolean>(false);
   const [authors, setAuthors] = useState<AuthorData[] | undefined>(undefined);
   const [activeStep, setActiveStep] = useState(0);
-  const { openDialog } = props;
 
+  const theme = useTheme();
+  const logo = useMediaQuery(theme.breakpoints.up("sm"))
+    ? "Mark as Played"
+    : "MAP";
+
+  const [open, setOpen] = useState<boolean>(false);
   const closeDialog = () => {
-    openDialog({ type: undefined, data: undefined, images: undefined });
+    setOpen(false);
   };
 
   useEffect(() => {
@@ -66,80 +69,95 @@ export default function AuthorsListing(props: {
         setLoading(false);
       }
     }
+
+    if (!open) {
+      return;
+    }
+
     void fetchAuthors();
-  }, []);
+  }, [open]);
+
+  const authorsMenuItem = (
+    <MenuItem
+      onClick={() => {
+        props.setAnchorEl!(null);
+        setOpen(true);
+      }}
+    >
+      {i18next.t("title.authors")}
+    </MenuItem>
+  );
 
   if (loading) {
-    const loadingDialog = (
-      <DialogMUI open={true} onClose={closeDialog} fullWidth>
-        <DialogContent>
-          <LoadingIndicator message={i18next.t("loading")} />
-        </DialogContent>
-      </DialogMUI>
-    );
-
-    return ReactDOM.createPortal(
-      loadingDialog,
-      document.getElementById(`dialog-window`)!
+    return (
+      <React.Fragment>
+        {authorsMenuItem}
+        <DialogMUI open={open} onClose={closeDialog} fullWidth>
+          <DialogContent>
+            <LoadingIndicator message={i18next.t("loading")} />
+          </DialogContent>
+        </DialogMUI>
+      </React.Fragment>
     );
   }
 
   if (error) {
-    const errorDialog = (
-      <DialogMUI open={true} onClose={closeDialog} fullWidth>
-        <DialogContent>
-          <ExceptionPage message={i18next.t("author.error.retrieve")} />
-        </DialogContent>
-      </DialogMUI>
-    );
-
-    return ReactDOM.createPortal(
-      errorDialog,
-      document.getElementById(`dialog-window`)!
+    return (
+      <React.Fragment>
+        {authorsMenuItem}
+        <DialogMUI open={open} onClose={closeDialog} fullWidth>
+          <DialogContent>
+            <ExceptionPage message={i18next.t("author.error.retrieve")} />
+          </DialogContent>
+        </DialogMUI>
+      </React.Fragment>
     );
   }
 
-  const listingDialog = (
-    <DialogMUI open={true} onClose={closeDialog} fullWidth>
-      <DialogTitle className={classes.topInfo}>
-        {i18next.t("title.authors")} Mark as Played
-        <IconButton
-          aria-label="close"
-          onClick={closeDialog}
-          className={classes.closeIcon}
-        >
-          <CloseIcon />
-        </IconButton>
-      </DialogTitle>
-      <DialogContent className={classes.content}>
-        <Grid
-          container
-          alignItems="center"
-          justifyContent="center"
-          direction="column"
-          spacing={1}
-          className={classes.container}
-        >
-          {authors && (
-            <AuthorItem
-              data={authors[activeStep]}
-              key={authors[activeStep].id}
-            />
-          )}
-        </Grid>
-      </DialogContent>
-      <DialogActions className={classes.navigation}>
-        <Stepper
-          activeStep={activeStep}
-          setActiveStep={setActiveStep}
-          length={authors?.length ?? 0}
-        />
-      </DialogActions>
-    </DialogMUI>
-  );
-
-  return ReactDOM.createPortal(
-    listingDialog,
-    document.getElementById(`dialog-window`)!
+  return (
+    <React.Fragment>
+      {authorsMenuItem}
+      <DialogMUI open={open} onClose={closeDialog} fullWidth>
+        <DialogTitle className={classes.topInfo}>
+          <Grid
+            container
+            direction="row"
+            justifyContent="space-between"
+            alignItems="flex-start"
+          >
+            {`${i18next.t("title.authors")} ${logo}`}
+            <IconButton
+              aria-label="close"
+              onClick={closeDialog}
+              className={classes.closeIcon}
+            >
+              <CloseIcon />
+            </IconButton>
+          </Grid>
+        </DialogTitle>
+        <DialogContent className={classes.content}>
+          <Grid
+            container
+            alignItems="center"
+            justifyContent="center"
+            direction="column"
+            spacing={1}
+            className={classes.container}
+          >
+            {authors &&
+              authors.map((author) => (
+                <AuthorItem data={author} key={author.id} />
+              ))}
+          </Grid>
+        </DialogContent>
+        <DialogActions className={classes.navigation}>
+          <Stepper
+            activeStep={activeStep}
+            setActiveStep={setActiveStep}
+            length={authors?.length ?? 0}
+          />
+        </DialogActions>
+      </DialogMUI>
+    </React.Fragment>
   );
 }

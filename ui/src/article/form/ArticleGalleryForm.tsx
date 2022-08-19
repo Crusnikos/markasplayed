@@ -1,7 +1,6 @@
 import React, { useReducer, useState } from "react";
 import { makeStyles } from "tss-react/mui";
 import {
-  Box,
   Button,
   Card,
   CardActionArea,
@@ -10,6 +9,7 @@ import {
   CardMedia,
   FormControlLabel,
   FormHelperText,
+  Grid,
   IconButton,
   Stack,
   Switch,
@@ -25,7 +25,7 @@ import i18next from "i18next";
 
 const useStyles = makeStyles()((theme) => ({
   helperMargin: {
-    marginBottom: "16px",
+    marginBottom: theme.spacing(2),
   },
   topInfo: {
     color: theme.palette.common.white,
@@ -59,23 +59,33 @@ const useStyles = makeStyles()((theme) => ({
     objectFit: "cover",
   },
   switch: {
-    position: "absolute",
-    right: "20px",
-    top: "10px",
     width: "135px",
-    height: "38px",
+    height: theme.spacing(5),
+    marginLeft: theme.spacing(0),
     background: theme.palette.grey[300],
-    borderRadius: "10px",
+    borderRadius: theme.spacing(1),
   },
   delete: {
-    position: "absolute",
-    right: "20px",
-    top: "10px",
     width: "95px",
-    height: "38px",
+    height: theme.spacing(5),
     background: theme.palette.grey[300],
-    paddingRight: "10px",
-    borderRadius: "10px",
+    borderRadius: theme.spacing(1),
+  },
+  galleryImageSection: {
+    display: "grid",
+  },
+  galleryImageSectionButton: {
+    marginTop: theme.spacing(2),
+    marginRight: theme.spacing(3),
+    gridRowStart: 1,
+    gridColumnStart: 1,
+    justifySelf: "end",
+    zIndex: 2,
+  },
+  galleryImageSectionImage: {
+    gridRowStart: 1,
+    gridColumnStart: 1,
+    zIndex: 1,
   },
 }));
 
@@ -219,65 +229,73 @@ export default function ArticleGalleryForm(props: {
 
   function displayExistingGalleryImage(): JSX.Element {
     return (
-      <Box position="relative">
-        <FormControlLabel
-          control={
-            <Switch
-              checked={imagesState.gallery.previews[activeStep].isActive}
-              onChange={() =>
-                imagesDispatch({
-                  type: "setGalleryImageAsConcealed",
-                  data: imagesState.gallery.previews[activeStep].id as number,
-                })
-              }
-            />
-          }
-          label={
-            <Typography fontSize="large">
-              {imagesState.gallery.previews[activeStep].isActive
-                ? i18next.t("form.label.gallery.active")
-                : i18next.t("form.label.gallery.hidden")}
-            </Typography>
-          }
-          labelPlacement="start"
-          className={classes.switch}
-        />
-        <CardMedia
-          component="img"
-          src={imagesState.gallery.previews[activeStep].link}
-          alt={i18next.t("image.missing")}
-          className={classes.image}
-        />
-      </Box>
+      <Grid container className={classes.galleryImageSection}>
+        <Grid item className={classes.galleryImageSectionButton}>
+          <FormControlLabel
+            control={
+              <Switch
+                checked={imagesState.gallery.previews[activeStep].isActive}
+                onChange={() =>
+                  imagesDispatch({
+                    type: "setGalleryImageAsConcealed",
+                    data: imagesState.gallery.previews[activeStep].id as number,
+                  })
+                }
+              />
+            }
+            label={
+              <Typography fontSize="large">
+                {imagesState.gallery.previews[activeStep].isActive
+                  ? i18next.t("form.label.gallery.active")
+                  : i18next.t("form.label.gallery.hidden")}
+              </Typography>
+            }
+            labelPlacement="start"
+            className={classes.switch}
+          />
+        </Grid>
+        <Grid item className={classes.galleryImageSectionImage}>
+          <CardMedia
+            component="img"
+            src={imagesState.gallery.previews[activeStep].link}
+            alt={i18next.t("image.missing")}
+            className={classes.image}
+          />
+        </Grid>
+      </Grid>
     );
   }
 
   function displayWaitingGalleryImage(): JSX.Element {
     return (
-      <Box position="relative">
-        <IconButton
-          disableRipple
-          onClick={() =>
-            imagesDispatch({
-              type: "deleteNewGalleryImage",
-              data: {
-                fileIndex: activeStep - (gallery?.length ?? 0),
-                previewIndex: activeStep,
-              },
-            })
-          }
-          className={classes.delete}
-        >
-          <Typography>{i18next.t("form.label.gallery.delete")}</Typography>
-          <ClearIcon fontSize="medium" />
-        </IconButton>
-        <CardMedia
-          component="img"
-          src={imagesState.gallery.previews[activeStep].link}
-          alt={i18next.t("image.missing")}
-          className={classes.image}
-        />
-      </Box>
+      <Grid container className={classes.galleryImageSection}>
+        <Grid item className={classes.galleryImageSectionButton}>
+          <IconButton
+            disableRipple
+            onClick={() =>
+              imagesDispatch({
+                type: "deleteNewGalleryImage",
+                data: {
+                  fileIndex: activeStep - (gallery?.length ?? 0),
+                  previewIndex: activeStep,
+                },
+              })
+            }
+            className={classes.delete}
+          >
+            <Typography>{i18next.t("form.label.gallery.delete")}</Typography>
+            <ClearIcon fontSize="medium" />
+          </IconButton>
+        </Grid>
+        <Grid item className={classes.galleryImageSectionImage}>
+          <CardMedia
+            component="img"
+            src={imagesState.gallery.previews[activeStep].link}
+            alt={i18next.t("image.missing")}
+            className={classes.image}
+          />
+        </Grid>
+      </Grid>
     );
   }
 

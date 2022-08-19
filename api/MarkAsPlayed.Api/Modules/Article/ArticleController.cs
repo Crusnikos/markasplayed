@@ -68,7 +68,15 @@ public sealed class ArticleController : ControllerBase
             return NotFound(userId);
         }
 
-        return Ok(await _articleCommand.CreateAsync(request, userId.Value, HttpContext.RequestAborted));
+        var response = await _articleCommand.CreateAsync(request, userId.Value, HttpContext.RequestAborted);
+
+        return response.Status switch
+        {
+            ArticleStatus.NotFound => NotFound("Author not found"),
+            ArticleStatus.InternalError => 
+                throw new Exception("Failed to create article", response.ExceptionCaptured),
+            _ => Ok(response.Identifier)
+        };
     }
 
     /// <summary>
@@ -81,12 +89,14 @@ public sealed class ArticleController : ControllerBase
         ArticleRequestData request,
         int id)
     {
-        var result = await _articleCommand.UpdateAsync(id, request, HttpContext.RequestAborted);
-        if(result is false)
-        {
-            return NotFound(id);
-        }
+        var response = await _articleCommand.UpdateAsync(id, request, HttpContext.RequestAborted);
 
-        return NoContent();
+        return response.Status switch
+        {
+            ArticleStatus.Forbidden => Forbid("No articles updated"),
+            ArticleStatus.InternalError => 
+                throw new Exception($"Failed to update {response.Identifier} article", response.ExceptionCaptured),
+            _ => NoContent()
+        };
     }
 }

@@ -16,9 +16,9 @@ import defaultFormValues from "./defaultFormValues";
 import { useFirebaseAuth } from "../../firebase";
 import i18next from "i18next";
 
-const useStyles = makeStyles()(() => ({
+const useStyles = makeStyles()((theme) => ({
   helperMargin: {
-    marginBottom: "16px",
+    marginBottom: theme.spacing(2),
   },
 }));
 

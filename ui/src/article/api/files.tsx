@@ -3,12 +3,12 @@ import { settings } from "../../api";
 
 export async function getFrontImage(request: {
   id: number;
-  small?: boolean;
+  size?: string;
 }): Promise<ImageData> {
   const response = await axios.get<ImageData>(
     `${settings.url}/files/article/${request.id}/front`,
     {
-      params: request.small,
+      params: { Size: request.size },
     }
   );
 
@@ -73,13 +73,13 @@ export async function addToGallery(
     files: File[];
   },
   token: string
-): Promise<number | undefined> {
+): Promise<void> {
   const formData = new FormData();
   Array.from(addRequest.files).forEach((file) => {
     formData.append("files", file);
   });
 
-  const response = await axios.post(
+  await axios.post(
     `${settings.url}/files/article/${addRequest.articleId}/gallery`,
     formData,
     {
@@ -88,8 +88,6 @@ export async function addToGallery(
       },
     }
   );
-
-  return response.status;
 }
 
 export type ImageData = {

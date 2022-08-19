@@ -30,15 +30,27 @@ const useStyles = makeStyles()((theme) => ({
   },
   playPauseButton: {
     backgroundColor: theme.palette.common.white,
-    position: "absolute",
-    bottom: 0,
-    right: 0,
-    height: 38,
-    width: 38,
-    margin: "20px",
+    height: theme.spacing(5),
+    width: theme.spacing(5),
     "&:hover": {
       backgroundColor: theme.palette.warning.main,
     },
+  },
+  sliderSection: {
+    display: "grid",
+  },
+  sliderSectionButton: {
+    margin: theme.spacing(2),
+    gridRowStart: 1,
+    gridColumnStart: 1,
+    zIndex: 2,
+    justifySelf: "end",
+    alignSelf: "end",
+  },
+  sliderSectionImage: {
+    gridRowStart: 1,
+    gridColumnStart: 1,
+    zIndex: 1,
   },
 }));
 
@@ -71,22 +83,26 @@ export function PictureSlider(props: { images: ImageData[] }): JSX.Element {
   }, [currentIndex, pause]);
 
   return (
-    <Grid position="relative">
-      <Box
-        key={currentIndex}
-        component="img"
-        className={classes.image}
-        src={`${images[currentIndex].imagePathName}?${Date.now()}`}
-        alt={i18next.t("image.missing")}
-        onClick={handleRedirect}
-      />
-      <IconButton
-        aria-label="play/pause"
-        onClick={() => setPause(!pause)}
-        className={classes.playPauseButton}
-      >
-        {pause ? <PlayArrowIcon /> : <PauseIcon />}
-      </IconButton>
+    <Grid container className={classes.sliderSection}>
+      <Grid item className={classes.sliderSectionImage}>
+        <Box
+          key={currentIndex}
+          component="img"
+          className={classes.image}
+          src={`${images[currentIndex].imagePathName}?${Date.now()}`}
+          alt={i18next.t("image.missing")}
+          onClick={handleRedirect}
+        />
+      </Grid>
+      <Grid item className={classes.sliderSectionButton}>
+        <IconButton
+          aria-label="play/pause"
+          onClick={() => setPause(!pause)}
+          className={classes.playPauseButton}
+        >
+          {pause ? <PlayArrowIcon /> : <PauseIcon />}
+        </IconButton>
+      </Grid>
     </Grid>
   );
 }

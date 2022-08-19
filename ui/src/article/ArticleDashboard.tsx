@@ -1,4 +1,4 @@
-import { Grid } from "@mui/material";
+import { Box, Grid } from "@mui/material";
 import { makeStyles } from "tss-react/mui";
 import LoadingIndicator from "../components/LoadingIndicator";
 import { useArticleData } from "../ArticleListProvider";
@@ -9,15 +9,11 @@ import ArticleDashboardItem from "./dashboard/ArticleDashboardItem";
 import i18next from "i18next";
 
 const useStyles = makeStyles()((theme) => ({
-  articleSection: {
-    width: "1200px",
-    [theme.breakpoints.down("lg")]: {
-      width: "100vw",
-    },
-  },
   paginationSection: {
     marginTop: theme.spacing(2),
-    marginBottom: theme.spacing(1),
+  },
+  articlesContainer: {
+    width: "100%",
   },
 }));
 
@@ -53,6 +49,7 @@ export default function ArticleDashboard(): JSX.Element {
     return (
       <React.Fragment>
         <ExceptionPage message={i18next.t("dashboard.error.missingPage")} />
+        <Box sx={{ flexGrow: 1 }} />
         <Grid item className={classes.paginationSection}>
           <PagePagination onPageChange={onPageChange} />
         </Grid>
@@ -62,7 +59,7 @@ export default function ArticleDashboard(): JSX.Element {
 
   return (
     <React.Fragment>
-      <Grid item className={classes.articleSection}>
+      <Grid item className={classes.articlesContainer}>
         {!isArticleDataEmpty &&
           articleData.map((article) => (
             <ArticleDashboardItem key={article.id} data={article} />

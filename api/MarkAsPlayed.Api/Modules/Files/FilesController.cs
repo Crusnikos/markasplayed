@@ -42,15 +42,15 @@ public sealed class FilesController : ControllerBase
     public async Task<ActionResult> GetFrontImageByIdAsync(
         [Range(1, int.MaxValue)]
         int id,
-        bool small = false)
+        Size size = Size.Large)
     {
         var baseUri = new Uri($"{HttpContext.Request.Scheme}://{HttpContext.Request.Host.Value}/");
 
-        var image = await _filesQuery.GetFrontImageAsync(id, baseUri, small);
+        var image = await _filesQuery.GetFrontImageAsync(id, baseUri, size);
 
         if(image is null)
         {
-            return NoContent();
+            return NotFound();
         }
 
         return Ok(image);
@@ -68,7 +68,7 @@ public sealed class FilesController : ControllerBase
                 Path.Combine(_env.ContentRootPath, "Image", id.ToString()),
                 HttpContext.RequestAborted);
 
-        return Ok(id);
+        return NoContent();
     }
 
     /// <summary>
@@ -112,8 +112,8 @@ public sealed class FilesController : ControllerBase
         return uploadedFiles switch
         {
             true => NoContent(),
-            false => Ok("Some of the files weren't uploaded, please check format and try again after some time"),
-            _ => BadRequest("Failed to upload files")
+            false => Conflict(),
+            _ => BadRequest()
         };
     }
 
@@ -122,7 +122,7 @@ public sealed class FilesController : ControllerBase
     /// </summary>
     [HttpGet]
     [Route("author/{id}/avatar")]
-    public async Task<ImageData> GetAuthorImageByIdAsync(
+    public async Task<ImageData?> GetAuthorImageByIdAsync(
         [Range(1, int.MaxValue)]
         int id)
     {

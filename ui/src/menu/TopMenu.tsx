@@ -1,4 +1,4 @@
-import React, { Dispatch, SetStateAction, useState } from "react";
+import React, { useState } from "react";
 import {
   AppBar,
   Box,
@@ -13,22 +13,25 @@ import { Link } from "react-router-dom";
 import { makeStyles } from "tss-react/mui";
 import { AccountCircle } from "@mui/icons-material";
 import MenuItem from "@mui/material/MenuItem";
-import { Dialog } from "../Dialog";
 import { useFirebaseAuth } from "../firebase";
 import i18next from "i18next";
+import { DispatchSnackbar } from "../components/SnackbarDialog";
+import ArticleForm from "../article/ArticleForm";
+import AuthorsListing from "../author";
+import Login from "../user/Login";
 
 const useStyles = makeStyles()((theme) => ({
   toolbar: {
     backgroundColor: theme.palette.primary.main,
+    height: theme.spacing(8),
   },
   logo: { color: theme.palette.common.white, textDecoration: "none" },
 }));
 
 export default function TopMenu(props: {
-  openDialog: Dispatch<SetStateAction<Dialog>>;
+  displaySnackbar: DispatchSnackbar;
 }): JSX.Element {
   const { classes } = useStyles();
-  const { openDialog } = props;
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const { app, authenticated } = useFirebaseAuth();
 
@@ -41,21 +44,6 @@ export default function TopMenu(props: {
 
   const handleClose = () => {
     setAnchorEl(null);
-  };
-
-  const handleAddArticleClick = () => {
-    setAnchorEl(null);
-    openDialog({ type: "addArticle", data: undefined, images: undefined });
-  };
-
-  const handleAuthorsClick = () => {
-    setAnchorEl(null);
-    openDialog({ type: "authors", data: undefined, images: undefined });
-  };
-
-  const handleLoginClick = () => {
-    setAnchorEl(null);
-    openDialog({ type: "loginUser", data: undefined, images: undefined });
   };
 
   const handleLogoutClick = async () => {
@@ -96,16 +84,16 @@ export default function TopMenu(props: {
           open={Boolean(anchorEl)}
           onClose={handleClose}
         >
-          <MenuItem onClick={handleAddArticleClick}>
-            {i18next.t("title.addArticle")}
-          </MenuItem>
-          <MenuItem onClick={handleAuthorsClick}>
-            {i18next.t("title.authors")}
-          </MenuItem>
+          <ArticleForm
+            responseOnSubmitForm={props.displaySnackbar}
+            data={undefined}
+            images={undefined}
+            returnFunction={undefined}
+            setAnchorEl={setAnchorEl}
+          />
+          <AuthorsListing setAnchorEl={setAnchorEl} />
           {!authenticated ? (
-            <MenuItem onClick={handleLoginClick}>
-              {i18next.t("title.login")}
-            </MenuItem>
+            <Login setAnchorEl={setAnchorEl} />
           ) : (
             <MenuItem onClick={handleLogoutClick}>
               {i18next.t("title.logout")}

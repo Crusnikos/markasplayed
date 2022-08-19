@@ -1,4 +1,4 @@
-import { Box, Divider, Grid, Typography } from "@mui/material";
+import { Box, Grid, Typography } from "@mui/material";
 import React, { useEffect, useState } from "react";
 import { AuthorData, getAuthorImage } from "./api";
 import { makeStyles } from "tss-react/mui";
@@ -6,12 +6,12 @@ import { ImageData } from "../article/api/files";
 import i18next from "i18next";
 import { useTranslation } from "react-i18next";
 
-const useStyles = makeStyles()(() => ({
+const useStyles = makeStyles()((theme) => ({
   avatarBorder: {
     border: "3px solid black",
-    height: "120px",
+    height: theme.spacing(16),
     borderRadius: "50%",
-    width: "120px",
+    width: theme.spacing(16),
   },
   avatarImage: {
     width: "100%",
@@ -35,18 +35,18 @@ function descriptionSelector(
 export default function AuthorItem(props: { data: AuthorData }): JSX.Element {
   const { classes } = useStyles();
   const { data: author } = props;
-  const [authorImage, setAuthorImage] = useState<ImageData | undefined>(
-    undefined
-  );
+  const [authorImage, setAuthorImage] = useState<ImageData | null>(null);
   const { i18n } = useTranslation();
 
   useEffect(() => {
     async function fetchAuthors() {
-      const authors = await getAuthorImage({ id: author.id });
-      setAuthorImage(authors);
+      const image = await getAuthorImage({ id: author.id });
+      setAuthorImage(image);
     }
+
     void fetchAuthors();
-  }, [author]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <React.Fragment>
