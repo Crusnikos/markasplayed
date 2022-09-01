@@ -2,7 +2,7 @@ import { Box, Grid } from "@mui/material";
 import { makeStyles } from "tss-react/mui";
 import LoadingIndicator from "../components/LoadingIndicator";
 import { useArticleData } from "../ArticleListProvider";
-import React, { useEffect, useState } from "react";
+import React, { Dispatch, SetStateAction, useEffect } from "react";
 import PagePagination from "../components/PagePagination";
 import ExceptionPage from "../components/ExceptionPage";
 import ArticleDashboardItem from "./dashboard/ArticleDashboardItem";
@@ -17,10 +17,13 @@ const useStyles = makeStyles()((theme) => ({
   },
 }));
 
-export default function ArticleDashboard(): JSX.Element {
+export default function ArticleDashboard(props: {
+  setLoading: Dispatch<SetStateAction<boolean>>;
+  loading: boolean;
+}): JSX.Element {
   const { classes } = useStyles();
+  const { loading, setLoading } = props;
   const [[articleData], getNextPage] = useArticleData();
-  const [loading, setLoading] = useState<boolean>(true);
   const isArticleDataEmpty =
     articleData === undefined ||
     articleData instanceof Error ||
@@ -35,6 +38,7 @@ export default function ArticleDashboard(): JSX.Element {
     if (articleData !== undefined) {
       setLoading(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [articleData]);
 
   if (loading) {
@@ -62,7 +66,11 @@ export default function ArticleDashboard(): JSX.Element {
       <Grid item className={classes.articlesContainer}>
         {!isArticleDataEmpty &&
           articleData.map((article) => (
-            <ArticleDashboardItem key={article.id} data={article} />
+            <ArticleDashboardItem
+              key={article.id}
+              data={article}
+              setLoading={setLoading}
+            />
           ))}
       </Grid>
       <Grid item className={classes.paginationSection}>

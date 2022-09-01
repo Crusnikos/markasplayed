@@ -29,7 +29,7 @@ const useStyles = makeStyles()((theme) => ({
 }));
 
 export default function TopMenu(props: {
-  displaySnackbar: DispatchSnackbar;
+  setSnackbar: DispatchSnackbar;
 }): JSX.Element {
   const { classes } = useStyles();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -85,7 +85,7 @@ export default function TopMenu(props: {
           onClose={handleClose}
         >
           <ArticleForm
-            responseOnSubmitForm={props.displaySnackbar}
+            responseOnSubmitForm={props.setSnackbar}
             data={undefined}
             images={undefined}
             returnFunction={undefined}

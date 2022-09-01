@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { Dispatch, SetStateAction, useEffect, useState } from "react";
 import {
   Box,
   CircularProgress,
@@ -50,11 +50,14 @@ const useStyles = makeStyles()((theme) => ({
 }));
 
 export default function ArticleDetails(props: {
-  displaySnackbar: DispatchSnackbar;
+  setSnackbar: DispatchSnackbar;
+  setLoading: Dispatch<SetStateAction<boolean>>;
+  loading: boolean;
 }): JSX.Element {
   const { classes } = useStyles();
+  const { setSnackbar, setLoading, loading } = props;
 
-  const [requireFetch, setRequireFetch] = useState<boolean>(true);
+  const [requireFetch, setRequireFetch] = useState<boolean>(false);
   const [article, setArticle] = useState<FullArticleData | undefined>();
   const [frontImage, setFrontImage] = useState<ImageData | undefined>(
     undefined
@@ -64,47 +67,49 @@ export default function ArticleDetails(props: {
   const params = useParams();
   const parsedId = tryParseInt(params.id);
 
-  const [loading, setLoading] = useState<boolean>(true);
+  const showLoadingSpinner = loading || requireFetch;
 
   useEffect(() => {
     async function fetchArticleData() {
       if (parsedId === null) {
         return;
       }
-      if (requireFetch || parsedId !== article?.id) {
-        try {
-          const fetchedResult = await getArticle({ id: parsedId });
-          setArticle(fetchedResult);
-        } catch {
-          setArticle(undefined);
-          setLoading(false);
-        }
-        setLoading(false);
-        setRequireFetch(false);
+      try {
+        const fetchedResult = await getArticle({ id: parsedId });
+        setArticle(fetchedResult);
+      } catch {
+        setArticle(undefined);
       }
+      setLoading(false);
+      setRequireFetch(false);
+    }
+
+    if (!loading && !requireFetch) {
+      return;
+    }
+
+    if (loading && parsedId === article?.id) {
+      setLoading(false);
+      return;
+    }
+
+    if (frontImage || gallery) {
+      setFrontImage(undefined);
+      setGallery(undefined);
     }
 
     void fetchArticleData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [requireFetch, parsedId]);
+  }, [loading, requireFetch]);
 
   useEffect(() => {
     async function fetchFrontImage() {
       if (parsedId !== null && article !== undefined) {
-        try {
-          const image = await getFrontImage({ id: parsedId });
-          setFrontImage(image);
-        } catch (error) {
-          setFrontImage(undefined);
-        }
+        const image = await getFrontImage({ id: parsedId });
+        setFrontImage(image);
       }
     }
 
-    void fetchFrontImage();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [article]);
-
-  useEffect(() => {
     async function fetchGallery() {
       if (parsedId !== null && article !== undefined) {
         const gallery = await getGallery({ id: parsedId });
@@ -112,11 +117,13 @@ export default function ArticleDetails(props: {
       }
     }
 
+    void fetchFrontImage();
+
     void fetchGallery();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [frontImage]);
+  }, [article]);
 
-  if (loading) {
+  if (showLoadingSpinner) {
     return <LoadingIndicator />;
   }
 
@@ -136,7 +143,7 @@ export default function ArticleDetails(props: {
               data={article}
               images={{ main: frontImage, gallery: gallery }}
               returnFunction={setRequireFetch}
-              responseOnSubmitForm={props.displaySnackbar}
+              responseOnSubmitForm={setSnackbar}
             />
           </Typography>
           <Box component="div" className={classes.textBox}>

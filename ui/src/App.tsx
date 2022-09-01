@@ -46,6 +46,7 @@ export default function App(): JSX.Element {
     severity: AlertColor | undefined;
   }>({ message: undefined, severity: `info` });
   const { ready } = useTranslation();
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
   function notification() {
     return (
@@ -84,8 +85,15 @@ export default function App(): JSX.Element {
           <ThemeProvider theme={theme}>
             {userNotification.message && notification()}
             <FlexWrapper>
-              <Menu displaySnackbar={setUserNotification} />
-              <MainPanel displaySnackbar={setUserNotification} />
+              <Menu
+                setSnackbar={setUserNotification}
+                setLoading={setIsLoading}
+              />
+              <MainPanel
+                setSnackbar={setUserNotification}
+                setLoading={setIsLoading}
+                loading={isLoading}
+              />
             </FlexWrapper>
             <Footer />
           </ThemeProvider>
