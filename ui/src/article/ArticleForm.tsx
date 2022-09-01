@@ -277,14 +277,14 @@ export default function ArticleForm(props: {
 
       if (response.status === "success") {
         await getNextPage({ page });
-        returnFunction?.(true);
         responseOnSubmitForm({
           message: i18next.t("form.success.article.update"),
           severity: `success`,
         });
       }
 
-      return closeDialog();
+      closeDialog();
+      return returnFunction?.(true);
     } else {
       setDraftArticle({ article: formData, articleType });
       setView("gallery");
@@ -310,8 +310,8 @@ export default function ArticleForm(props: {
         (await updateGalleryExecution(data?.id, oldGalleryImages));
       if (updateGalleryResponse && updateGalleryResponse.status === "failure") {
         await getNextPage({ page });
-        returnFunction?.(true);
-        return closeDialog();
+        closeDialog();
+        return returnFunction?.(true);
       }
 
       const addToGalleryResponse =
@@ -319,17 +319,17 @@ export default function ArticleForm(props: {
         (await addToGalleryExecution(data?.id, newGalleryImages));
       if (addToGalleryResponse && addToGalleryResponse.status === "failure") {
         await getNextPage({ page });
-        returnFunction?.(true);
-        return closeDialog();
+        closeDialog();
+        return returnFunction?.(true);
       }
 
       responseOnSubmitForm({
         message: i18next.t("form.success.gallery.update"),
         severity: `success`,
       });
-      returnFunction?.(true);
       setView("article");
-      return closeDialog();
+      closeDialog();
+      return returnFunction?.(true);
     }
 
     if (draftArticle && frontImage) {

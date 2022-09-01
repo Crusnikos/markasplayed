@@ -1,5 +1,5 @@
 import { makeStyles } from "tss-react/mui";
-import React, { useEffect, useMemo } from "react";
+import React, { Dispatch, SetStateAction, useEffect, useMemo } from "react";
 import { Grid, Typography } from "@mui/material";
 import { Route, Routes, useLocation } from "react-router-dom";
 import { tryParseInt } from "./parsing";
@@ -16,9 +16,12 @@ const useStyles = makeStyles()((theme) => ({
 }));
 
 export default function MainPanel(props: {
-  displaySnackbar: DispatchSnackbar;
+  setSnackbar: DispatchSnackbar;
+  setLoading: Dispatch<SetStateAction<boolean>>;
+  loading: boolean;
 }) {
   const { classes } = useStyles();
+  const { setSnackbar, setLoading, loading } = props;
   const [, getNextPage] = useArticleData();
   const location = useLocation();
   const qs = new URLSearchParams(location.search);
@@ -48,11 +51,20 @@ export default function MainPanel(props: {
           direction="column"
         >
           <Routes>
-            <Route path="/" element={<ArticleDashboard />} />
+            <Route
+              path="/"
+              element={
+                <ArticleDashboard setLoading={setLoading} loading={loading} />
+              }
+            />
             <Route
               path="article/:id"
               element={
-                <ArticleDetails displaySnackbar={props.displaySnackbar} />
+                <ArticleDetails
+                  setSnackbar={setSnackbar}
+                  setLoading={setLoading}
+                  loading={loading}
+                />
               }
             />
             <Route
@@ -62,7 +74,7 @@ export default function MainPanel(props: {
                   <Typography>
                     {i18next.t("routing.error.missingPage")}
                   </Typography>
-                  <ArticleDashboard />
+                  <ArticleDashboard setLoading={setLoading} loading={loading} />
                 </React.Fragment>
               }
             />

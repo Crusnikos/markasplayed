@@ -1,5 +1,5 @@
 import { Box, Grid, IconButton } from "@mui/material";
-import React, { useEffect, useState } from "react";
+import React, { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { makeStyles } from "tss-react/mui";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import PauseIcon from "@mui/icons-material/Pause";
@@ -54,14 +54,19 @@ const useStyles = makeStyles()((theme) => ({
   },
 }));
 
-export function PictureSlider(props: { images: ImageData[] }): JSX.Element {
+export function PictureSlider(props: {
+  images: ImageData[];
+  setLoading: Dispatch<SetStateAction<boolean>>;
+}): JSX.Element {
   const { classes } = useStyles();
   const { images } = props;
+
   const [currentIndex, setCurrentIndex] = useState<number>(0);
   const [pause, setPause] = useState(false);
 
   const navigate = useNavigate();
   const handleRedirect = () => {
+    props.setLoading(true);
     navigate(`article/${images[currentIndex].id}`);
     return;
   };
