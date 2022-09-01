@@ -1,9 +1,15 @@
-import React, { Fragment, useEffect, useState } from "react";
+import React, {
+  Dispatch,
+  Fragment,
+  SetStateAction,
+  useEffect,
+  useState,
+} from "react";
 import { makeStyles } from "tss-react/mui";
 import { ImageData, getSliderImages } from "../article/api/files";
 import { useArticleData } from "../ArticleListProvider";
 import { DispatchSnackbar } from "../components/SnackbarDialog";
-import { DefaultPicture, PictureSlider } from "./PictureSlider";
+import { PictureSlider } from "./PictureSlider";
 import TopMenu from "./TopMenu";
 
 const useStyles = makeStyles()((theme) => ({
@@ -17,7 +23,8 @@ const useStyles = makeStyles()((theme) => ({
 }));
 
 export default function Menu(props: {
-  displaySnackbar: DispatchSnackbar;
+  setSnackbar: DispatchSnackbar;
+  setLoading: Dispatch<SetStateAction<boolean>>;
 }): JSX.Element {
   const { classes } = useStyles();
   const [[, count]] = useArticleData();
@@ -39,14 +46,10 @@ export default function Menu(props: {
   return (
     <Fragment>
       <header className={classes.header}>
-        {sliderImages ? (
-          <PictureSlider images={sliderImages} />
-        ) : (
-          <DefaultPicture />
-        )}
+        <PictureSlider images={sliderImages} setLoading={props.setLoading} />
       </header>
       <nav className={classes.nav}>
-        <TopMenu displaySnackbar={props.displaySnackbar} />
+        <TopMenu setSnackbar={props.setSnackbar} />
       </nav>
     </Fragment>
   );

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { Dispatch, SetStateAction, useEffect, useState } from "react";
 import {
   Box,
   Card,
@@ -85,6 +85,7 @@ const useStyles = makeStyles()((theme) => ({
 
 export default function ArticleDashboardItem(props: {
   data: DashboardArticleData;
+  setLoading: Dispatch<SetStateAction<boolean>>;
 }): JSX.Element {
   const { classes } = useStyles();
   const { data } = props;
@@ -95,7 +96,9 @@ export default function ArticleDashboardItem(props: {
   const navigate = useNavigate();
 
   const handleClick = () => {
+    props.setLoading(true);
     navigate(`article/${data.id}`);
+    window.scrollTo(0, 0);
     return;
   };
 
