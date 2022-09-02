@@ -29,6 +29,7 @@ export default function ArticleDashboard(): JSX.Element {
   const onPageChange = async (page: number) => {
     setLoading(true);
     await getNextPage({ page });
+    window.scrollTo(0, 0);
   };
 
   useEffect(() => {

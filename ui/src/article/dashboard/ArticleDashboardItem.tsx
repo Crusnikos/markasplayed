@@ -96,6 +96,7 @@ export default function ArticleDashboardItem(props: {
 
   const handleClick = () => {
     navigate(`article/${data.id}`);
+    window.scrollTo(0, 0);
     return;
   };
 
