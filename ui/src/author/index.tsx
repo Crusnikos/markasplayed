@@ -1,5 +1,5 @@
 import {
-  Dialog as DialogMUI,
+  Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
@@ -18,6 +18,7 @@ import { AuthorData, getAuthorsListing } from "./api";
 import AuthorItem from "./AuthorItem";
 import Stepper from "../components/Stepper";
 import i18next from "i18next";
+import { stopPropagationForTab } from "../stopPropagationForTab";
 
 const useStyles = makeStyles()((theme) => ({
   closeIcon: {
@@ -92,11 +93,11 @@ export default function AuthorsListing(props: {
     return (
       <React.Fragment>
         {authorsMenuItem}
-        <DialogMUI open={open} onClose={closeDialog} fullWidth>
+        <Dialog open={open} onClose={closeDialog} fullWidth>
           <DialogContent>
             <LoadingIndicator message={i18next.t("loading")} />
           </DialogContent>
-        </DialogMUI>
+        </Dialog>
       </React.Fragment>
     );
   }
@@ -105,11 +106,11 @@ export default function AuthorsListing(props: {
     return (
       <React.Fragment>
         {authorsMenuItem}
-        <DialogMUI open={open} onClose={closeDialog} fullWidth>
+        <Dialog open={open} onClose={closeDialog} fullWidth>
           <DialogContent>
             <ExceptionPage message={i18next.t("author.error.retrieve")} />
           </DialogContent>
-        </DialogMUI>
+        </Dialog>
       </React.Fragment>
     );
   }
@@ -117,7 +118,12 @@ export default function AuthorsListing(props: {
   return (
     <React.Fragment>
       {authorsMenuItem}
-      <DialogMUI open={open} onClose={closeDialog} fullWidth>
+      <Dialog
+        onKeyDown={stopPropagationForTab}
+        open={open}
+        onClose={closeDialog}
+        fullWidth
+      >
         <DialogTitle className={classes.topInfo}>
           <Grid
             container
@@ -157,7 +163,7 @@ export default function AuthorsListing(props: {
             length={authors?.length ?? 0}
           />
         </DialogActions>
-      </DialogMUI>
+      </Dialog>
     </React.Fragment>
   );
 }

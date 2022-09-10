@@ -1,7 +1,7 @@
 import {
   Button,
   Chip,
-  Dialog as DialogMUI,
+  Dialog,
   DialogContent,
   DialogContentText,
   DialogTitle,
@@ -42,6 +42,7 @@ import i18next from "i18next";
 import { AxiosError } from "axios";
 import EditIcon from "@mui/icons-material/Edit";
 import { DispatchSnackbar } from "../components/SnackbarDialog";
+import { stopPropagationForTab } from "../stopPropagationForTab";
 
 const useStyles = makeStyles()((theme) => ({
   closeIcon: {
@@ -399,11 +400,11 @@ export default function ArticleForm(props: {
     return (
       <React.Fragment>
         {data ? editButton : createMenuItem}
-        <DialogMUI open={open} onClose={closeDialog} fullWidth>
+        <Dialog open={open} onClose={closeDialog} fullWidth>
           <DialogContent>
             <LoadingIndicator message={i18next.t("loading")} />
           </DialogContent>
-        </DialogMUI>
+        </Dialog>
       </React.Fragment>
     );
   }
@@ -412,11 +413,11 @@ export default function ArticleForm(props: {
     return (
       <React.Fragment>
         {data ? editButton : createMenuItem}
-        <DialogMUI open={open} onClose={closeDialog} fullWidth>
+        <Dialog open={open} onClose={closeDialog} fullWidth>
           <DialogContent>
             <ExceptionPage message={i18next.t("form.error.lookup.retrieve")} />
           </DialogContent>
-        </DialogMUI>
+        </Dialog>
       </React.Fragment>
     );
   }
@@ -424,7 +425,12 @@ export default function ArticleForm(props: {
   return (
     <React.Fragment>
       {data ? editButton : createMenuItem}
-      <DialogMUI open={open} onClose={closeDialog} fullWidth>
+      <Dialog
+        onKeyDown={stopPropagationForTab}
+        open={open}
+        onClose={closeDialog}
+        fullWidth
+      >
         <DialogTitle className={classes.topInfo}>
           <Grid
             container
@@ -509,7 +515,7 @@ export default function ArticleForm(props: {
             />
           )}
         </DialogContent>
-      </DialogMUI>
+      </Dialog>
     </React.Fragment>
   );
 }

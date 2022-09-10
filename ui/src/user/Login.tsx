@@ -1,7 +1,7 @@
 import React, { Dispatch, SetStateAction, useState } from "react";
 import {
   Button,
-  Dialog as DialogMUI,
+  Dialog,
   DialogContent,
   DialogContentText,
   DialogTitle,
@@ -19,6 +19,7 @@ import { LoginRequest, useFirebaseAuth } from "../firebase";
 import CloseIcon from "@mui/icons-material/Close";
 import LoadingIndicator from "../components/LoadingIndicator";
 import i18next from "i18next";
+import { stopPropagationForTab } from "../stopPropagationForTab";
 
 const useStyles = makeStyles()((theme) => ({
   warning: {
@@ -97,11 +98,11 @@ export default function Login(props: {
     return (
       <React.Fragment>
         {loginMenuItem}
-        <DialogMUI open={open} onClose={closeDialog} fullWidth>
+        <Dialog open={open} onClose={closeDialog} fullWidth>
           <DialogContent>
             <LoadingIndicator message={i18next.t("loading")} />
           </DialogContent>
-        </DialogMUI>
+        </Dialog>
       </React.Fragment>
     );
   }
@@ -109,7 +110,12 @@ export default function Login(props: {
   return (
     <React.Fragment>
       {loginMenuItem}
-      <DialogMUI open={open} onClose={closeDialog} fullWidth>
+      <Dialog
+        onKeyDown={stopPropagationForTab}
+        open={open}
+        onClose={closeDialog}
+        fullWidth
+      >
         <DialogTitle>
           <Grid
             container
@@ -206,7 +212,7 @@ export default function Login(props: {
             </FormControl>
           </form>
         </DialogContent>
-      </DialogMUI>
+      </Dialog>
     </React.Fragment>
   );
 }
