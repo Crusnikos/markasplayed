@@ -8,8 +8,8 @@ public class LookupData
     public int? Id { get; init; }
 
     [Required]
-    public string Name { get; init; } = default!;
+    public string? Name { get; init; } = default!;
 
     [Required]
-    public char GroupName { get; init; } = default!;
+    public char? GroupName { get; init; } = default!;
 }

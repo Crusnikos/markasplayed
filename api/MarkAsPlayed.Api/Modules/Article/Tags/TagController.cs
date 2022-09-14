@@ -7,6 +7,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace MarkAsPlayed.Api.Modules.Article.Tags;
 
+[ApiController]
 [Route("tags")]
 public sealed class TagController : ControllerBase
 {
@@ -20,10 +21,11 @@ public sealed class TagController : ControllerBase
     }
 
     /// <summary>
-    ///     Retrieves tags by id
+    ///     Retrieves tags by article id
     /// </summary>
     [HttpGet("article/{id}")]
-    public async Task<ActionResult> GetTagsByIdAsync(
+    [ProducesResponseType(typeof(IReadOnlyList<TagData>), StatusCodes.Status200OK)]
+    public async Task<ActionResult> GetTagsAsync(
         [Range(1, int.MaxValue)]
         int id)
     {
@@ -37,6 +39,11 @@ public sealed class TagController : ControllerBase
     /// </summary>
     [Authorize]
     [HttpPost]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> CreateTagAsync(
         [FromBody]
         TagRequestData request)
@@ -45,9 +52,12 @@ public sealed class TagController : ControllerBase
 
         return response.Status switch
         {
-            TagStatus.InternalError =>
-                throw new Exception("Failed to create tag", response.ExceptionCaptured),
-            _ => Ok()
+            StatusCodesHelper.NotFound => NotFound(),
+            StatusCodesHelper.InternalError => Problem(
+                statusCode: 500,
+                title: $"Failed to create tag: {response.TagIdentifier} for article: {response.ArticleIdentifier}"
+                ),
+            _ => NoContent()
         };
     }
 
@@ -56,6 +66,11 @@ public sealed class TagController : ControllerBase
     /// </summary>
     [Authorize]
     [HttpPut]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> DeactivateTagAsync(
         [FromBody]
         TagRequestData request)
@@ -64,10 +79,12 @@ public sealed class TagController : ControllerBase
 
         return response.Status switch
         {
-            TagStatus.Forbidden => Forbid("No tags updated"),
-            TagStatus.InternalError =>
-                throw new Exception("Failed to create tag", response.ExceptionCaptured),
-            _ => Ok()
+            StatusCodesHelper.NotFound => NotFound(),
+            StatusCodesHelper.InternalError => Problem(
+                statusCode: 500,
+                title: $"Failed to deactivate tag: {response.TagIdentifier} for article: {response.ArticleIdentifier}"
+                ),
+            _ => NoContent()
         };
     }
 }

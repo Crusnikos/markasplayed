@@ -94,6 +94,7 @@ const useStyles = makeStyles()((theme) => ({
     padding: theme.spacing(2),
     paddingRight: theme.spacing(4),
     background: `linear-gradient(90deg, rgba(1,36,0,0) 20%, ${theme.palette.warning.main} 80%)`,
+    marginTop: "auto",
   },
   eachFooterIcons: {
     backgroundColor: theme.palette.common.white,
@@ -246,47 +247,42 @@ export default function ArticleDashboardItem(props: {
                 </Grid>
               )}
             </Grid>
-            <Grid container direction="column">
-              <Grid item>
-                <Box
-                  component="div"
-                  className={classes.shortDescriptionTextBox}
+            <Grid item>
+              <Box component="div" className={classes.shortDescriptionTextBox}>
+                <Typography
+                  className={classes.shortDescription}
+                  variant="body2"
+                  textAlign="justify"
                 >
-                  <Typography
-                    className={classes.shortDescription}
-                    variant="body2"
-                    textAlign="justify"
-                  >
-                    {data.shortDescription}
-                  </Typography>
-                </Box>
-              </Grid>
-              {data.availableOn.length > 0 && (
-                <Grid
-                  item
-                  container
-                  wrap="nowrap"
-                  justifyContent="flex-end"
-                  alignItems="center"
-                  className={classes.footerIcons}
-                >
-                  {groupedPlatformIcons.map((icon) => (
-                    <Grid
-                      item
-                      className={classes.eachFooterIcons}
-                      key={icon.groupName}
-                    >
-                      <CardMedia
-                        className={classes.gamingPlatformMinis}
-                        component="img"
-                        alt={i18next.t("image.missing")}
-                        image={IconSelector(icon.groupName, "color")}
-                      />
-                    </Grid>
-                  ))}
-                </Grid>
-              )}
+                  {data.shortDescription}
+                </Typography>
+              </Box>
             </Grid>
+            {data.availableOn.length > 0 && (
+              <Grid
+                item
+                container
+                wrap="nowrap"
+                justifyContent="flex-end"
+                alignItems="center"
+                className={classes.footerIcons}
+              >
+                {groupedPlatformIcons.map((icon) => (
+                  <Grid
+                    item
+                    className={classes.eachFooterIcons}
+                    key={icon.groupName}
+                  >
+                    <CardMedia
+                      className={classes.gamingPlatformMinis}
+                      component="img"
+                      alt={i18next.t("image.missing")}
+                      image={IconSelector(icon.groupName, "color")}
+                    />
+                  </Grid>
+                ))}
+              </Grid>
+            )}
           </Grid>
         </Grid>
       </CardActionArea>

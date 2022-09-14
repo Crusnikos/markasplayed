@@ -54,5 +54,5 @@ public class ArticleRequestData
     ///     Article Type
     /// </summary>
     [Required]
-    public int ArticleType { get; init; }
+    public int? ArticleType { get; init; }
 }

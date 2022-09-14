@@ -2,7 +2,8 @@
 
 - [General info](#general-info)
 - [Technologies](#technologies)
-- [Setup](#setupen)
+- [Setup](#setup)
+- [API Tests Setup](#api-tests-setup)
 - [Releases](#releases)
 
 ## General info
@@ -40,6 +41,17 @@ Process launching containers in terminal:
 ```
 
 Application should be available under adress: http://Localhost:3000
+
+## API Tests Setup
+
+Process launching containers in terminal:
+
+```
+1.docker compose build
+2.docker compose up -d
+3.docker compose exec api bash
+4.dotnet test MarkAsPlayed.sln
+```
 
 ## Releases
 

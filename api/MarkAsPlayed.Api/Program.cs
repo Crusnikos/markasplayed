@@ -73,6 +73,8 @@ builder.Services.
             .SetMinimumLevel(LogLevel.Information);
     });
 
+var testMode = Convert.ToBoolean(builder.Configuration["TestingEnvironment"]);
+
 // Setting modules
 
 ArticleConfiguration.ConfigureModule(builder.Services);
@@ -86,19 +88,22 @@ var app = builder.Build();
 
 app.MapHealthChecks("/health");
 
-Console.WriteLine("Starting the application");
-var configuration = app.Services.GetService<IConfiguration>();
-if (configuration is null)
+if(testMode is false)
 {
-    throw new ArgumentNullException("Configuration could not be resolved");
-}
-Console.ForegroundColor = ConsoleColor.Green;
-Console.WriteLine("Configuration resolved correctly");
-Console.ResetColor();
+    Console.WriteLine("Starting the application");
+    var configuration = app.Services.GetService<IConfiguration>();
+    if (configuration is null)
+    {
+        throw new ArgumentNullException("Configuration could not be resolved");
+    }
+    Console.ForegroundColor = ConsoleColor.Green;
+    Console.WriteLine("Configuration resolved correctly");
+    Console.ResetColor();
 
-Console.WriteLine("Start migrations");
-var migrator = new Migrator();
-await migrator.RunAsync(configuration.GetConnectionString("MainDatabase"));
+    Console.WriteLine("Start migrations");
+    var migrator = new Migrator();
+    await migrator.RunAsync(configuration.GetConnectionString("MainDatabase"));
+}
 
 if (app.Environment.IsDevelopment())
 {
@@ -121,3 +126,5 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
+public partial class Program { }
