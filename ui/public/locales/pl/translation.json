@@ -31,9 +31,20 @@
   },
 
   "footer": {
-    "author": "Strona stworzona przez Michał Kubrak ",
-    "git": "Kod żródłowy dostępny na ",
-    "icons": "Ikony pobrane z "
+    "about": {
+      "p1": "Mark As Played jest blogiem poświeconym grom oraz portfoliem. Czytaj recenzje, sprawdzaj newsy, poznaj lepiej autora!",
+      "p2": "Tworzenie bloga o tematyce około gamingowej było moim skromnym marzeniem już od dobrych kilku lat. Ambitnie czekałem do momentu, kiedy moje zdolności programistyczne osiągną wystarczający poziom abym mógł sam wszystko zakodować. Dzień ten w końcu nadszedł, blog ruszył, a moja głowa wypełniona jest tuzinami pomysłów co mogę zrobić lepiej, co dodać nowego.",
+      "p3": "Serwis jest cały czas w trakcie budowy. W przypadku wystąpienia jakichkolwiek problemów serdecznie przepraszam."
+    },
+    "header": {
+      "about": "O MARK AS PLAYED",
+      "social": "SPOŁECZNOŚĆ"
+    },
+    "icons": {
+      "icon": "icons8-attach-gif-96.png",
+      "text": "Ikony pobrane z ",
+      "link": "https://icons8.com/"
+    }
   },
 
   "form": {
