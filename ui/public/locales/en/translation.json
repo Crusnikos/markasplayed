@@ -31,9 +31,20 @@
   },
 
   "footer": {
-    "author": "Site created by Michał Kubrak ",
-    "git": "Source code available on ",
-    "icons": "Icons downloaded from "
+    "about": {
+      "p1": "Mark As Played is personal gaming blog and portfolio. Read reviews, enjoy the news, get to know the author better!",
+      "p2": "Creating a blog about gaming has been my humble dream for several years. I waited ambitiously until my programming skills would reach a sufficient level for me to code everything myself. The day has finally come, the blog has started and my head is filled with dozens of ideas what I can do better, what to add new.",
+      "p3": "The website is still under construction. In case of any problems, I sincerely apologize."
+    },
+    "header": {
+      "about": "ABOUT MARK AS PLAYED",
+      "social": "SOCIAL MEDIA"
+    },
+    "icons": {
+      "icon": "icons8-attach-gif-96.png",
+      "text": "Icons downloaded from ",
+      "link": "https://icons8.com/"
+    }
   },
 
   "form": {

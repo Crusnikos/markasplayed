@@ -1,0 +1,24 @@
+{
+  "data": [
+    {
+      "icon": "icons8-mail-96.png",
+      "link": "mailto:michalkubrak.90@gmail.com"
+    },
+    {
+      "icon": "icons8-discord-96.png",
+      "link": "https://discord.gg/qgyj8ZEYEz"
+    },
+    {
+      "icon": "icons8-instagram-96.png",
+      "link": "https://www.instagram.com/mark_as_played/"
+    },
+    {
+      "icon": "icons8-github-96.png",
+      "link": "https://github.com/Crusnikos/markasplayed"
+    },
+    {
+      "icon": "icons8-youtube-96.png",
+      "link": "https://www.youtube.com/channel/UCQeVCUm1U9uyYRrEaFuRn-A"
+    }
+  ]
+}
