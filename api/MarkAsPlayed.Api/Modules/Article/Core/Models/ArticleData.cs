@@ -1,8 +1,7 @@
 ﻿using MarkAsPlayed.Api.Lookups;
 using System.ComponentModel.DataAnnotations;
-using System.Net;
 
-namespace MarkAsPlayed.Api.Modules.Article.Models;
+namespace MarkAsPlayed.Api.Modules.Article.Core.Models;
 
 /// <summary>
 ///     Complete article data

@@ -1,10 +1,10 @@
-﻿using MarkAsPlayed.Api.Modules.Article.Models;
+﻿using MarkAsPlayed.Api.Modules.Article.Core.Models;
 using MarkAsPlayed.Api.Data;
 using LinqToDB;
 using MarkAsPlayed.Api.Pagination;
 using MarkAsPlayed.Api.Lookups;
 
-namespace MarkAsPlayed.Api.Modules.Article.Queries;
+namespace MarkAsPlayed.Api.Modules.Article.Core.Queries;
 
 public sealed class ArticleQuery
 {

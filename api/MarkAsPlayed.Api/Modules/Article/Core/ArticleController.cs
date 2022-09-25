@@ -2,11 +2,11 @@
 using Microsoft.AspNetCore.Authorization;
 using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
-using MarkAsPlayed.Api.Modules.Article.Queries;
-using MarkAsPlayed.Api.Modules.Article.Models;
-using MarkAsPlayed.Api.Modules.Article.Commands;
+using MarkAsPlayed.Api.Modules.Article.Core.Queries;
+using MarkAsPlayed.Api.Modules.Article.Core.Models;
+using MarkAsPlayed.Api.Modules.Article.Core.Commands;
 
-namespace MarkAsPlayed.Api.Modules.Article;
+namespace MarkAsPlayed.Api.Modules.Article.Core;
 
 [Route("article")]
 public sealed class ArticleController : ControllerBase
@@ -46,7 +46,7 @@ public sealed class ArticleController : ControllerBase
     {
         var article = await _articleQuery.GetSingleArticleAsync(id, HttpContext.RequestAborted);
 
-        if(article is null)
+        if (article is null)
         {
             return NotFound();
         }
@@ -63,7 +63,7 @@ public sealed class ArticleController : ControllerBase
         ArticleRequestData request)
     {
         var userId = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier) ?? null;
-        if(userId is null)
+        if (userId is null)
         {
             return NotFound(userId);
         }
@@ -73,7 +73,7 @@ public sealed class ArticleController : ControllerBase
         return response.Status switch
         {
             ArticleStatus.NotFound => NotFound("Author not found"),
-            ArticleStatus.InternalError => 
+            ArticleStatus.InternalError =>
                 throw new Exception("Failed to create article", response.ExceptionCaptured),
             _ => Ok(response.Identifier)
         };
@@ -94,7 +94,7 @@ public sealed class ArticleController : ControllerBase
         return response.Status switch
         {
             ArticleStatus.Forbidden => Forbid("No articles updated"),
-            ArticleStatus.InternalError => 
+            ArticleStatus.InternalError =>
                 throw new Exception($"Failed to update {response.Identifier} article", response.ExceptionCaptured),
             _ => NoContent()
         };

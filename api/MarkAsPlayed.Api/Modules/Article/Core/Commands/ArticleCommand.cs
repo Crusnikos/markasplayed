@@ -1,9 +1,9 @@
 ﻿using LinqToDB;
 using MarkAsPlayed.Api.Data;
 using MarkAsPlayed.Api.Data.Models;
-using MarkAsPlayed.Api.Modules.Article.Models;
+using MarkAsPlayed.Api.Modules.Article.Core.Models;
 
-namespace MarkAsPlayed.Api.Modules.Article.Commands;
+namespace MarkAsPlayed.Api.Modules.Article.Core.Commands;
 
 public sealed class ArticleCommand
 {

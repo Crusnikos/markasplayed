@@ -1,4 +1,4 @@
-﻿namespace MarkAsPlayed.Api.Modules.Article.Models;
+﻿namespace MarkAsPlayed.Api.Modules.Article.Core.Models;
 
 public class ArticleCreationResponse
 {

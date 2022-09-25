@@ -1,4 +1,4 @@
-﻿namespace MarkAsPlayed.Api.Modules.Article;
+﻿namespace MarkAsPlayed.Api.Modules.Article.Core;
 
 public enum ArticleStatus
 {
