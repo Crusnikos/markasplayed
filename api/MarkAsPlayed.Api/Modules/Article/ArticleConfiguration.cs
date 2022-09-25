@@ -1,5 +1,7 @@
-﻿using MarkAsPlayed.Api.Modules.Article.Queries;
-using MarkAsPlayed.Api.Modules.Article.Commands;
+﻿using MarkAsPlayed.Api.Modules.Article.Core.Queries;
+using MarkAsPlayed.Api.Modules.Article.Core.Commands;
+using MarkAsPlayed.Api.Modules.Article.Tags.Queries;
+using MarkAsPlayed.Api.Modules.Article.Tags.Commands;
 
 namespace MarkAsPlayed.Api.Modules.Article;
 
@@ -9,5 +11,7 @@ public static class ArticleConfiguration
     {
         services.AddScoped<ArticleQuery>();
         services.AddScoped<ArticleCommand>();
+        services.AddScoped<TagQuery>();
+        services.AddScoped<TagCommand>();
     }
 }

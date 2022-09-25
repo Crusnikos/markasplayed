@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace MarkAsPlayed.Api.Modules.Article.Models;
+namespace MarkAsPlayed.Api.Modules.Article.Core.Models;
 
 /// <summary>
 ///     Article creation request

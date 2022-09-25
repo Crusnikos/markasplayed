@@ -25,6 +25,15 @@
       "hours": "hours",
       "playedOn": "Played on"
     },
+    "tag": {
+      "choose": "Choose tags",
+      "confirm": "confirm",
+      "edit": "edit",
+      "finish": "finish",
+      "noResults": "No results to display",
+      "placeholder": "Type to search...",
+      "search": "Search"
+    },
     "title": {
       "gallery": "Gallery"
     }
@@ -152,6 +161,55 @@
     "article": "Saving and editing form available only to administration users",
     "login": "Login available only to administration users",
     "mainPicture": "Only webp format is accepted and 1280x720 resolution is recommended"
+  },
+
+  "tags": {
+    "e": {
+      "boardGame": "board game",
+      "event": "event",
+      "game": "game",
+      "movie": "movie",
+      "series": "series"
+    },
+    "g": {
+      "anime": "anime",
+      "comedy": "comedy",
+      "fantasy": "fantasy",
+      "horror": "horror",
+      "scienceFiction": "science fiction",
+      "thriller": "thriller"
+    },
+    "m": {
+      "singlePlayer": "single player",
+      "multiPlayer": "multi player",
+      "cooperative": "cooperative",
+      "competitive": "competitive",
+      "mmo": "mmo"
+    },
+    "p": {
+      "badLanguage": "bad language",
+      "discrimination": "discrimination",
+      "drugs": "drugs",
+      "fear": "fear",
+      "gambling": "gambling",
+      "inGamePurchases": "in-game purchases",
+      "pegi3": "pegi 3",
+      "pegi7": "pegi 7",
+      "pegi12": "pegi 12",
+      "pegi16": "pegi 16",
+      "pegi18": "pegi 18",
+      "sex": "sex",
+      "violence": "violence"
+    },
+    "t": {
+      "action": "action",
+      "adventure": "adventure",
+      "puzzle": "puzzle",
+      "rolePlaying": "role-playing",
+      "simulation": "simulation",
+      "strategy": "strategy",
+      "sports": "sports"
+    }
   },
 
   "title": {

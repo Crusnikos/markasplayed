@@ -15,11 +15,13 @@ import LoadingIndicator from "../components/LoadingIndicator";
 import ExceptionPage from "../components/ExceptionPage";
 import ArticleDetailsReviewPanel from "./details/ArticleDetailsReviewPanel";
 import ArticleDetailsGallery from "./details/ArticleDetailsGallery";
+import ArticleDetailsTagPanel from "./details/ArticleDetailsTagPanel";
 import { ImageData, getFrontImage, getGallery } from "./api/files";
 import { FullArticleData, getArticle } from "./api/article";
 import i18next from "i18next";
 import ArticleForm from "./ArticleForm";
 import { DispatchSnackbar } from "../components/SnackbarDialog";
+import { getArticleTags, LookupTagData } from "./api/tag";
 
 const useStyles = makeStyles()((theme) => ({
   paper: {
@@ -63,6 +65,7 @@ export default function ArticleDetails(props: {
     undefined
   );
   const [gallery, setGallery] = useState<ImageData[] | undefined>(undefined);
+  const [tags, setTags] = useState<LookupTagData[] | undefined>(undefined);
 
   const params = useParams();
   const parsedId = tryParseInt(params.id);
@@ -117,9 +120,18 @@ export default function ArticleDetails(props: {
       }
     }
 
+    async function fetchTags() {
+      if (parsedId !== null && article !== undefined) {
+        const tags = await getArticleTags({ id: parsedId });
+        setTags(tags);
+      }
+    }
+
     void fetchFrontImage();
 
     void fetchGallery();
+
+    void fetchTags();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [article]);
 
@@ -155,13 +167,16 @@ export default function ArticleDetails(props: {
               {article.createdBy.name}
             </Typography>
           </Grid>
-          {frontImage ? (
-            <Box
-              component="img"
-              className={classes.image}
-              src={`${frontImage?.imagePathName}?${Date.now()}`}
-              alt={i18next.t("image.missing")}
-            />
+          {frontImage && tags ? (
+            <React.Fragment>
+              <Box
+                component="img"
+                className={classes.image}
+                src={`${frontImage?.imagePathName}?${Date.now()}`}
+                alt={i18next.t("image.missing")}
+              />
+              <ArticleDetailsTagPanel tags={tags} setTags={setTags} />
+            </React.Fragment>
           ) : (
             <CircularProgress />
           )}

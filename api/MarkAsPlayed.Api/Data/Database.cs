@@ -20,4 +20,6 @@ public sealed class Database : DataConnection
     public ITable<ArticleType> ArticleTypes => this.GetTable<ArticleType>();
     public ITable<ArticleImage> ArticleImages => this.GetTable<ArticleImage>();
     public ITable<Author> Authors => this.GetTable<Author>();
+    public ITable<Tag> Tags => this.GetTable<Tag>();
+    public ITable<ArticleTag> ArticleTags => this.GetTable<ArticleTag>();
 }

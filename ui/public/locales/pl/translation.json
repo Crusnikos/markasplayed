@@ -25,6 +25,15 @@
       "hours": "godzin",
       "playedOn": "Grane na"
     },
+    "tag": {
+      "choose": "Wybierz tagi",
+      "confirm": "potwierdź",
+      "edit": "edytuj",
+      "finish": "zakończ",
+      "noResults": "Brak wyników do wyświetlenia",
+      "placeholder": "Wpisz...",
+      "search": "Wyszukaj"
+    },
     "title": {
       "gallery": "Galeria"
     }
@@ -152,6 +161,55 @@
     "article": "Zapisywanie oraz edytowanie formularza dostępne tylko dla zalogowanych",
     "login": "Logowanie dostępne tylko dla użytkowników administracji",
     "mainPicture": "Akceptowany wyłącznie format webp i zalecana rozdzielczość 1280x720"
+  },
+
+  "tags": {
+    "e": {
+      "boardGame": "gra planszowa",
+      "event": "wydarzenie",
+      "game": "gra",
+      "movie": "film",
+      "series": "serial"
+    },
+    "g": {
+      "anime": "anime",
+      "comedy": "komedia",
+      "fantasy": "fantazy",
+      "horror": "horror",
+      "scienceFiction": "science fiction",
+      "thriller": "dreszczowiec"
+    },
+    "m": {
+      "singlePlayer": "jeden gracz",
+      "multiPlayer": "wielu graczy",
+      "cooperative": "kooperacyjna",
+      "competitive": "współzawodnictwo",
+      "mmo": "mmo"
+    },
+    "p": {
+      "badLanguage": "przekleństwa",
+      "discrimination": "dyskryminacja",
+      "drugs": "narkotyki",
+      "fear": "straszy",
+      "gambling": "hazard",
+      "inGamePurchases": "zakupy w grze",
+      "pegi3": "pegi 3",
+      "pegi7": "pegi 7",
+      "pegi12": "pegi 12",
+      "pegi16": "pegi 16",
+      "pegi18": "pegi 18",
+      "sex": "sex",
+      "violence": "przemoc"
+    },
+    "t": {
+      "action": "akcja",
+      "adventure": "przygoda",
+      "puzzle": "puzzle",
+      "rolePlaying": "role-playing",
+      "simulation": "symulacja",
+      "strategy": "strategia",
+      "sports": "sport"
+    }
   },
 
   "title": {
