@@ -23,9 +23,9 @@ export default function ArticlePagination(props: {
       qs.delete("page");
     }
 
-    navigate({ search: qs.toString() });
+    navigate({ search: qs.toString() }, { replace: true });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, qs]);
+  }, [page]);
 
   return (
     <Pagination
