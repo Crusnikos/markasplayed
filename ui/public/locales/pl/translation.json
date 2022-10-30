@@ -29,6 +29,7 @@
       "choose": "Wybierz tagi",
       "confirm": "potwierdź",
       "edit": "edytuj",
+      "error": "Wystąpił problem z edycją tagów",
       "finish": "zakończ",
       "noResults": "Brak wyników do wyświetlenia",
       "placeholder": "Wpisz...",
@@ -174,7 +175,7 @@
     "g": {
       "anime": "anime",
       "comedy": "komedia",
-      "fantasy": "fantazy",
+      "fantasy": "fantasy",
       "horror": "horror",
       "scienceFiction": "science fiction",
       "thriller": "dreszczowiec"

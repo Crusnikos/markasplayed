@@ -29,6 +29,7 @@
       "choose": "Choose tags",
       "confirm": "confirm",
       "edit": "edit",
+      "error": "Failed to edit tags data",
       "finish": "finish",
       "noResults": "No results to display",
       "placeholder": "Type to search...",

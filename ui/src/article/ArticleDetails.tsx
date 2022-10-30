@@ -175,7 +175,11 @@ export default function ArticleDetails(props: {
                 src={`${frontImage?.imagePathName}?${Date.now()}`}
                 alt={i18next.t("image.missing")}
               />
-              <ArticleDetailsTagPanel tags={tags} setTags={setTags} />
+              <ArticleDetailsTagPanel
+                tags={tags}
+                setTags={setTags}
+                setSnackbar={setSnackbar}
+              />
             </React.Fragment>
           ) : (
             <CircularProgress />

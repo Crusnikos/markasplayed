@@ -23,9 +23,17 @@ import { useFirebaseAuth } from "../../firebase";
 import { useParams } from "react-router-dom";
 import { tryParseInt } from "../../parsing";
 import SearchIcon from "@mui/icons-material/Search";
+import { DispatchSnackbar } from "../../components/SnackbarDialog";
 
 const useStyles = makeStyles()((theme) => ({
-  chip: { padding: theme.spacing(1) },
+  functionChip: { padding: theme.spacing(1) },
+  tagChip: {
+    padding: theme.spacing(1),
+    color: theme.palette.common.white,
+    "& .MuiChip-deleteIcon": {
+      color: "white",
+    },
+  },
   skeleton: {
     height: theme.spacing(6),
   },
@@ -35,61 +43,38 @@ function ColorPicker(groupName: string): SxProps<Theme> | undefined {
   switch (groupName) {
     case "E":
       return {
-        backgroundColor: "#f54275",
-        color: "white",
-        "& .MuiChip-deleteIcon": {
-          color: "white",
-        },
+        backgroundColor: "#5fb02c",
       };
     case "G":
       return {
         backgroundColor: "#ad42f5",
-        color: "white",
-        "& .MuiChip-deleteIcon": {
-          color: "white",
-        },
       };
     case "M":
       return {
         backgroundColor: "#429ef5",
-        color: "white",
-        "& .MuiChip-deleteIcon": {
-          color: "white",
-        },
       };
     case "P":
       return {
-        backgroundColor: "#5fb02c",
-        color: "white",
-        "& .MuiChip-deleteIcon": {
-          color: "white",
-        },
+        backgroundColor: "#f54275",
       };
     case "T":
       return {
         backgroundColor: "#f56c42",
-        color: "white",
-        "& .MuiChip-deleteIcon": {
-          color: "white",
-        },
       };
     default:
       return {
         backgroundColor: "#f5429c",
-        color: "white",
-        "& .MuiChip-deleteIcon": {
-          color: "white",
-        },
       };
   }
 }
 
 export default function ArticleDetailsTagPanel(props: {
+  setSnackbar: DispatchSnackbar;
   tags: LookupTagData[];
   setTags: Dispatch<SetStateAction<LookupTagData[] | undefined>>;
 }): JSX.Element {
   const { classes } = useStyles();
-  const { tags, setTags } = props;
+  const { tags, setTags, setSnackbar } = props;
 
   const [edit, setEdit] = useState<boolean>(false);
 
@@ -131,9 +116,16 @@ export default function ArticleDetailsTagPanel(props: {
       throw new Error();
     }
 
-    await deactivateTag({ ArticleId: parsedId, TagId: tagId }, token);
-    const updatedtags = await getArticleTags({ id: parsedId });
-    setTags(updatedtags);
+    try {
+      await deactivateTag({ ArticleId: parsedId, TagId: tagId }, token);
+      const updatedtags = await getArticleTags({ id: parsedId });
+      setTags(updatedtags);
+    } catch {
+      setSnackbar({
+        message: i18next.t("details.tag.error"),
+        severity: `error`,
+      });
+    }
   };
 
   const handleSearch = (value: string) => {
@@ -182,11 +174,18 @@ export default function ArticleDetailsTagPanel(props: {
       await createTag({ ArticleId: parsedId, TagId: tag.id }, token);
     });
 
-    return Promise.all(request).then(async () => {
-      setSelectedTags([]);
-      const updatedtags = await getArticleTags({ id: parsedId });
-      setTags(updatedtags);
-    });
+    return Promise.all(request)
+      .then(async () => {
+        setSelectedTags([]);
+        const updatedtags = await getArticleTags({ id: parsedId });
+        setTags(updatedtags);
+      })
+      .catch(() =>
+        setSnackbar({
+          message: i18next.t("details.tag.error"),
+          severity: `error`,
+        })
+      );
   };
 
   if (loadingTags) {
@@ -211,7 +210,7 @@ export default function ArticleDetailsTagPanel(props: {
             <Grid item key={item.id}>
               {edit ? (
                 <Chip
-                  className={classes.chip}
+                  className={classes.tagChip}
                   sx={ColorPicker(item.groupName)}
                   size="medium"
                   label={i18next
@@ -225,7 +224,7 @@ export default function ArticleDetailsTagPanel(props: {
                 />
               ) : (
                 <Chip
-                  className={classes.chip}
+                  className={classes.tagChip}
                   sx={ColorPicker(item.groupName)}
                   size="medium"
                   label={i18next
@@ -238,7 +237,7 @@ export default function ArticleDetailsTagPanel(props: {
         {!edit && (
           <Grid item>
             <Chip
-              className={classes.chip}
+              className={classes.functionChip}
               size="medium"
               label={i18next.t("details.tag.edit").toLocaleUpperCase()}
               variant="outlined"
@@ -328,7 +327,7 @@ export default function ArticleDetailsTagPanel(props: {
           <Grid container item spacing={1} sm>
             <Grid item>
               <Chip
-                className={classes.chip}
+                className={classes.functionChip}
                 size="medium"
                 label={i18next.t("details.tag.confirm").toLocaleUpperCase()}
                 variant="outlined"
@@ -342,7 +341,7 @@ export default function ArticleDetailsTagPanel(props: {
             </Grid>
             <Grid item>
               <Chip
-                className={classes.chip}
+                className={classes.functionChip}
                 size="medium"
                 label={i18next.t("details.tag.finish").toLocaleUpperCase()}
                 variant="outlined"
