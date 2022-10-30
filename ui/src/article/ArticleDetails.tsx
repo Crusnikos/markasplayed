@@ -72,21 +72,35 @@ export default function ArticleDetails(props: {
 
   const showLoadingSpinner = loading || requireFetch;
 
+  async function fetchArticleData() {
+    if (parsedId === null) {
+      return;
+    }
+    try {
+      const fetchedResult = await getArticle({ id: parsedId });
+      setArticle(fetchedResult);
+    } catch {
+      setArticle(undefined);
+    }
+    setLoading(false);
+    setRequireFetch(false);
+  }
+
   useEffect(() => {
-    async function fetchArticleData() {
-      if (parsedId === null) {
-        return;
-      }
-      try {
-        const fetchedResult = await getArticle({ id: parsedId });
-        setArticle(fetchedResult);
-      } catch {
-        setArticle(undefined);
-      }
-      setLoading(false);
-      setRequireFetch(false);
+    if (loading || requireFetch) {
+      return;
     }
 
+    if (frontImage || gallery) {
+      setFrontImage(undefined);
+      setGallery(undefined);
+    }
+
+    void fetchArticleData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [parsedId]);
+
+  useEffect(() => {
     if (!loading && !requireFetch) {
       return;
     }
