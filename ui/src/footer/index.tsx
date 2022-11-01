@@ -36,7 +36,9 @@ export default function Footer(): JSX.Element {
 
   useEffect(() => {
     async function fetchLocalSocialLinks() {
-      await fetch("data/socialLinks.json")
+      await fetch(
+        `${window.location.protocol}//${window.location.host}/data/socialLinks.json`
+      )
         .then((res) => res.json())
         .then((result) => {
           setData(result.data);
