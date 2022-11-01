@@ -38,7 +38,7 @@ export function FooterItem(props: { icon: string; link: string }): JSX.Element {
       <Box
         component="img"
         className={classes.socialIcon}
-        src={icon}
+        src={`${window.location.protocol}//${window.location.host}/${icon}`}
         alt={i18next.t("image.missing")}
       />
     </a>
@@ -58,7 +58,7 @@ export function FooterItemWithText(props: {
       <Box
         component="img"
         className={classes.icon}
-        src={icon}
+        src={`${window.location.protocol}//${window.location.host}/${icon}`}
         alt={i18next.t("image.missing")}
       />
       <Typography className={classes.text} overflow="hidden">
