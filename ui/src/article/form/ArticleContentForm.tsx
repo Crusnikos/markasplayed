@@ -300,8 +300,8 @@ export default function ArticleContentForm(props: {
                 message: i18next.t("form.rules.required"),
               },
               maxLength: {
-                value: 5000,
-                message: i18next.t("form.rules.max5000Length"),
+                value: 10000,
+                message: i18next.t("form.rules.max10000Length"),
               },
             }}
             name="longDescription"

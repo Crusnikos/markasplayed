@@ -103,7 +103,7 @@
       "max50Length": "Maximum length is 50 characters",
       "max400Length": "Maximum length is 400 characters",
       "max1000Value": "Maximum is 1000 hours",
-      "max5000Length": "Maximum length is 5000 characters",
+      "max10000Length": "Maximum length is 10000 characters",
       "min1Value": "Minimum is 1 hour",
       "min6Length": "Minimum length is 6 characters",
       "required": "Required field"

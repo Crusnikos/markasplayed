@@ -103,7 +103,7 @@
       "max50Length": "Maksymalna długość wynosi 50 znaków",
       "max400Length": "Maksymalna długość wynosi 400 znaków",
       "max1000Value": "Maksymalny czas to 1000 godzin",
-      "max5000Length": "Maksymalna długość wynosi 5000 znaków",
+      "max10000Length": "Maksymalna długość wynosi 10000 znaków",
       "min1Value": "Minimalny czas to 1 godzina",
       "min6Length": "Minimalna długość wynosi 6 znaków",
       "required": "Pole jest wymagane"
