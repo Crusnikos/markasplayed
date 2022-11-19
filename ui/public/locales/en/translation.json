@@ -11,7 +11,12 @@
       "retrieve": "Failed to retrieve articles data, please reload page"
     },
     "item": {
-      "availableOn": "available on:"
+      "availableOn": "available on:",
+      "type": {
+        "news": "news",
+        "other": "other",
+        "review": "review"
+      }
     }
   },
 
