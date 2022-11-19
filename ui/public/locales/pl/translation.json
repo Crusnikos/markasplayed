@@ -11,7 +11,12 @@
       "retrieve": "Wystąpił problem z pobraniem artykułów, proszę odśwież stronę"
     },
     "item": {
-      "availableOn": "dostępne na:"
+      "availableOn": "dostępne na:",
+      "type": {
+        "news": "nowość",
+        "other": "inne",
+        "review": "recenzja"
+      }
     }
   },
 

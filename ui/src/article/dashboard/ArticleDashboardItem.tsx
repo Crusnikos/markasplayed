@@ -24,16 +24,26 @@ const useStyles = makeStyles()((theme) => ({
   },
   imageSection: {
     display: "grid",
+    gridTemplateColumns: "repeat(4, 25% [col-start])",
+    gridTemplateRows: "repeat(4, 25% [row-start])",
   },
   imageSectionTypeItem: {
+    backgroundColor: theme.palette.warning.main,
+    borderRadius: theme.spacing(1),
+    boxShadow: "2px 4px 6px 4px rgba(63, 63, 68, 1)",
     margin: theme.spacing(1.5),
+    minWidth: "100px",
+    height: "50px",
     gridRowStart: 1,
     gridColumnStart: 1,
     zIndex: 2,
+    opacity: 0.8,
   },
   imageSectionImageItem: {
     gridRowStart: 1,
+    gridRowEnd: 5,
     gridColumnStart: 1,
+    gridColumnEnd: 5,
     zIndex: 1,
   },
   shortDescription: {
@@ -70,11 +80,10 @@ const useStyles = makeStyles()((theme) => ({
     padding: theme.spacing(2),
   },
   articleType: {
-    background: `linear-gradient(90deg, ${theme.palette.warning.dark} 50%, rgba(1,36,0,0) 100%)`,
     color: theme.palette.common.white,
+    fontWeight: "bolder",
+    textShadow: "4px 4px 8px #000000",
     padding: theme.spacing(1),
-    width: "130px",
-    borderRadius: theme.spacing(1),
   },
   shortDescriptionTextBox: {
     overflow: "hidden",
@@ -130,8 +139,14 @@ export default function ArticleDashboardItem(props: {
               className={classes.imageSection}
             >
               <Grid item className={classes.imageSectionTypeItem}>
-                <Typography variant="body1" className={classes.articleType}>
-                  {data.articleType.name}
+                <Typography
+                  variant="body1"
+                  className={classes.articleType}
+                  textAlign="center"
+                >
+                  {i18next
+                    .t(`dashboard.item.type.${data.articleType.name}`)
+                    .toLocaleUpperCase()}
                 </Typography>
               </Grid>
               <Grid item className={classes.imageSectionImageItem}>
@@ -194,6 +209,7 @@ export default function ArticleDashboardItem(props: {
                 <Typography
                   className={classes.shortDescription}
                   variant="body2"
+                  textAlign="justify"
                 >
                   {data.shortDescription}
                 </Typography>

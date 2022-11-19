@@ -43,11 +43,16 @@ const useStyles = makeStyles()((theme) => ({
   },
   content: {
     whiteSpace: "pre-line",
+    paddingBottom: theme.spacing(2),
   },
   textBox: {
     overflow: "hidden",
     textOverflow: "ellipsis",
     width: "100%",
+  },
+  title: {
+    textAlign: "center",
+    fontWeight: "bold",
   },
 }));
 
@@ -61,6 +66,9 @@ export default function ArticleDetails(props: {
 
   const [requireFetch, setRequireFetch] = useState<boolean>(false);
   const [article, setArticle] = useState<FullArticleData | undefined>();
+  const [dividedArticleText, setDividedArticleText] = useState<
+    string[] | undefined
+  >();
   const [frontImage, setFrontImage] = useState<ImageData | undefined>(
     undefined
   );
@@ -79,6 +87,9 @@ export default function ArticleDetails(props: {
     try {
       const fetchedResult = await getArticle({ id: parsedId });
       setArticle(fetchedResult);
+      setDividedArticleText(
+        fetchedResult.longDescription.split("\n").filter((t) => t)
+      );
     } catch {
       setArticle(undefined);
     }
@@ -163,18 +174,25 @@ export default function ArticleDetails(props: {
     <Container disableGutters={true}>
       <Paper elevation={6} className={classes.paper}>
         <Stack spacing={2} alignItems="center">
-          <Typography variant="h4">
-            {article.title}
-            <ArticleForm
-              data={article}
-              images={{ main: frontImage, gallery: gallery }}
-              returnFunction={setRequireFetch}
-              responseOnSubmitForm={setSnackbar}
-            />
+          <Grid
+            container
+            direction="row"
+            justifyContent="center"
+            alignItems="stretch"
+          >
+            <Typography variant="h4" className={classes.title}>
+              {article.title.toLocaleUpperCase()}
+              <ArticleForm
+                data={article}
+                images={{ main: frontImage, gallery: gallery }}
+                returnFunction={setRequireFetch}
+                responseOnSubmitForm={setSnackbar}
+              />
+            </Typography>
+          </Grid>
+          <Typography variant="h6" textAlign="justify">
+            {article.shortDescription}
           </Typography>
-          <Box component="div" className={classes.textBox}>
-            <Typography variant="h6">{article.shortDescription}</Typography>
-          </Box>
           <Grid container item alignItems="flex-start">
             <Typography variant="body2">
               {new Date(article.createdAt).toLocaleDateString()} |{" "}
@@ -199,9 +217,17 @@ export default function ArticleDetails(props: {
             <CircularProgress />
           )}
           <Box component="div" className={classes.textBox}>
-            <Typography variant="body1" className={classes.content} noWrap>
-              {article.longDescription}
-            </Typography>
+            {dividedArticleText?.map((paragraph, index) => (
+              <Typography
+                key={index}
+                variant="body1"
+                className={classes.content}
+                textAlign="justify"
+                noWrap
+              >
+                {paragraph}
+              </Typography>
+            ))}
           </Box>
           {article.articleType.name === "review" && (
             <ArticleDetailsReviewPanel
