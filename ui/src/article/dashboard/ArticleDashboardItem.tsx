@@ -24,16 +24,16 @@ const useStyles = makeStyles()((theme) => ({
   },
   imageSection: {
     display: "grid",
-    gridTemplateColumns: "repeat(4, 25% [col-start])",
-    gridTemplateRows: "repeat(4, 25% [row-start])",
+    gridTemplateColumns: "repeat(5, 20% [col-start])",
+    gridTemplateRows: "repeat(5, 20% [row-start])",
   },
   imageSectionTypeItem: {
     backgroundColor: theme.palette.warning.main,
     borderRadius: theme.spacing(1),
-    boxShadow: "2px 4px 6px 4px rgba(63, 63, 68, 1)",
-    margin: theme.spacing(1.5),
+    boxShadow: "6px 6px 5px #222",
+    margin: theme.spacing(1),
     minWidth: "100px",
-    height: "50px",
+    maxHeight: "40px",
     gridRowStart: 1,
     gridColumnStart: 1,
     zIndex: 2,
@@ -41,9 +41,9 @@ const useStyles = makeStyles()((theme) => ({
   },
   imageSectionImageItem: {
     gridRowStart: 1,
-    gridRowEnd: 5,
+    gridRowEnd: 6,
     gridColumnStart: 1,
-    gridColumnEnd: 5,
+    gridColumnEnd: 6,
     zIndex: 1,
   },
   shortDescription: {
@@ -73,6 +73,9 @@ const useStyles = makeStyles()((theme) => ({
     height: theme.spacing(4),
     width: theme.spacing(4),
   },
+  playedOnIcon: {
+    filter: "drop-shadow(6px 6px 5px #222)",
+  },
   announcementIcon: {
     fontSize: 64,
   },
@@ -83,7 +86,7 @@ const useStyles = makeStyles()((theme) => ({
     color: theme.palette.common.white,
     fontWeight: "bolder",
     textShadow: "4px 4px 8px #000000",
-    padding: theme.spacing(1),
+    padding: theme.spacing(0.5),
   },
   shortDescriptionTextBox: {
     overflow: "hidden",
@@ -140,7 +143,7 @@ export default function ArticleDashboardItem(props: {
             >
               <Grid item className={classes.imageSectionTypeItem}>
                 <Typography
-                  variant="body1"
+                  variant="body2"
                   className={classes.articleType}
                   textAlign="center"
                 >
@@ -182,6 +185,7 @@ export default function ArticleDashboardItem(props: {
                       image={platform}
                       alt={i18next.t("image.missing")}
                       height="64"
+                      className={classes.playedOnIcon}
                     />
                   ) : (
                     <AnnouncementIcon className={classes.announcementIcon} />
