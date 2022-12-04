@@ -16,6 +16,7 @@ import { DashboardArticleData } from "../api/article";
 import { getFrontImage, ImageData } from "../api/files";
 import IconSelector from "../IconSelector";
 import i18next from "i18next";
+import CustomDecoratedTag from "../../components/customDecoratedTag";
 
 const useStyles = makeStyles()((theme) => ({
   articleItem: {
@@ -26,18 +27,6 @@ const useStyles = makeStyles()((theme) => ({
     display: "grid",
     gridTemplateColumns: "repeat(5, 20% [col-start])",
     gridTemplateRows: "repeat(5, 20% [row-start])",
-  },
-  imageSectionTypeItem: {
-    backgroundColor: theme.palette.warning.main,
-    borderRadius: theme.spacing(1),
-    boxShadow: "6px 6px 5px #222",
-    margin: theme.spacing(1),
-    minWidth: "100px",
-    maxHeight: "40px",
-    gridRowStart: 1,
-    gridColumnStart: 1,
-    zIndex: 2,
-    opacity: 0.8,
   },
   imageSectionImageItem: {
     gridRowStart: 1,
@@ -73,21 +62,11 @@ const useStyles = makeStyles()((theme) => ({
     height: theme.spacing(4),
     width: theme.spacing(4),
   },
-  playedOnIcon: {
-    filter: "drop-shadow(6px 6px 5px #222)",
-  },
   announcementIcon: {
     fontSize: 64,
-    filter: "drop-shadow(6px 6px 5px #222)",
   },
   footerIcons: {
     padding: theme.spacing(2),
-  },
-  articleType: {
-    color: theme.palette.common.white,
-    fontWeight: "bolder",
-    textShadow: "4px 4px 8px #000000",
-    padding: theme.spacing(0.5),
   },
   shortDescriptionTextBox: {
     overflow: "hidden",
@@ -142,17 +121,11 @@ export default function ArticleDashboardItem(props: {
               sm={12}
               className={classes.imageSection}
             >
-              <Grid item className={classes.imageSectionTypeItem}>
-                <Typography
-                  variant="body2"
-                  className={classes.articleType}
-                  textAlign="center"
-                >
-                  {i18next
-                    .t(`dashboard.item.type.${data.articleType.name}`)
-                    .toLocaleUpperCase()}
-                </Typography>
-              </Grid>
+              <CustomDecoratedTag
+                text={i18next
+                  .t(`dashboard.item.type.${data.articleType.name}`)
+                  .toLocaleUpperCase()}
+              />
               <Grid item className={classes.imageSectionImageItem}>
                 <CardMedia
                   className={classes.image}
@@ -186,7 +159,6 @@ export default function ArticleDashboardItem(props: {
                       image={platform}
                       alt={i18next.t("image.missing")}
                       height="64"
-                      className={classes.playedOnIcon}
                     />
                   ) : (
                     <AnnouncementIcon className={classes.announcementIcon} />

@@ -1,19 +1,26 @@
-import { Box, Grid, IconButton } from "@mui/material";
+import { Box, Grid, IconButton, Step, Stepper } from "@mui/material";
 import React, { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { makeStyles } from "tss-react/mui";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import PauseIcon from "@mui/icons-material/Pause";
 import { useNavigate } from "react-router-dom";
-import { ImageData } from "../article/api/files";
+import { SliderData } from "../article/api/files";
 import i18next from "i18next";
+import CustomDecoratedTag from "../components/customDecoratedTag";
 
 const useStyles = makeStyles()((theme) => ({
+  mobileComponentHeight: {
+    minHeight: "200px",
+    height: "28vh",
+  },
+  desktopComponentHeight: {
+    minHeight: "200px",
+    height: "38vh",
+  },
   image: {
     width: "100%",
-    height: "35vh",
-    display: "inline-block",
     objectFit: "cover",
-    transition: "1s",
+    transition: "2s",
     objectPosition: "50% 50%",
     cursor: "pointer",
   },
@@ -32,48 +39,67 @@ const useStyles = makeStyles()((theme) => ({
   },
   overlayImage: {
     maxWidth: "100%",
-    maxHeight: "35vh",
   },
   playPauseButton: {
     backgroundColor: theme.palette.common.white,
-    height: theme.spacing(5),
-    width: theme.spacing(5),
+    "&:hover": {
+      backgroundColor: theme.palette.warning.main,
+    },
+  },
+  inactiveSlideButton: {
+    "&:disabled": {
+      backgroundColor: theme.palette.warning.main,
+    },
+  },
+  activeSlideButton: {
+    backgroundColor: theme.palette.common.white,
     "&:hover": {
       backgroundColor: theme.palette.warning.main,
     },
   },
   sliderSection: {
     display: "grid",
+    gridTemplateColumns: "repeat(4, 25% [col-start])",
+    gridTemplateRows: "repeat(4, 25% [row-start])",
   },
   sliderSectionImage: {
     gridRowStart: 1,
     gridColumnStart: 1,
+    gridRowEnd: 5,
+    gridColumnEnd: 5,
     zIndex: 1,
   },
-  sliderSectionButton: {
-    margin: theme.spacing(2),
-    gridRowStart: 1,
+  sliderSectionBottom: {
+    paddingLeft: theme.spacing(3),
+    paddingRight: theme.spacing(3),
+    alignSelf: "center",
+    gridRowStart: 4,
     gridColumnStart: 1,
+    gridColumnEnd: 5,
     zIndex: 2,
-    justifySelf: "end",
-    alignSelf: "end",
   },
   sliderSectionOverlayImage: {
     gridRowStart: 1,
     gridColumnStart: 1,
+    gridRowEnd: 5,
+    gridColumnEnd: 5,
     zIndex: 2,
   },
 }));
 
 export function PictureSlider(props: {
-  images: ImageData[] | undefined;
+  images: SliderData[] | undefined;
   setLoading: Dispatch<SetStateAction<boolean>>;
+  desktopScreen: boolean;
 }): JSX.Element {
   const { classes } = useStyles();
-  const { images } = props;
+  const { images, desktopScreen } = props;
 
   const [currentIndex, setCurrentIndex] = useState<number>(0);
   const [isPaused, setIsPaused] = useState(false);
+  const height = desktopScreen
+    ? classes.desktopComponentHeight
+    : classes.mobileComponentHeight;
 
   const navigate = useNavigate();
   const handleRedirect = () => {
@@ -99,13 +125,13 @@ export function PictureSlider(props: {
   }, [currentIndex, isPaused, images]);
 
   return (
-    <Grid container className={classes.sliderSection}>
+    <Grid container className={`${classes.sliderSection} ${height}`}>
       <Grid item className={classes.sliderSectionImage}>
         {images && !isPaused && (
           <Box
             key={currentIndex}
             component="img"
-            className={`${classes.image} ${classes.imageAnimation}`}
+            className={`${classes.image} ${classes.imageAnimation} ${height}`}
             src={`${images[currentIndex].imagePathName}?${Date.now()}`}
             alt={i18next.t("image.missing")}
             onClick={handleRedirect}
@@ -120,25 +146,62 @@ export function PictureSlider(props: {
           />
         )}
       </Grid>
+      {images && !isPaused && (
+        <CustomDecoratedTag text={`${images[currentIndex].articleTitle}`} />
+      )}
       {(!images || (images && isPaused)) && (
         <Grid item className={classes.sliderSectionOverlayImage}>
           <Box
             component="img"
-            className={classes.overlayImage}
+            className={`${classes.overlayImage} ${height}`}
             src={`/logo overlay.png`}
             alt={i18next.t("image.missing")}
           />
         </Grid>
       )}
       {images && (
-        <Grid item className={classes.sliderSectionButton}>
-          <IconButton
-            aria-label="play/pause"
-            onClick={() => setIsPaused(!isPaused)}
-            className={classes.playPauseButton}
-          >
-            {isPaused ? <PlayArrowIcon /> : <PauseIcon />}
-          </IconButton>
+        <Grid
+          container
+          item
+          direction="row"
+          alignItems="center"
+          className={classes.sliderSectionBottom}
+        >
+          <Grid item>
+            {!isPaused && (
+              <Stepper>
+                {images.map((image, index) => (
+                  <Step key={image.id}>
+                    {currentIndex === index ? (
+                      <IconButton
+                        size="large"
+                        onClick={() => setCurrentIndex(index)}
+                        className={classes.inactiveSlideButton}
+                        disabled={true}
+                      />
+                    ) : (
+                      <IconButton
+                        size="large"
+                        onClick={() => setCurrentIndex(index)}
+                        className={classes.activeSlideButton}
+                      />
+                    )}
+                  </Step>
+                ))}
+              </Stepper>
+            )}
+          </Grid>
+          <Box sx={{ flexGrow: 1 }} />
+          <Grid item>
+            <IconButton
+              size="medium"
+              aria-label="play/pause"
+              onClick={() => setIsPaused(!isPaused)}
+              className={classes.playPauseButton}
+            >
+              {isPaused ? <PlayArrowIcon /> : <PauseIcon />}
+            </IconButton>
+          </Grid>
         </Grid>
       )}
     </Grid>

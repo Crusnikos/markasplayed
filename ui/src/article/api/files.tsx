@@ -15,8 +15,10 @@ export async function getFrontImage(request: {
   return response.data;
 }
 
-export async function getSliderImages(): Promise<ImageData[]> {
-  const response = await axios.get<ImageData[]>(`${settings.url}/files/slider`);
+export async function getSliderImages(): Promise<SliderData[]> {
+  const response = await axios.get<SliderData[]>(
+    `${settings.url}/files/slider`
+  );
   return response.data;
 }
 
@@ -89,6 +91,10 @@ export async function addToGallery(
     }
   );
 }
+
+export type SliderData = {
+  articleTitle: string;
+} & ImageData;
 
 export type ImageData = {
   id: number;
