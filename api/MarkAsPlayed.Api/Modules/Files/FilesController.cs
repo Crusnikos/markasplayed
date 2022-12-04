@@ -28,7 +28,7 @@ public sealed class FilesController : ControllerBase
     ///     Retrieves latest slider images
     /// </summary>
     [HttpGet("slider")]
-    public async Task<IEnumerable<ImageData>> GetSliderImagesAsync()
+    public async Task<IEnumerable<SliderData>> GetSliderImagesAsync()
     {
         var baseUri = new Uri($"{HttpContext.Request.Scheme}://{HttpContext.Request.Host.Value}/");
 

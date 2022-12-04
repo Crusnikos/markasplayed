@@ -6,8 +6,6 @@ import {
   Menu,
   Toolbar,
   Typography,
-  useMediaQuery,
-  useTheme,
 } from "@mui/material";
 import { Link } from "react-router-dom";
 import { makeStyles } from "tss-react/mui";
@@ -30,13 +28,13 @@ const useStyles = makeStyles()((theme) => ({
 
 export default function TopMenu(props: {
   setSnackbar: DispatchSnackbar;
+  desktopScreen: boolean;
 }): JSX.Element {
   const { classes } = useStyles();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const { app, authenticated } = useFirebaseAuth();
 
-  const theme = useTheme();
-  const logo = useMediaQuery(theme.breakpoints.up("sm")) ? "MAPlayed" : "MAP";
+  const logo = props.desktopScreen ? "MAPlayed" : "MAP";
 
   const handleMenu = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);

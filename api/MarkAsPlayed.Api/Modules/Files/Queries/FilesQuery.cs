@@ -44,18 +44,19 @@ public sealed class FilesQuery
         };
     }
 
-    public async Task<IEnumerable<ImageData>> GetSliderAsync(
+    public async Task<IEnumerable<SliderData>> GetSliderAsync(
         Uri baseUri,
         CancellationToken cancellationToken = default)
     {
         await using var db = _databaseFactory();
 
         return await db.Articles.Select(
-            q => new ImageData
+            q => new SliderData
             {
                 Id = q.Id,
                 ImageFileName = DefaultFrontImageFileName,
-                ImagePathName = new Uri(baseUri, $"/Image/{q.Id}/{DefaultFrontImageFileName}").AbsoluteUri
+                ImagePathName = new Uri(baseUri, $"/Image/{q.Id}/{DefaultFrontImageFileName}").AbsoluteUri,
+                ArticleTitle = q.Title
             }).
             OrderByDescending(q => q.Id).
             Take(DefaultPageSize).

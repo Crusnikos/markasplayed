@@ -1,3 +1,4 @@
+import { useMediaQuery, useTheme } from "@mui/material";
 import React, {
   Dispatch,
   Fragment,
@@ -6,7 +7,7 @@ import React, {
   useState,
 } from "react";
 import { makeStyles } from "tss-react/mui";
-import { ImageData, getSliderImages } from "../article/api/files";
+import { getSliderImages, SliderData } from "../article/api/files";
 import { useArticleData } from "../ArticleListProvider";
 import { DispatchSnackbar } from "../components/SnackbarDialog";
 import { PictureSlider } from "./PictureSlider";
@@ -16,6 +17,7 @@ const useStyles = makeStyles()((theme) => ({
   header: {
     marginTop: theme.spacing(1),
     marginBottom: theme.spacing(1),
+    overflow: "hidden",
   },
   nav: {
     marginBottom: theme.spacing(1),
@@ -28,9 +30,12 @@ export default function Menu(props: {
 }): JSX.Element {
   const { classes } = useStyles();
   const [[, count]] = useArticleData();
-  const [sliderImages, setSliderImages] = useState<ImageData[] | undefined>(
+  const [sliderImages, setSliderImages] = useState<SliderData[] | undefined>(
     undefined
   );
+
+  const theme = useTheme();
+  const desktopScreen = useMediaQuery(theme.breakpoints.up("sm"));
 
   useEffect(() => {
     async function fetchSliderImages() {
@@ -46,10 +51,17 @@ export default function Menu(props: {
   return (
     <Fragment>
       <header className={classes.header}>
-        <PictureSlider images={sliderImages} setLoading={props.setLoading} />
+        <PictureSlider
+          images={sliderImages}
+          setLoading={props.setLoading}
+          desktopScreen={desktopScreen}
+        />
       </header>
       <nav className={classes.nav}>
-        <TopMenu setSnackbar={props.setSnackbar} />
+        <TopMenu
+          setSnackbar={props.setSnackbar}
+          desktopScreen={desktopScreen}
+        />
       </nav>
     </Fragment>
   );
