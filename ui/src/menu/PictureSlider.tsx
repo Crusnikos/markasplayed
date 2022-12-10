@@ -173,12 +173,14 @@ export function PictureSlider(props: {
                 {images.map((image, index) => (
                   <Step key={image.id}>
                     {currentIndex === index ? (
-                      <IconButton
-                        size="large"
-                        onClick={() => setCurrentIndex(index)}
-                        className={classes.inactiveSlideButton}
-                        disabled={true}
-                      />
+                      <Fragment>
+                        <IconButton
+                          size="large"
+                          onClick={() => setCurrentIndex(index)}
+                          className={classes.inactiveSlideButton}
+                          disabled={true}
+                        />
+                      </Fragment>
                     ) : (
                       <IconButton
                         size="large"
