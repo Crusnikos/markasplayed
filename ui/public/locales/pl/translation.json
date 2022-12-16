@@ -175,15 +175,19 @@
       "event": "wydarzenie",
       "game": "gra",
       "movie": "film",
-      "series": "serial"
+      "series": "serial",
+      "story": "story"
     },
     "g": {
       "anime": "anime",
       "comedy": "komedia",
       "fantasy": "fantasy",
       "horror": "horror",
+      "mystery": "tajemniczość",
+      "romance": "romans",
       "scienceFiction": "science fiction",
-      "thriller": "dreszczowiec"
+      "thriller": "dreszczowiec",
+      "western": "western"
     },
     "m": {
       "singlePlayer": "jeden gracz",
@@ -210,8 +214,12 @@
     "t": {
       "action": "akcja",
       "adventure": "przygoda",
+      "cardgame": "gra karciana",
+      "dicegame": "gra z kośćmi",
       "puzzle": "puzzle",
       "rolePlaying": "role-playing",
+      "sandbox": "sandbox",
+      "shooter": "strzelanka",
       "simulation": "symulacja",
       "strategy": "strategia",
       "sports": "sport"

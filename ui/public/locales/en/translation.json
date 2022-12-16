@@ -175,15 +175,19 @@
       "event": "event",
       "game": "game",
       "movie": "movie",
-      "series": "series"
+      "series": "series",
+      "story": "story"
     },
     "g": {
       "anime": "anime",
       "comedy": "comedy",
       "fantasy": "fantasy",
       "horror": "horror",
+      "mystery": "mystery",
+      "romance": "romance",
       "scienceFiction": "science fiction",
-      "thriller": "thriller"
+      "thriller": "thriller",
+      "western": "western"
     },
     "m": {
       "singlePlayer": "single player",
@@ -210,8 +214,12 @@
     "t": {
       "action": "action",
       "adventure": "adventure",
+      "cardgame": "card game",
+      "dicegame": "dice game",
       "puzzle": "puzzle",
       "rolePlaying": "role-playing",
+      "sandbox": "sandbox",
+      "shooter": "shooter",
       "simulation": "simulation",
       "strategy": "strategy",
       "sports": "sports"
