@@ -1,5 +1,7 @@
 ﻿using LinqToDB;
 using MarkAsPlayed.Api.Data;
+using MarkAsPlayed.Api.Modules.Files.Models;
+using System;
 
 namespace MarkAsPlayed.Api.Modules.Files.Commands;
 
@@ -19,121 +21,201 @@ public sealed class FilesCommand
         _databaseFactory = databaseFactory;
     }
 
-    public async Task UpdateFrontImageAsync(IFormFile file, string filePathName, CancellationToken cancellationToken = default)
+    public async Task<CommonResponseTemplate> CreateFrontImageAsync(IFormFile file, string filePathName, CancellationToken cancellationToken = default)
     {
-        if (file.Length == 0 || Path.GetExtension(file.FileName) != ".webp")
+        try
         {
-            return;
-        }
-
-        if (!Directory.Exists(filePathName))
-        {
-            Directory.CreateDirectory(filePathName);
-        }
-
-        foreach (var item in ResolutionsMatchedWithNames)
-        {
-            using (var stream = File.Create(Path.Combine(filePathName, item.Name)))
+            if (file.Length == 0 || Path.GetExtension(file.FileName) != ".webp")
             {
-                await file.CopyToAsync(stream, cancellationToken);
+                return new CommonResponseTemplate
+                {
+                    ArticleIdentifier = null,
+                    Status = StatusCodesHelper.BadRequest,
+                    ExceptionCaptured = null,
+                    Message = "Incorrect or missing file provided"
+                };
             }
 
-            await new ImageResolution(
-                Path.Combine(filePathName, item.Name)).
-                OverwriteFileResolution(item.Resolution, cancellationToken);
+            if (!Directory.Exists(filePathName))
+            {
+                Directory.CreateDirectory(filePathName);
+            }
+
+            foreach (var item in ResolutionsMatchedWithNames)
+            {
+                using (var stream = File.Create(Path.Combine(filePathName, item.Name)))
+                {
+                    await file.CopyToAsync(stream, cancellationToken);
+                }
+
+                await new ImageResolution(
+                    Path.Combine(filePathName, item.Name)).
+                    OverwriteFileResolution(item.Resolution, cancellationToken);
+            }
+
+            return new CommonResponseTemplate
+            {
+                ArticleIdentifier = null,
+                Status = StatusCodesHelper.NoContent,
+                ExceptionCaptured = null,
+                Message = "Front image updated"
+            };
+        }
+        catch (Exception exception)
+        {
+            return new CommonResponseTemplate
+            {
+                ArticleIdentifier = null,
+                Status = StatusCodesHelper.InternalError,
+                ExceptionCaptured = exception,
+                Message = "Failed to update front image"
+            };
         }
     }
 
-    public async Task UpdateGalleryAsync(
+    public async Task<CommonResponseTemplate> UpdateGalleryAsync(
         IReadOnlyList<int> updateIds,
+        int articleId,
         CancellationToken cancellationToken = default)
     {
-        await using var db = _databaseFactory();
-
-        await using var transaction = await db.BeginTransactionAsync(cancellationToken);
-
-        var images = await db.ArticleImages.Where(ag => updateIds.Contains((int)ag.Id)).ToListAsync(cancellationToken);
-
-        foreach (var image in images)
+        try
         {
-            await db.ArticleImages.Where(ag => ag.Id == image.Id).
-                Set(ag => ag.IsActive, false).
-                UpdateAsync(cancellationToken);
-        }
+            await using var db = _databaseFactory();
+            await using var transaction = await db.BeginTransactionAsync(cancellationToken);
 
-        await transaction.CommitAsync(cancellationToken);
+            var images = await db.ArticleImages.Where(image => updateIds.Contains((int)image.Id)).ToListAsync(cancellationToken);
+
+            if (images.Count < 1)
+            {
+                return new CommonResponseTemplate
+                {
+                    ArticleIdentifier = articleId,
+                    Status = StatusCodesHelper.NotFound,
+                    ExceptionCaptured = null,
+                    Message = "No images found"
+                };
+            }
+
+            foreach (var image in images)
+            {
+                await db.ArticleImages.Where(ag => ag.Id == image.Id).
+                    Set(ag => ag.IsActive, false).
+                    UpdateAsync(cancellationToken);
+            }
+
+            await transaction.CommitAsync(cancellationToken);
+
+            return new CommonResponseTemplate
+            {
+                ArticleIdentifier = articleId,
+                Status = StatusCodesHelper.OK,
+                ExceptionCaptured = null,
+                Message = "Gallery updated"
+            };
+        }
+        catch (Exception exception)
+        {
+            return new CommonResponseTemplate
+            {
+                ArticleIdentifier = articleId,
+                Status = StatusCodesHelper.InternalError,
+                ExceptionCaptured = exception,
+                Message = "Failed to update gallery"
+            };
+        }
     }
 
-    public async Task<bool?> AddToGalleryAsync(
+    public async Task<CommonResponseTemplate> AddToGalleryAsync(
         IReadOnlyList<IFormFile> files,
         string pathName,
         int articleId,
         CancellationToken cancellationToken = default)
     {
-        await using var db = _databaseFactory();
-        await using var transaction = await db.BeginTransactionAsync(cancellationToken);
-        var successfulFilesUploadSum = files.Count;
-
-        if (!Directory.Exists(pathName))
+        try
         {
-            Directory.CreateDirectory(pathName);
-        }
+            await using var db = _databaseFactory();
+            await using var transaction = await db.BeginTransactionAsync(cancellationToken);
+            var successfulFilesUploadSum = files.Count;
 
-        foreach (var file in files.Where(
-            file => file.Length > 0 && 
-            Path.GetExtension(file.FileName) == ".webp")
-            )
-        {
-            var fileName = Guid.NewGuid().ToString() + ".webp";
-            var fileFullPath = Path.Combine(pathName, fileName);
-
-            try
+            if (!Directory.Exists(pathName))
             {
-                using (var stream = File.Create(fileFullPath))
+                Directory.CreateDirectory(pathName);
+            }
+
+            foreach (var file in files)
+            {
+                var fileName = string.Empty;
+                var fileFullPath = string.Empty;
+
+                try
                 {
-                    await file.CopyToAsync(stream, cancellationToken);
-                }
+                    if (file.Length == 0 || Path.GetExtension(file.FileName) != ".webp")
+                    throw new Exception("Incorrect or missing file provided");
 
-                await new ImageResolution(fileFullPath).
-                    OverwriteFileResolution(Resolution.FullHD, cancellationToken);
-
-                await db.ArticleImages.InsertWithInt64IdentityAsync(
-                    () => new Data.Models.ArticleImage
+                    fileName = Guid.NewGuid().ToString() + ".webp";
+                    fileFullPath = Path.Combine(pathName, fileName);
+                
+                    using (var stream = File.Create(fileFullPath))
                     {
-                        ArticleId = articleId,
-                        FileName = fileName,
-                        IsActive = true
-                    },
-                    cancellationToken
-                );
-            }
-            catch (Exception exception)
-            {
-                Console.WriteLine($"File {file.FileName} failed on upload");
-                Console.WriteLine($"Exception: {exception.Message}");
+                        await file.CopyToAsync(stream, cancellationToken);
+                    }
 
-                if (File.Exists(fileFullPath) is true)
-                {
-                    File.Delete(fileFullPath);
+                    await new ImageResolution(fileFullPath).
+                        OverwriteFileResolution(Resolution.FullHD, cancellationToken);
+
+                    await db.ArticleImages.InsertWithInt64IdentityAsync(
+                        () => new Data.Models.ArticleImage
+                        {
+                            ArticleId = articleId,
+                            FileName = fileName,
+                            IsActive = true
+                        },
+                        cancellationToken
+                    );
                 }
-
-                Console.WriteLine($"File {file.FileName} successfully removed");
-
-                successfulFilesUploadSum--;
+                catch (Exception)
+                {
+                    if (String.IsNullOrEmpty(fileFullPath) is false && File.Exists(fileFullPath) is true)
+                    {
+                        Console.WriteLine("test");
+                        File.Delete(fileFullPath);
+                    }
+                    successfulFilesUploadSum--;
+                }
             }
+
+            await transaction.CommitAsync(cancellationToken);
+
+            if (successfulFilesUploadSum == files.Count)
+            {
+                return new CommonResponseTemplate
+                {
+                    ArticleIdentifier = articleId,
+                    Status = StatusCodesHelper.NoContent,
+                    ExceptionCaptured = null,
+                    Message = "All images uploaded to gallery"
+                };
+            }
+            if (successfulFilesUploadSum == 0)
+                throw new Exception("0 files uploaded");
+
+            return new CommonResponseTemplate
+            {
+                ArticleIdentifier = articleId,
+                Status = StatusCodesHelper.Conflict,
+                ExceptionCaptured = null,
+                Message = $"{successfulFilesUploadSum} from {files.Count} images uploaded"
+            };
         }
-
-        await transaction.CommitAsync(cancellationToken);
-
-        if(successfulFilesUploadSum == files.Count)
+        catch (Exception exception)
         {
-            return true;
+            return new CommonResponseTemplate
+            {
+                ArticleIdentifier = articleId,
+                Status = StatusCodesHelper.InternalError,
+                ExceptionCaptured = exception,
+                Message = "Failed add images to gallery"
+            };
         }
-        if(successfulFilesUploadSum == 0)
-        {
-            return null;
-        }
-
-        return false;
     }
 }

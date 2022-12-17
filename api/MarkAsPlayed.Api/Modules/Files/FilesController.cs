@@ -7,6 +7,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace MarkAsPlayed.Api.Modules.Files;
 
+[ApiController]
 [Route("files")]
 public sealed class FilesController : ControllerBase
 {
@@ -28,60 +29,81 @@ public sealed class FilesController : ControllerBase
     ///     Retrieves latest slider images
     /// </summary>
     [HttpGet("slider")]
-    public async Task<IEnumerable<SliderData>> GetSliderImagesAsync()
+    [ProducesResponseType(typeof(IReadOnlyList<SliderData>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetSliderImagesAsync()
     {
         var baseUri = new Uri($"{HttpContext.Request.Scheme}://{HttpContext.Request.Host.Value}/");
+        var response = await _filesQuery.GetSliderAsync(baseUri, HttpContext.RequestAborted);
 
-        return await _filesQuery.GetSliderAsync(baseUri, HttpContext.RequestAborted);
+        return Ok(response);
     }
 
     /// <summary>
     ///     Retrieves an image by id
     /// </summary>
     [HttpGet("article/{id}/front")]
-    public async Task<ActionResult> GetFrontImageByIdAsync(
+    [ProducesResponseType(typeof(ImageData), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetFrontImageAsync(
         [Range(1, int.MaxValue)]
         int id,
         Size size = Size.Large)
     {
         var baseUri = new Uri($"{HttpContext.Request.Scheme}://{HttpContext.Request.Host.Value}/");
 
-        var image = await _filesQuery.GetFrontImageAsync(id, baseUri, size);
+        var response = await _filesQuery.GetFrontImageAsync(id, baseUri, size);
 
-        if(image is null)
+        if(response is null)
         {
             return NotFound();
         }
 
-        return Ok(image);
+        return Ok(response);
     }
 
     /// <summary>
     ///     Update front image
     /// </summary>
     [Authorize]
-    [HttpPut("article/{id}/front")]
-    public async Task<IActionResult> UpdateFrontImageByIdAsync([FromForm] FrontImageRequestData request, int id)
+    [HttpPost("article/{id}/front")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> CreateFrontImageAsync([FromForm] FrontImageRequestData request, int id)
     {
-        await _filesCommand.UpdateFrontImageAsync(
+        var response = await _filesCommand.CreateFrontImageAsync(
                 request.File,
                 Path.Combine(_env.ContentRootPath, "Image", id.ToString()),
                 HttpContext.RequestAborted);
 
-        return NoContent();
+        return response.Status switch
+        {
+            StatusCodesHelper.BadRequest => BadRequest(),
+            StatusCodesHelper.InternalError => Problem(
+                statusCode: 500,
+                title: "Failed to update front image"
+                ),
+            _ => NoContent()
+        };
     }
 
     /// <summary>
     ///     Retrieves a article gallery
     /// </summary>
     [HttpGet("article/{id}/gallery")]
-    public async Task<IEnumerable<ImageData>> GetArticleGalleryAsync(
+    [ProducesResponseType(typeof(IReadOnlyList<SliderData>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetArticleGalleryAsync(
         [Range(1, int.MaxValue)]
         int id)
     {
-        var baseUri = new Uri($"{HttpContext.Request.Scheme}://{HttpContext.Request.Host.Value}/");
+        var response = await _filesQuery.GetGalleryAsync(
+                id, 
+                new Uri($"{HttpContext.Request.Scheme}://{HttpContext.Request.Host.Value}/"), 
+                HttpContext.RequestAborted
+                );
 
-        return await _filesQuery.GetGalleryAsync(id, baseUri, HttpContext.RequestAborted);
+        return Ok(response);
     }
 
     /// <summary>
@@ -89,11 +111,24 @@ public sealed class FilesController : ControllerBase
     /// </summary>
     [Authorize]
     [HttpPut("article/{id}/gallery")]
-    public async Task<IActionResult> UpdateExistingGalleryAsync([FromBody] GalleryUpdateRequest request, int id)
+    [ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> UpdateGalleryAsync([FromBody] GalleryUpdateRequest request, int id)
     {
-        await _filesCommand.UpdateGalleryAsync(request.GalleryIds, HttpContext.RequestAborted);
+        var response = await _filesCommand.UpdateGalleryAsync(request.GalleryIds, id, HttpContext.RequestAborted);
 
-        return Ok(id);
+        return response.Status switch
+        {
+            StatusCodesHelper.NotFound => NotFound(),
+            StatusCodesHelper.InternalError => Problem(
+                statusCode: 500,
+                title: "Failed to update gallery"
+                ),
+            _ => Ok(id)
+        };
     }
 
     /// <summary>
@@ -101,19 +136,27 @@ public sealed class FilesController : ControllerBase
     /// </summary>
     [Authorize]
     [HttpPost("article/{id}/gallery")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> AddToGalleryAsync([FromForm] GalleryAddRequest request, int id)
     {
-        var uploadedFiles = await _filesCommand.AddToGalleryAsync(
+        var response = await _filesCommand.AddToGalleryAsync(
                 request.Files, 
                 Path.Combine(_env.ContentRootPath, "Image", id.ToString(), "Gallery"),
                 id,
                 HttpContext.RequestAborted);
 
-        return uploadedFiles switch
+        return response.Status switch
         {
-            true => NoContent(),
-            false => Conflict(),
-            _ => BadRequest()
+            StatusCodesHelper.Conflict => Conflict(),
+            StatusCodesHelper.InternalError => Problem(
+                statusCode: 500,
+                title: "Failed add images to gallery"
+                ),
+            _ => NoContent()
         };
     }
 
@@ -122,13 +165,22 @@ public sealed class FilesController : ControllerBase
     /// </summary>
     [HttpGet]
     [Route("author/{id}/avatar")]
-    public async Task<ImageData?> GetAuthorImageByIdAsync(
+    [ProducesResponseType(typeof(ImageData), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetAuthorImageByIdAsync(
         [Range(1, int.MaxValue)]
         int id)
     {
-        var baseUri = new Uri($"{HttpContext.Request.Scheme}://{HttpContext.Request.Host.Value}/");
-        var image = await _filesQuery.GetAuthorImageAsync(id, baseUri);
+        var response = await _filesQuery.GetAuthorImageAsync(
+            id,
+            new Uri($"{HttpContext.Request.Scheme}://{HttpContext.Request.Host.Value}/")
+            );
 
-        return image;
+        if (response is null)
+        {
+            return NotFound();
+        }
+
+        return Ok(response);
     }
 }

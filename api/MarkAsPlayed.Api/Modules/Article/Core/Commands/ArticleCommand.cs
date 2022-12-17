@@ -2,6 +2,7 @@
 using MarkAsPlayed.Api.Data;
 using MarkAsPlayed.Api.Data.Models;
 using MarkAsPlayed.Api.Modules.Article.Core.Models;
+using Npgsql;
 
 namespace MarkAsPlayed.Api.Modules.Article.Core.Commands;
 
@@ -14,7 +15,7 @@ public sealed class ArticleCommand
         _databaseFactory = databaseFactory;
     }
 
-    public async Task<ArticleCreationResponse> CreateAsync(
+    public async Task<CommonResponseTemplate> CreateAsync(
         ArticleRequestData request,
         string authorOfRequest,
         CancellationToken cancellationToken = default)
@@ -29,11 +30,12 @@ public sealed class ArticleCommand
 
             if (author is null)
             {
-                return new ArticleCreationResponse 
-                { 
-                    Identifier = null, 
-                    Status = ArticleStatus.NotFound, 
-                    ExceptionCaptured = null 
+                return new CommonResponseTemplate
+                {
+                    ArticleIdentifier = null,
+                    Status = StatusCodesHelper.NotFound,
+                    ExceptionCaptured = null,
+                    Message = "Author does not exist"
                 };
             }
 
@@ -49,7 +51,7 @@ public sealed class ArticleCommand
                     LongDescription = trimmedLongDescription,
                     ShortDescription = trimmedShortDescription,
                     PlayedOnGamingPlatformId = request.PlayedOn,
-                    ArticleTypeId = request.ArticleType,
+                    ArticleTypeId = request.ArticleType!.Value,
                     CreatedBy = author.Id
                 },
                 cancellationToken
@@ -71,25 +73,37 @@ public sealed class ArticleCommand
 
             await transaction.CommitAsync(cancellationToken);
 
-            return new ArticleCreationResponse 
+            return new CommonResponseTemplate 
             { 
-                Identifier = identifier, 
-                Status = ArticleStatus.OK, 
-                ExceptionCaptured = null 
+                ArticleIdentifier = identifier, 
+                Status = StatusCodesHelper.OK,
+                ExceptionCaptured = null,
+                Message = "Article successfully added"
             };
-        } 
+        }
+        catch (PostgresException exception) when (exception.SqlState == PostgresErrorCodes.ForeignKeyViolation)
+        {
+            return new CommonResponseTemplate
+            {
+                ArticleIdentifier = null,
+                Status = StatusCodesHelper.NotFound,
+                ExceptionCaptured = exception,
+                Message = "Database rejected data"
+            };
+        }
         catch (Exception exception)
         {
-            return new ArticleCreationResponse 
-            { 
-                Identifier = null, 
-                Status = ArticleStatus.InternalError, 
-                ExceptionCaptured = exception 
+            return new CommonResponseTemplate
+            {
+                ArticleIdentifier = null,
+                Status = StatusCodesHelper.InternalError, 
+                ExceptionCaptured = exception,
+                Message = "Failed to add article"
             };
         }
     }
 
-    public async Task<ArticleUpdateResponse> UpdateAsync(
+    public async Task<CommonResponseTemplate> UpdateAsync(
         int id,
         ArticleRequestData request,
         CancellationToken cancellationToken = default)
@@ -101,6 +115,18 @@ public sealed class ArticleCommand
             await using var transaction = await db.BeginTransactionAsync(cancellationToken);
 
             var oldArticleData = await db.Articles.Where(a => a.Id == id).FirstOrDefaultAsync(cancellationToken);
+
+            if (oldArticleData is null)
+            {
+                return new CommonResponseTemplate
+                {
+                    ArticleIdentifier = id,
+                    Status = StatusCodesHelper.NotFound,
+                    ExceptionCaptured = null,
+                    Message = "Article does not exist"
+                };
+            }
+
             var trimmedLongDescription = request.LongDescription.Trim();
             var trimmedShortDescription = request.ShortDescription.Trim();
 
@@ -118,11 +144,12 @@ public sealed class ArticleCommand
 
             if (updatedRecords == 0)
             {
-                return new ArticleUpdateResponse
+                return new CommonResponseTemplate
                 {
-                    Identifier = null,
-                    Status = ArticleStatus.Forbidden,
-                    ExceptionCaptured = null
+                    ArticleIdentifier = id,
+                    Status = StatusCodesHelper.NotFound,
+                    ExceptionCaptured = null,
+                    Message = "Failed to update article"
                 };
             }
 
@@ -144,20 +171,32 @@ public sealed class ArticleCommand
 
             await transaction.CommitAsync(cancellationToken);
 
-            return new ArticleUpdateResponse
+            return new CommonResponseTemplate
             {
-                Identifier = null,
-                Status = ArticleStatus.NoContent,
-                ExceptionCaptured = null
+                ArticleIdentifier = null,
+                Status = StatusCodesHelper.NoContent,
+                ExceptionCaptured = null,
+                Message = "Article successfully updated"
+            };
+        }
+        catch (PostgresException exception) when (exception.SqlState == PostgresErrorCodes.ForeignKeyViolation)
+        {
+            return new CommonResponseTemplate
+            {
+                ArticleIdentifier = id,
+                Status = StatusCodesHelper.NotFound,
+                ExceptionCaptured = exception,
+                Message = "Database rejected data"
             };
         }
         catch (Exception exception)
         {
-            return new ArticleUpdateResponse
+            return new CommonResponseTemplate
             {
-                Identifier = id,
-                Status = ArticleStatus.InternalError,
-                ExceptionCaptured = exception
+                ArticleIdentifier = id,
+                Status = StatusCodesHelper.InternalError,
+                ExceptionCaptured = exception,
+                Message = "Failed to update article"
             };
         }
     }

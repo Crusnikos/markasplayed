@@ -23,4 +23,8 @@
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.2.3" />
   </ItemGroup>
 
+	<ItemGroup>
+		<InternalsVisibleTo Include="..\MarkAsPlayed.Api.Tests\MarkAsPlayed.Api.Tests.csproj" />
+	</ItemGroup>
+
 </Project>

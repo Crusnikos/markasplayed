@@ -40,7 +40,7 @@ export async function setFrontImage(
 ): Promise<void> {
   const formData = new FormData();
   formData.append("file", request.file);
-  await axios.put<MainImageCreationRequest>(
+  await axios.post<MainImageCreationRequest>(
     `${settings.url}/files/article/${request.id}/front`,
     formData,
     {

@@ -13,11 +13,11 @@ public sealed class AuthorQuery
         _databaseFactory = databaseFactory;
     }
 
-    public List<AuthorData> GetAuthors()
+    public async Task<List<AuthorData>> GetAuthors(CancellationToken cancellationToken = default)
     {
-        using var db = _databaseFactory();
+        await using var db = _databaseFactory();
 
-        return db.Authors.Select(
+        return await db.Authors.Select(
             q => new AuthorData
             {
                 Id = q.Id,
@@ -26,6 +26,6 @@ public sealed class AuthorQuery
                 DescriptionEn = q.DescriptionEn
             }).
             OrderByDescending(q => q.Id).
-            ToList();
+            ToListAsync(cancellationToken);
     }
 }

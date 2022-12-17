@@ -59,7 +59,8 @@ const useStyles = makeStyles()((theme) => ({
   },
   sliderSection: {
     display: "grid",
-    gridTemplateColumns: "repeat(4, 25% [col-start])",
+    gridTemplateColumns:
+      "16% [col-start] 16% [col-start] repeat(2, 34% [col-start])",
     gridTemplateRows: "repeat(4, 25% [row-start])",
   },
   sliderSectionImage: {
@@ -173,14 +174,14 @@ export function PictureSlider(props: {
                 {images.map((image, index) => (
                   <Step key={image.id}>
                     {currentIndex === index ? (
-                      <Fragment>
+                      <React.Fragment>
                         <IconButton
                           size="large"
                           onClick={() => setCurrentIndex(index)}
                           className={classes.inactiveSlideButton}
                           disabled={true}
                         />
-                      </Fragment>
+                      </React.Fragment>
                     ) : (
                       <IconButton
                         size="large"

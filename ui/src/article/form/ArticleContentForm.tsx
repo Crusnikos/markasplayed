@@ -97,11 +97,13 @@ export default function ArticleContentForm(props: {
                   select
                   {...field}
                 >
-                  {lookups?.articleTypes.map((g) => (
-                    <MenuItem key={g.id} value={g.id}>
-                      {g.name}
-                    </MenuItem>
-                  ))}
+                  {lookups?.articleTypes
+                    .sort((a, b) => a.id - b.id)
+                    .map((g) => (
+                      <MenuItem key={g.id} value={g.id}>
+                        {i18next.t(`dashboard.item.type.${g.name}`)}
+                      </MenuItem>
+                    ))}
                 </TextField>
                 <FormHelperText error className={classes.helperMargin}>
                   {errors.articleType?.message}
