@@ -9,4 +9,7 @@ public class LookupData
 
     [Required]
     public string Name { get; init; } = default!;
+
+    [Required]
+    public char GroupName { get; init; } = default!;
 }

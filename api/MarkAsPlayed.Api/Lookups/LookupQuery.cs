@@ -22,7 +22,10 @@ public class LookupQuery<T> where T : LookupItem
                 new LookupData
                 {
                     Id = lookupData.Id,
-                    Name = lookupData.Name
-                }).ToListAsync(cancellationToken);
+                    Name = lookupData.Name,
+                    GroupName = lookupData.GroupName,
+                }).
+                OrderBy(lookupData => lookupData.Name).
+                ToListAsync(cancellationToken);
     }
 }
