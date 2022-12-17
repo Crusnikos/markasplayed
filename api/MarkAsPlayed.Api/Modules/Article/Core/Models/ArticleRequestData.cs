@@ -47,12 +47,12 @@ public class ArticleRequestData
     ///     Main article
     /// </summary>
     [Required]
-    [StringLength(5000, MinimumLength = 1)]
+    [StringLength(10000, MinimumLength = 1)]
     public string LongDescription { get; init; } = default!;
 
     /// <summary>
     ///     Article Type
     /// </summary>
     [Required]
-    public int ArticleType { get; init; }
+    public int? ArticleType { get; init; }
 }

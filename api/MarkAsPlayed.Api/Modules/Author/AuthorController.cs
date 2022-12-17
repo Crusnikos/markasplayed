@@ -1,9 +1,11 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using MarkAsPlayed.Api.Modules.Author.Queries;
 using MarkAsPlayed.Api.Modules.Author.Models;
+using MarkAsPlayed.Api.Modules.Article.Core.Models;
 
 namespace MarkAsPlayed.Api.Modules.Author;
 
+[ApiController]
 [Route("author")]
 public sealed class AuthorController : ControllerBase
 {
@@ -17,10 +19,12 @@ public sealed class AuthorController : ControllerBase
     /// <summary>
     ///     Retrieves an authors listing
     /// </summary>
-    [HttpGet]
-    [Route("listing")]
-    public List<AuthorData> GetAuthorsListing()
+    [HttpGet("listing")]
+    [ProducesResponseType(typeof(IReadOnlyList<AuthorData>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetAuthorsListing()
     {
-        return _authorQuery.GetAuthors();
+        var listing = await _authorQuery.GetAuthors(HttpContext.RequestAborted);
+
+        return Ok(listing);
     }
 }

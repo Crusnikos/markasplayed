@@ -1,9 +1,7 @@
 ﻿using LinqToDB;
 using MarkAsPlayed.Api.Data;
-using MarkAsPlayed.Api.Modules.Article.Core.Models;
-using MarkAsPlayed.Api.Modules.Article.Core;
 using MarkAsPlayed.Api.Modules.Article.Tags.Models;
-using System.Threading;
+using Npgsql;
 
 namespace MarkAsPlayed.Api.Modules.Article.Tags.Commands;
 
@@ -16,7 +14,7 @@ public class TagCommand
         _databaseFactory = databaseFactory;
     }
 
-    public async Task<TagCreationResponse> CreateAsync(
+    public async Task<CommonResponseTemplate> CreateAsync(
         TagRequestData request,
         CancellationToken cancellationToken = default)
     {
@@ -46,23 +44,40 @@ public class TagCommand
                 );
             }
 
-            return new TagCreationResponse
+            return new CommonResponseTemplate
             {
-                Status = TagStatus.OK,
-                ExceptionCaptured = null
+                ArticleIdentifier = request.ArticleId,
+                TagIdentifier = request.TagId,
+                Status = StatusCodesHelper.NoContent,
+                ExceptionCaptured = null,
+                Message = "Tag successfully activated"
+            };
+        }
+        catch (PostgresException exception) when (exception.SqlState == PostgresErrorCodes.ForeignKeyViolation)
+        {
+            return new CommonResponseTemplate
+            {
+                ArticleIdentifier = request.ArticleId,
+                TagIdentifier = request.TagId,
+                Status = StatusCodesHelper.NotFound,
+                ExceptionCaptured = exception,
+                Message = "Database rejected data"
             };
         }
         catch (Exception exception)
         {
-            return new TagCreationResponse
+            return new CommonResponseTemplate
             {
-                Status = TagStatus.InternalError,
-                ExceptionCaptured = exception
+                ArticleIdentifier = request.ArticleId,
+                TagIdentifier = request.TagId,
+                Status = StatusCodesHelper.InternalError,
+                ExceptionCaptured = exception,
+                Message = "Failed to activate tag"
             };
         }
     }
 
-    public async Task<TagDeactivationResponse> DeactivateAsync(
+    public async Task<CommonResponseTemplate> DeactivateAsync(
         TagRequestData request,
         CancellationToken cancellationToken = default)
     {
@@ -81,25 +96,34 @@ public class TagCommand
 
             if (updatedRecords == 0)
             {
-                return new TagDeactivationResponse
+                return new CommonResponseTemplate
                 {
-                    Status = TagStatus.Forbidden,
-                    ExceptionCaptured = null
+                    ArticleIdentifier = request.ArticleId,
+                    TagIdentifier = request.TagId,
+                    Status = StatusCodesHelper.NotFound,
+                    ExceptionCaptured = null,
+                    Message = "Failed to deactivate tag"
                 };
             }
 
-            return new TagDeactivationResponse
+            return new CommonResponseTemplate
             {
-                Status = TagStatus.OK,
-                ExceptionCaptured = null
+                ArticleIdentifier = request.ArticleId,
+                TagIdentifier = request.TagId,
+                Status = StatusCodesHelper.NoContent,
+                ExceptionCaptured = null,
+                Message = "Tag successfully deactivated"
             };
         }
         catch (Exception exception)
         {
-            return new TagDeactivationResponse
+            return new CommonResponseTemplate
             {
-                Status = TagStatus.InternalError,
-                ExceptionCaptured = exception
+                ArticleIdentifier = request.ArticleId,
+                TagIdentifier = request.TagId,
+                Status = StatusCodesHelper.InternalError,
+                ExceptionCaptured = exception,
+                Message = "Failed to deactivate tag"
             };
         }
     }

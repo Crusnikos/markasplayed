@@ -3,19 +3,8 @@
 namespace MarkAsPlayed.Api.Data.Models;
 
 [Table("tag")]
-public class Tag
+public sealed class Tag : LookupItem
 {
     [Column("tag_id")]
-    [NotNull]
-    [PrimaryKey]
-    [Identity]
-    public int Id { get; set; }
-
-    [Column("name")]
-    [NotNull]
-    public string Name { get; set; } = default!;
-
-    [Column("group_name")]
-    [NotNull]
-    public char Group { get; set; }
+    public override int Id { get; set; }
 }

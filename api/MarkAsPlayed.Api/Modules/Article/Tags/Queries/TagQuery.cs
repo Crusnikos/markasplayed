@@ -1,6 +1,5 @@
 ﻿using LinqToDB;
 using MarkAsPlayed.Api.Data;
-using MarkAsPlayed.Api.Data.Models;
 using MarkAsPlayed.Api.Modules.Article.Tags.Models;
 
 namespace MarkAsPlayed.Api.Modules.Article.Tags.Queries;
@@ -12,21 +11,6 @@ public class TagQuery
     public TagQuery(Database.Factory databaseFactory)
     {
         _databaseFactory = databaseFactory;
-    }
-
-    public async Task<List<TagData>> GetLookupTable(CancellationToken cancellationToken = default)
-    {
-        await using var db = _databaseFactory();
-
-        return await db.GetTable<Tag>().
-            Select(lookupData =>
-                new TagData
-                {
-                    Id = lookupData.Id,
-                    Name = lookupData.Name,
-                    GroupName = lookupData.Group,
-                }).OrderBy(lookupData => lookupData.GroupName).
-                    ToListAsync();
     }
 
     public async Task<IEnumerable<TagData>> GetSingleArticleTagsAsync(
@@ -44,8 +28,10 @@ public class TagQuery
             {
                 Id = tags.Id,
                 Name = tags.Name,
-                GroupName = tags.Group
-            }).ToListAsync(cancellationToken);
+                GroupName = tags.GroupName
+            }).
+            OrderBy(tag => tag.Name).
+            ToListAsync(cancellationToken);
 
         return listing;
     }

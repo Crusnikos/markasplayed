@@ -13,9 +13,9 @@
     "item": {
       "availableOn": "dostępne na:",
       "type": {
-        "news": "nowość",
-        "other": "inne",
-        "review": "recenzja"
+        "news": "Aktualności",
+        "other": "Inne",
+        "review": "Recenzja"
       }
     }
   },
@@ -47,7 +47,7 @@
 
   "footer": {
     "about": {
-      "p1": "Mark As Played jest blogiem poświeconym grom oraz portfoliem. Czytaj recenzje, sprawdzaj newsy, poznaj lepiej autora!",
+      "p1": "Mark As Played jest blogiem poświeconym grom oraz portfoliem. Czytaj recenzje, sprawdzaj aktualności, poznaj lepiej autora!",
       "p2": "Tworzenie bloga o tematyce około gamingowej było moim skromnym marzeniem już od dobrych kilku lat. Ambitnie czekałem do momentu, kiedy moje zdolności programistyczne osiągną wystarczający poziom abym mógł sam wszystko zakodować. Dzień ten w końcu nadszedł, blog ruszył, a moja głowa wypełniona jest tuzinami pomysłów co mogę zrobić lepiej, co dodać nowego.",
       "p3": "Serwis jest cały czas w trakcie budowy. W przypadku wystąpienia jakichkolwiek problemów serdecznie przepraszam."
     },
@@ -175,15 +175,19 @@
       "event": "wydarzenie",
       "game": "gra",
       "movie": "film",
-      "series": "serial"
+      "series": "serial",
+      "story": "story"
     },
     "g": {
       "anime": "anime",
       "comedy": "komedia",
       "fantasy": "fantasy",
       "horror": "horror",
+      "mystery": "tajemniczość",
+      "romance": "romans",
       "scienceFiction": "science fiction",
-      "thriller": "dreszczowiec"
+      "thriller": "dreszczowiec",
+      "western": "western"
     },
     "m": {
       "singlePlayer": "jeden gracz",
@@ -196,7 +200,7 @@
       "badLanguage": "przekleństwa",
       "discrimination": "dyskryminacja",
       "drugs": "narkotyki",
-      "fear": "straszy",
+      "fear": "strach",
       "gambling": "hazard",
       "inGamePurchases": "zakupy w grze",
       "pegi3": "pegi 3",
@@ -210,8 +214,12 @@
     "t": {
       "action": "akcja",
       "adventure": "przygoda",
+      "cardGame": "gra karciana",
+      "diceGame": "gra z kośćmi",
       "puzzle": "puzzle",
       "rolePlaying": "role-playing",
+      "sandbox": "sandbox",
+      "shooter": "strzelanka",
       "simulation": "symulacja",
       "strategy": "strategia",
       "sports": "sport"

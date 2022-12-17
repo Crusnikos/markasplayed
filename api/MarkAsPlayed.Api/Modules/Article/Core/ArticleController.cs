@@ -8,6 +8,7 @@ using MarkAsPlayed.Api.Modules.Article.Core.Commands;
 
 namespace MarkAsPlayed.Api.Modules.Article.Core;
 
+[ApiController]
 [Route("article")]
 public sealed class ArticleController : ControllerBase
 {
@@ -24,7 +25,8 @@ public sealed class ArticleController : ControllerBase
     ///     Retrieves an articles listing
     /// </summary>
     [HttpGet("listing")]
-    public async Task<IEnumerable<DashboardArticleData>> GetArticleListingAsync(
+    [ProducesResponseType(typeof(IReadOnlyList<DashboardArticleData>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetArticleListingAsync(
         [Range(1, int.MaxValue)]
         int? page)
     {
@@ -33,13 +35,15 @@ public sealed class ArticleController : ControllerBase
         Response.Headers.Add("display-page", listing.Page.ToString());
         Response.Headers.Add("articles-count", listing.Total.ToString());
 
-        return listing.Data;
+        return Ok(listing.Data);
     }
 
     /// <summary>
     ///     Retrieves an article by id
     /// </summary>
     [HttpGet("{id}")]
+    [ProducesResponseType(typeof(FullArticleData), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetArticleAsync(
         [Range(1, int.MaxValue)]
         int id)
@@ -58,6 +62,12 @@ public sealed class ArticleController : ControllerBase
     ///     Creates an article
     /// </summary>
     [Authorize]
+    [HttpPost]
+    [ProducesResponseType(typeof(long), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> CreateArticleAsync(
         [FromBody]
         ArticleRequestData request)
@@ -65,17 +75,19 @@ public sealed class ArticleController : ControllerBase
         var userId = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier) ?? null;
         if (userId is null)
         {
-            return NotFound(userId);
+            return NotFound();
         }
 
         var response = await _articleCommand.CreateAsync(request, userId.Value, HttpContext.RequestAborted);
 
         return response.Status switch
         {
-            ArticleStatus.NotFound => NotFound("Author not found"),
-            ArticleStatus.InternalError =>
-                throw new Exception("Failed to create article", response.ExceptionCaptured),
-            _ => Ok(response.Identifier)
+            StatusCodesHelper.NotFound => NotFound(),
+            StatusCodesHelper.InternalError => Problem(
+                statusCode: 500, 
+                title: "Failed to create article"
+                ),
+            _ => Ok(response.ArticleIdentifier)
         };
     }
 
@@ -84,6 +96,11 @@ public sealed class ArticleController : ControllerBase
     /// </summary>
     [Authorize]
     [HttpPut("{id}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> UpdateArticleAsync(
         [FromBody]
         ArticleRequestData request,
@@ -93,9 +110,11 @@ public sealed class ArticleController : ControllerBase
 
         return response.Status switch
         {
-            ArticleStatus.Forbidden => Forbid("No articles updated"),
-            ArticleStatus.InternalError =>
-                throw new Exception($"Failed to update {response.Identifier} article", response.ExceptionCaptured),
+            StatusCodesHelper.NotFound => NotFound(),
+            StatusCodesHelper.InternalError => Problem(
+                statusCode: 500,
+                title: $"Failed to update {response.ArticleIdentifier} article"
+                ),
             _ => NoContent()
         };
     }

@@ -16,7 +16,6 @@ import {
   createTag,
   deactivateTag,
   getArticleTags,
-  getTagLookup,
   LookupTagData,
 } from "../api/tag";
 import { useFirebaseAuth } from "../../firebase";
@@ -24,6 +23,7 @@ import { useParams } from "react-router-dom";
 import { tryParseInt } from "../../parsing";
 import SearchIcon from "@mui/icons-material/Search";
 import { DispatchSnackbar } from "../../components/SnackbarDialog";
+import { getLookup } from "../api/lookup";
 
 const useStyles = makeStyles()((theme) => ({
   functionChip: { padding: theme.spacing(1) },
@@ -92,7 +92,7 @@ export default function ArticleDetailsTagPanel(props: {
 
   useEffect(() => {
     async function fetchTagLookup() {
-      const lookup = await getTagLookup();
+      const lookup = await getLookup({ lookupName: "tagData" });
       setLookup(lookup);
     }
 
