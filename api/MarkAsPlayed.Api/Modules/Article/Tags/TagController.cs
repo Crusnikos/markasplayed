@@ -20,17 +20,6 @@ public sealed class TagController : ControllerBase
     }
 
     /// <summary>
-    ///     Retrieves the tag lookup data
-    /// </summary>
-    [HttpGet]
-    public async Task<IEnumerable<TagData>> GetLookupTable()
-    {
-        var data = await _tagQuery.GetLookupTable(HttpContext.RequestAborted);
-
-        return data;
-    }
-
-    /// <summary>
     ///     Retrieves tags by id
     /// </summary>
     [HttpGet("article/{id}")]

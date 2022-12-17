@@ -33,17 +33,19 @@ public sealed class ArticleQuery
                 playedOn = new LookupData
                 {
                     Id = playedOn.Id,
-                    Name = playedOn.Name
+                    Name = playedOn.Name,
+                    GroupName = playedOn.GroupName,
                 },
                 articleType = new LookupData
                 {
                     Id = articleType.Id,
-                    Name = articleType.Name
+                    Name = articleType.Name,
+                    GroupName = articleType.GroupName,
                 },
                 author = new LookupData
                 {
                     Id = author.Id,
-                    Name= author.Name
+                    Name = author.Name
                 }
             }).FirstOrDefaultAsync(cancellationToken);
 
@@ -59,7 +61,8 @@ public sealed class ArticleQuery
             select new LookupData
             {
                 Id = platforms.Id,
-                Name = platforms.Name
+                Name = platforms.Name,
+                GroupName= platforms.GroupName,
             };
 
         var platformsList = await platformsSubquery.ToListAsync(cancellationToken);
@@ -93,7 +96,8 @@ public sealed class ArticleQuery
             {
                 ArticleId = articlePlatforms.ArticleId,
                 PlatformId = articlePlatforms.GamingPlatformId,
-                PlatformName = platforms.Name
+                PlatformName = platforms.Name,
+                PlatformGroupName = platforms.GroupName
             };
 
         var articleSubquery =
@@ -107,12 +111,14 @@ public sealed class ArticleQuery
                 playedOn = new LookupData
                 {
                     Id = playedOn.Id,
-                    Name = playedOn.Name
+                    Name = playedOn.Name,
+                    GroupName = playedOn.GroupName,
                 },
                 articleType = new LookupData
                 {
                     Id = articleType.Id,
-                    Name = articleType.Name
+                    Name = articleType.Name,
+                    GroupName= articleType.GroupName
                 },
                 author = new LookupData
                 {
@@ -124,7 +130,8 @@ public sealed class ArticleQuery
                     Select(q => new LookupData
                     {
                         Id = q.PlatformId,
-                        Name = q.PlatformName
+                        Name = q.PlatformName,
+                        GroupName = q.PlatformGroupName
                     }).ToList()
             };
 

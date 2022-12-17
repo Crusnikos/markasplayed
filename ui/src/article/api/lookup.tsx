@@ -4,6 +4,7 @@ import { settings } from "../../api";
 export type LookupData = {
   id: number;
   name: string;
+  groupName: string;
 };
 
 export type Lookups = {

@@ -24,4 +24,10 @@ public class PlatformData
     /// </summary>
     [Required]
     public string PlatformName { get; set; } = default!;
+
+    /// <summary>
+    ///     Platform group name
+    /// </summary>
+    [Required]
+    public char PlatformGroupName { get; set; } = default!;
 }
