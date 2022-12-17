@@ -7,12 +7,6 @@ export type LookupTagData = {
   groupName: string;
 };
 
-export async function getTagLookup(): Promise<LookupTagData[]> {
-  const response = await axios.get<LookupTagData[]>(`${settings.url}/tags`);
-
-  return response.data;
-}
-
 export async function getArticleTags(request: {
   id: number;
 }): Promise<LookupTagData[]> {

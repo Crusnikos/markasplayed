@@ -12,4 +12,8 @@ public abstract class LookupItem
     [Column("name")]
     [NotNull]
     public string Name { get; set; } = default!;
+
+    [Column("group_name")]
+    [NotNull]
+    public char GroupName { get; set; } = default!;
 }
