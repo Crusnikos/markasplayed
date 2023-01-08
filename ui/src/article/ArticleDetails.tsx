@@ -26,7 +26,6 @@ import { getArticleTags, LookupTagData } from "./api/tag";
 const useStyles = makeStyles()((theme) => ({
   paper: {
     margin: "auto",
-    marginTop: theme.spacing(1),
     marginBottom: theme.spacing(1),
     padding: theme.spacing(2),
   },
@@ -80,6 +79,13 @@ export default function ArticleDetails(props: {
 
   const showLoadingSpinner = loading || requireFetch;
 
+  const handleScrollToArticleDetails = () => {
+    const element = document.getElementById("article-section");
+    if (element) {
+      element.scrollIntoView({ behavior: "smooth" });
+    }
+  };
+
   async function fetchArticleData() {
     if (parsedId === null) {
       return;
@@ -95,6 +101,7 @@ export default function ArticleDetails(props: {
     }
     setLoading(false);
     setRequireFetch(false);
+    handleScrollToArticleDetails();
   }
 
   useEffect(() => {
@@ -161,7 +168,11 @@ export default function ArticleDetails(props: {
   }, [article]);
 
   if (showLoadingSpinner) {
-    return <LoadingIndicator />;
+    return (
+      <Container disableGutters={true} sx={{ height: "80vh" }}>
+        <LoadingIndicator />
+      </Container>
+    );
   }
 
   if (article === undefined) {
@@ -171,7 +182,7 @@ export default function ArticleDetails(props: {
   }
 
   return (
-    <Container disableGutters={true}>
+    <Container disableGutters={true} id="article-section">
       <Paper elevation={6} className={classes.paper}>
         <Stack spacing={2} alignItems="center">
           <Grid

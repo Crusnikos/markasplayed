@@ -16,11 +16,11 @@ import TopMenu from "./TopMenu";
 const useStyles = makeStyles()((theme) => ({
   header: {
     marginTop: theme.spacing(1),
-    marginBottom: theme.spacing(1),
     overflow: "hidden",
   },
   nav: {
-    marginBottom: theme.spacing(1),
+    marginTop: theme.spacing(1.5),
+    marginBottom: theme.spacing(1.5),
   },
 }));
 
@@ -50,7 +50,7 @@ export default function Menu(props: {
 
   return (
     <Fragment>
-      <header className={classes.header}>
+      <header className={classes.header} id="slider-header">
         <PictureSlider
           images={sliderImages}
           setLoading={props.setLoading}
