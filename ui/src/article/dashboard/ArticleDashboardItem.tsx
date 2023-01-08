@@ -29,7 +29,7 @@ import IconGrouping from "../IconGrouping";
 
 const useStyles = makeStyles()((theme) => ({
   articleItem: {
-    marginTop: theme.spacing(1),
+    marginBottom: theme.spacing(1.5),
   },
   imageSection: {
     display: "grid",
@@ -57,7 +57,7 @@ const useStyles = makeStyles()((theme) => ({
     minHeight: "270px",
   },
   header: {
-    background: `linear-gradient(90deg, ${theme.palette.primary.main} 50%, rgba(1,36,0,0) 100%)`,
+    background: `linear-gradient(90deg, ${theme.palette.primary.main} 70%, rgba(1,36,0,0) 100%)`,
     color: theme.palette.common.white,
   },
   subheader: {

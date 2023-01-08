@@ -141,7 +141,7 @@ export function PictureSlider(props: {
         {(!images || (images && isPaused)) && (
           <Box
             component="img"
-            className={classes.image}
+            className={`${classes.image} ${height}`}
             src={`/logo.jpg`}
             alt={i18next.t("image.missing")}
           />
@@ -197,7 +197,7 @@ export function PictureSlider(props: {
           <Box sx={{ flexGrow: 1 }} />
           <Grid item>
             <IconButton
-              size="medium"
+              size={desktopScreen ? "medium" : "small"}
               aria-label="play/pause"
               onClick={() => setIsPaused(!isPaused)}
               className={classes.playPauseButton}

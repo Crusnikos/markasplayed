@@ -32,6 +32,9 @@ const theme = createTheme({
       main: "#ff6200",
       light: "#ffffa7",
     },
+    background: {
+      default: "#e0e0e0",
+    },
   },
   typography: {
     fontFamily: ["Oswald"].join(","),
@@ -79,10 +82,10 @@ export default function App(): JSX.Element {
 
   return (
     <Fragment>
-      <CssBaseline />
       <BrowserRouter>
         <CacheProvider value={muiCache}>
           <ThemeProvider theme={theme}>
+            <CssBaseline />
             {userNotification.message && notification()}
             <FlexWrapper>
               <Menu
