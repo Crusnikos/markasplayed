@@ -41,7 +41,8 @@
       "search": "Wyszukaj"
     },
     "title": {
-      "gallery": "Galeria"
+      "gallery": "Galeria",
+      "tag": "Tagi"
     }
   },
 
