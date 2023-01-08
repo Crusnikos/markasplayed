@@ -183,21 +183,21 @@
       "comedy": "komedia",
       "fantasy": "fantasy",
       "horror": "horror",
-      "mystery": "tajemniczość",
+      "mystery": "pełne tajemnic",
       "romance": "romans",
-      "scienceFiction": "science fiction",
-      "thriller": "dreszczowiec",
+      "scienceFiction": "fantastyka naukowa",
+      "thriller": "kryminał",
       "western": "western"
     },
     "m": {
       "singlePlayer": "jeden gracz",
       "multiPlayer": "wielu graczy",
-      "cooperative": "kooperacyjna",
-      "competitive": "współzawodnictwo",
-      "mmo": "mmo"
+      "cooperative": "gra kooperacyjna",
+      "competitive": "współzawodnictwo w grze",
+      "mmo": "gra online"
     },
     "p": {
-      "badLanguage": "przekleństwa",
+      "badLanguage": "wulgarny język",
       "discrimination": "dyskryminacja",
       "drugs": "narkotyki",
       "fear": "strach",
@@ -208,7 +208,7 @@
       "pegi12": "pegi 12",
       "pegi16": "pegi 16",
       "pegi18": "pegi 18",
-      "sex": "sex",
+      "sex": "seks",
       "violence": "przemoc"
     },
     "t": {
@@ -217,8 +217,8 @@
       "cardGame": "gra karciana",
       "diceGame": "gra z kośćmi",
       "puzzle": "puzzle",
-      "rolePlaying": "role-playing",
-      "sandbox": "sandbox",
+      "rolePlaying": "gra RPG",
+      "sandbox": "otwarty świat",
       "shooter": "strzelanka",
       "simulation": "symulacja",
       "strategy": "strategia",

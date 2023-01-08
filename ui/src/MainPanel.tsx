@@ -1,6 +1,6 @@
 import { makeStyles } from "tss-react/mui";
 import React, { Dispatch, SetStateAction, useEffect, useMemo } from "react";
-import { Grid, Typography } from "@mui/material";
+import { Grid, Typography, useMediaQuery, useTheme } from "@mui/material";
 import { Route, Routes, useLocation } from "react-router-dom";
 import { tryParseInt } from "./parsing";
 import { useArticleData } from "./ArticleListProvider";
@@ -12,6 +12,10 @@ import { DispatchSnackbar } from "./components/SnackbarDialog";
 const useStyles = makeStyles()((theme) => ({
   main: {
     marginBottom: theme.spacing(1),
+  },
+  articleItemAdditionalMargin: {
+    marginLeft: theme.spacing(1),
+    marginRight: theme.spacing(1),
   },
 }));
 
@@ -26,6 +30,11 @@ export default function MainPanel(props: {
   const location = useLocation();
   const qs = new URLSearchParams(location.search);
   const pathname = useMemo(() => location.pathname, [location]);
+
+  const theme = useTheme();
+  const isAdditionalMarginRequired = useMediaQuery(
+    theme.breakpoints.down(1200)
+  );
 
   useEffect(() => {
     async function fetchRequestedPage() {
@@ -42,7 +51,11 @@ export default function MainPanel(props: {
   }, []);
 
   return (
-    <main className={classes.main}>
+    <main
+      className={`${classes.main} ${
+        isAdditionalMarginRequired && classes.articleItemAdditionalMargin
+      }`}
+    >
       <section>
         <Grid
           container

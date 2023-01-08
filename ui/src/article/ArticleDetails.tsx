@@ -26,7 +26,6 @@ import { getArticleTags, LookupTagData } from "./api/tag";
 const useStyles = makeStyles()((theme) => ({
   paper: {
     margin: "auto",
-    marginTop: theme.spacing(1),
     marginBottom: theme.spacing(1),
     padding: theme.spacing(2),
   },

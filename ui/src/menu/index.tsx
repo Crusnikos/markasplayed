@@ -16,11 +16,11 @@ import TopMenu from "./TopMenu";
 const useStyles = makeStyles()((theme) => ({
   header: {
     marginTop: theme.spacing(1),
-    marginBottom: theme.spacing(1),
     overflow: "hidden",
   },
   nav: {
-    marginBottom: theme.spacing(1),
+    marginTop: theme.spacing(1.5),
+    marginBottom: theme.spacing(1.5),
   },
 }));
 
