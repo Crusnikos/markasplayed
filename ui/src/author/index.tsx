@@ -93,7 +93,7 @@ export default function AuthorsListing(props: {
     return (
       <React.Fragment>
         {authorsMenuItem}
-        <Dialog open={open} onClose={closeDialog} fullWidth>
+        <Dialog open={open} fullWidth disableEscapeKeyDown={true}>
           <DialogContent>
             <LoadingIndicator message={i18next.t("loading")} />
           </DialogContent>

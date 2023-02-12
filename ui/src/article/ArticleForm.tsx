@@ -400,7 +400,7 @@ export default function ArticleForm(props: {
     return (
       <React.Fragment>
         {data ? editButton : createMenuItem}
-        <Dialog open={open} onClose={closeDialog} fullWidth>
+        <Dialog open={open} fullWidth disableEscapeKeyDown={true}>
           <DialogContent>
             <LoadingIndicator message={i18next.t("loading")} />
           </DialogContent>
