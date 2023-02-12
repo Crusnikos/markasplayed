@@ -50,7 +50,7 @@ export default function Menu(props: {
 
   return (
     <Fragment>
-      <header className={classes.header}>
+      <header className={classes.header} id="slider-header">
         <PictureSlider
           images={sliderImages}
           setLoading={props.setLoading}
