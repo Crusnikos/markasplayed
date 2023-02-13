@@ -3,13 +3,13 @@
 namespace MarkAsPlayed.Api.Modules.Files.Models;
 
 /// <summary>
-///     Change gallery request
+///     Gallery update request
 /// </summary>
 public class GalleryUpdateRequest
 {
     /// <summary>
-    ///     Files database ids
+    ///     Image id
     /// </summary>
     [Required]
-    public IReadOnlyList<int> GalleryIds { get; init; } = default!;
+    public int Id { get; init; } = default!;
 }

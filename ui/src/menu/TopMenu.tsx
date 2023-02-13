@@ -14,9 +14,7 @@ import MenuItem from "@mui/material/MenuItem";
 import { useFirebaseAuth } from "../firebase";
 import i18next from "i18next";
 import { DispatchSnackbar } from "../components/SnackbarDialog";
-import ArticleForm from "../article/ArticleForm";
-import AuthorsListing from "../author";
-import Login from "../user/Login";
+import { ArticlePopup, AuthorsPopup, LoginPopup } from "../popup";
 
 const useStyles = makeStyles()((theme) => ({
   toolbar: {
@@ -48,6 +46,12 @@ export default function TopMenu(props: {
     setAnchorEl(null);
     await app!.auth().signOut();
   };
+
+  const userLoginState = !authenticated ? (
+    <LoginPopup setAnchorEl={setAnchorEl} />
+  ) : (
+    <MenuItem onClick={handleLogoutClick}>{i18next.t("title.logout")}</MenuItem>
+  );
 
   return (
     <AppBar position="sticky">
@@ -82,21 +86,15 @@ export default function TopMenu(props: {
           open={Boolean(anchorEl)}
           onClose={handleClose}
         >
-          <ArticleForm
+          <ArticlePopup
             responseOnSubmitForm={props.setSnackbar}
             data={undefined}
             images={undefined}
             returnFunction={undefined}
             setAnchorEl={setAnchorEl}
           />
-          <AuthorsListing setAnchorEl={setAnchorEl} />
-          {!authenticated ? (
-            <Login setAnchorEl={setAnchorEl} />
-          ) : (
-            <MenuItem onClick={handleLogoutClick}>
-              {i18next.t("title.logout")}
-            </MenuItem>
-          )}
+          <AuthorsPopup setAnchorEl={setAnchorEl} />
+          {userLoginState}
         </Menu>
       </Toolbar>
     </AppBar>

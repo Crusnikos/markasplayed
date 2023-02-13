@@ -52,15 +52,13 @@ export async function setFrontImage(
 }
 
 export async function updateGallery(
-  updateRequest: {
-    id: number;
-    galleryIds: number[];
-  },
+  articleId: number,
+  galleryId: number,
   token: string
 ): Promise<void> {
   await axios.put(
-    `${settings.url}/files/article/${updateRequest.id}/gallery`,
-    { galleryIds: updateRequest.galleryIds },
+    `${settings.url}/files/article/${articleId}/gallery`,
+    { Id: galleryId },
     {
       headers: {
         Authorization: `Bearer ${token}`,
@@ -70,19 +68,15 @@ export async function updateGallery(
 }
 
 export async function addToGallery(
-  addRequest: {
-    articleId: number;
-    files: File[];
-  },
+  articleId: number,
+  file: File,
   token: string
 ): Promise<void> {
   const formData = new FormData();
-  Array.from(addRequest.files).forEach((file) => {
-    formData.append("files", file);
-  });
+  formData.append("file", file);
 
   await axios.post(
-    `${settings.url}/files/article/${addRequest.articleId}/gallery`,
+    `${settings.url}/files/article/${articleId}/gallery`,
     formData,
     {
       headers: {

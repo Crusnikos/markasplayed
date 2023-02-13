@@ -1,11 +1,18 @@
-import React, { Dispatch, SetStateAction, useEffect } from "react";
+import React, { Dispatch, SetStateAction, useEffect, useState } from "react";
 import Snackbar from "@mui/material/Snackbar";
-import { Alert, AlertColor } from "@mui/material";
+import {
+  Alert,
+  AlertColor,
+  Slide,
+  SlideProps,
+  Typography,
+} from "@mui/material";
 import { makeStyles } from "tss-react/mui";
 
 const useStyles = makeStyles()(() => ({
   alert: {
     width: "100%",
+    whiteSpace: "pre-wrap",
   },
 }));
 
@@ -16,23 +23,42 @@ export type DispatchSnackbar = Dispatch<
   }>
 >;
 
+function displaySubmessages(message: string) {
+  return (
+    <Typography
+      variant="subtitle1"
+      lineHeight={"0.6rem"}
+      fontSize={13}
+    >{`\n${message}`}</Typography>
+  );
+}
+
+function TransitionRight(props: SlideProps) {
+  return <Slide {...props} direction="right" />;
+}
+
 export default function SnackbarDialog(props: {
-  message: string | undefined;
+  message: string;
   clearMessage: DispatchSnackbar;
   severity?: AlertColor;
 }): JSX.Element {
   const { classes } = useStyles();
   const { message, clearMessage, severity } = props;
-  const [open, setOpen] = React.useState(true);
+  const [open, setOpen] = useState(true);
+  const [splitMessage, setSplitMessage] = useState<string[]>([]);
 
   useEffect(() => {
+    if (message === undefined || message === "") return;
+
     setOpen(true);
+    setSplitMessage(message.split(";"));
   }, [message]);
 
   return (
     <Snackbar
       open={open}
-      autoHideDuration={6000}
+      TransitionComponent={TransitionRight}
+      autoHideDuration={12000}
       onClose={() => clearMessage({ message: undefined, severity: undefined })}
     >
       <Alert
@@ -43,7 +69,8 @@ export default function SnackbarDialog(props: {
         severity={severity ?? `info`}
         className={classes.alert}
       >
-        {message}
+        {splitMessage[0]}
+        {splitMessage.slice(1).map((sm) => displaySubmessages(sm))}
       </Alert>
     </Snackbar>
   );

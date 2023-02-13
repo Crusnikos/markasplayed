@@ -19,9 +19,9 @@ import ArticleDetailsTagPanel from "./details/ArticleDetailsTagPanel";
 import { ImageData, getFrontImage, getGallery } from "./api/files";
 import { FullArticleData, getArticle } from "./api/article";
 import i18next from "i18next";
-import ArticleForm from "./ArticleForm";
 import { DispatchSnackbar } from "../components/SnackbarDialog";
 import { getArticleTags, LookupTagData } from "./api/tag";
+import { ArticlePopup } from "../popup";
 
 const useStyles = makeStyles()((theme) => ({
   paper: {
@@ -193,7 +193,7 @@ export default function ArticleDetails(props: {
           >
             <Typography variant="h4" className={classes.title}>
               {article.title.toLocaleUpperCase()}
-              <ArticleForm
+              <ArticlePopup
                 data={article}
                 images={{ main: frontImage, gallery: gallery }}
                 returnFunction={setRequireFetch}

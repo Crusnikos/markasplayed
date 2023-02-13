@@ -107,7 +107,7 @@ public sealed class FilesController : ControllerBase
     }
 
     /// <summary>
-    ///     Update gallery
+    ///     Update gallery image
     /// </summary>
     [Authorize]
     [HttpPut("article/{id}/gallery")]
@@ -118,43 +118,41 @@ public sealed class FilesController : ControllerBase
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> UpdateGalleryAsync([FromBody] GalleryUpdateRequest request, int id)
     {
-        var response = await _filesCommand.UpdateGalleryAsync(request.GalleryIds, id, HttpContext.RequestAborted);
+        var response = await _filesCommand.UpdateGalleryAsync(request.Id, id, HttpContext.RequestAborted);
 
         return response.Status switch
         {
             StatusCodesHelper.NotFound => NotFound(),
             StatusCodesHelper.InternalError => Problem(
                 statusCode: 500,
-                title: "Failed to update gallery"
+                title: "Failed to update gallery image"
                 ),
             _ => Ok(id)
         };
     }
 
     /// <summary>
-    ///     Add images to gallery
+    ///     Add image to gallery
     /// </summary>
     [Authorize]
     [HttpPost("article/{id}/gallery")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status409Conflict)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> AddToGalleryAsync([FromForm] GalleryAddRequest request, int id)
     {
         var response = await _filesCommand.AddToGalleryAsync(
-                request.Files, 
+                request.File, 
                 Path.Combine(_env.ContentRootPath, "Image", id.ToString(), "Gallery"),
                 id,
                 HttpContext.RequestAborted);
 
         return response.Status switch
         {
-            StatusCodesHelper.Conflict => Conflict(),
             StatusCodesHelper.InternalError => Problem(
                 statusCode: 500,
-                title: "Failed add images to gallery"
+                title: "Failed add image to gallery"
                 ),
             _ => NoContent()
         };

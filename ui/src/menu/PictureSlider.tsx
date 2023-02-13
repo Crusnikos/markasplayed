@@ -7,6 +7,7 @@ import { useNavigate } from "react-router-dom";
 import { SliderData } from "../article/api/files";
 import i18next from "i18next";
 import CustomDecoratedTag from "../components/customDecoratedTag";
+import fadeIn from "../animatedEffects/fadeIn.module.css";
 
 const useStyles = makeStyles()((theme) => ({
   mobileComponentHeight: {
@@ -24,19 +25,6 @@ const useStyles = makeStyles()((theme) => ({
     objectPosition: "50% 50%",
     cursor: "pointer",
   },
-  imageAnimation: {
-    animation: "fadeIn 5s",
-    "@keyframes fadeIn": {
-      "0%": {
-        opacity: 0,
-        visibility: "hidden",
-      },
-      "100%": {
-        opacity: 1,
-        visibility: "visible",
-      },
-    },
-  },
   overlayImage: {
     maxWidth: "100%",
   },
@@ -48,7 +36,7 @@ const useStyles = makeStyles()((theme) => ({
   },
   inactiveSlideButton: {
     "&:disabled": {
-      backgroundColor: theme.palette.warning.main,
+      backgroundColor: theme.palette.error.main,
     },
   },
   activeSlideButton: {
@@ -132,7 +120,7 @@ export function PictureSlider(props: {
           <Box
             key={currentIndex}
             component="img"
-            className={`${classes.image} ${classes.imageAnimation} ${height}`}
+            className={`${classes.image} ${height} ${fadeIn.animate}`}
             src={`${images[currentIndex].imagePathName}?${Date.now()}`}
             alt={i18next.t("image.missing")}
             onClick={handleRedirect}

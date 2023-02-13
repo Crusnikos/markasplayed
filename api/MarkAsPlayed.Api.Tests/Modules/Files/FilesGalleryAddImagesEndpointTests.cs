@@ -60,26 +60,12 @@ public class FilesGalleryAddImagesEndpointTests : IClassFixture<FilesGalleryAddI
     }
 
     [Fact]
-    public async Task ShouldReturn409DuringAProcessThatWasPartiallySuccessful()
-    {
-        var response = await _suite.Client.AllowHttpStatus(HttpStatusCode.Conflict).
-            Request("files", "article", _suite.testId.ToString(), "gallery").
-            PostMultipartAsync(mp =>
-            {
-                mp.AddFile("files", "/app/MarkAsPlayed.Api.Tests/TestImages/test1png.png");
-                mp.AddFile("files", "/app/MarkAsPlayed.Api.Tests/TestImages/test1webp.webp");
-            });
-        response.StatusCode.Should().Be((int)HttpStatusCode.Conflict);
-    }
-
-    [Fact]
-    public async Task ShouldSaveGalleryImages()
+    public async Task ShouldSaveGalleryImage()
     {
         var response = await _suite.Client.Request("files", "article", _suite.testId.ToString(), "gallery").
             PostMultipartAsync(mp =>
             {
-                mp.AddFile("files", "/app/MarkAsPlayed.Api.Tests/TestImages/test1webp.webp");
-                mp.AddFile("files", "/app/MarkAsPlayed.Api.Tests/TestImages/test2webp.webp");
+                mp.AddFile("file", "/app/MarkAsPlayed.Api.Tests/TestImages/test1webp.webp");
             });
 
         response.StatusCode.Should().Be((int)HttpStatusCode.NoContent);
@@ -88,6 +74,6 @@ public class FilesGalleryAddImagesEndpointTests : IClassFixture<FilesGalleryAddI
 
         var items = await db.ArticleImages.Where(image => image.ArticleId == _suite.testId).ToListAsync();
 
-        items.Should().HaveCountGreaterThan(1);
+        items.Should().HaveCount(1);
     }
 }

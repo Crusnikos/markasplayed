@@ -16,7 +16,7 @@ public sealed class Migrator
             Build();
     }
 
-    public Task RunAsync(string connectionString, CancellationToken cancellationToken = default)
+    public Task<List<string>> RunAsync(string connectionString, CancellationToken cancellationToken = default)
     {
         if (connectionString == null)
         {
@@ -30,25 +30,33 @@ public sealed class Migrator
             Console.ForegroundColor = ConsoleColor.Green;
             Console.WriteLine("Database upgrade is not required");
             Console.ResetColor();
-            return Task.CompletedTask;
+            return Task.FromResult(new List<string>());
         }
 
         Console.WriteLine($"Number of scripts to execute: {engine.GetScriptsToExecute().Count}");
 
         var operation = engine.PerformUpgrade();
+        var executedScripts = engine.GetExecutedScripts();
+
         if (operation.Successful)
         {
             Console.ForegroundColor = ConsoleColor.Green;
             Console.WriteLine("Database successfully upgraded");
             Console.ResetColor();
-            return Task.CompletedTask;
+            return Task.FromResult(executedScripts);
         }
         else
         {
             Console.ForegroundColor = ConsoleColor.Red;
             Console.WriteLine("Database could not be updated");
             Console.ResetColor();
-            return Task.CompletedTask;
+            Console.WriteLine("\n");
+
+            Console.WriteLine("Error:");
+            Console.WriteLine(operation.Error.Message);
+            Console.WriteLine("\n");
+
+            return Task.FromResult(executedScripts);
         }
     }
 

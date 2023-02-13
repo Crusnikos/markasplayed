@@ -18,6 +18,11 @@ const useStyles = makeStyles()((theme) => ({
     height: "100%",
     borderRadius: "50%",
   },
+  container: {
+    padding: theme.spacing(3),
+    height: "350px",
+    overflow: "auto",
+  },
 }));
 
 function descriptionSelector(
@@ -50,27 +55,29 @@ export default function AuthorItem(props: { data: AuthorData }): JSX.Element {
 
   return (
     <React.Fragment>
-      <Grid item>
-        <Grid
-          container
-          className={classes.avatarBorder}
-          alignItems="center"
-          justifyContent="center"
-        >
-          {authorImage && (
-            <Box
-              component="img"
-              className={classes.avatarImage}
-              src={`${authorImage?.imagePathName}?${Date.now()}`}
-              alt={i18next.t("image.missing")}
-            />
-          )}
+      <Grid container spacing={1} className={classes.container}>
+        <Grid item>
+          <Grid
+            container
+            className={classes.avatarBorder}
+            alignItems="center"
+            justifyContent="center"
+          >
+            {authorImage && (
+              <Box
+                component="img"
+                className={classes.avatarImage}
+                src={`${authorImage?.imagePathName}?${Date.now()}`}
+                alt={i18next.t("image.missing")}
+              />
+            )}
+          </Grid>
         </Grid>
+        <Grid item>
+          <Typography variant="h5">{author.name}</Typography>
+        </Grid>
+        <Grid item>{descriptionSelector(i18n.resolvedLanguage, author)}</Grid>
       </Grid>
-      <Grid item>
-        <Typography variant="h5">{author.name}</Typography>
-      </Grid>
-      <Grid item>{descriptionSelector(i18n.resolvedLanguage, author)}</Grid>
     </React.Fragment>
   );
 }
