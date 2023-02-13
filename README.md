@@ -76,4 +76,5 @@ Process launching containers in terminal:
 - 1.2.7 - commit fd39f89 - slider improvments
 - 1.2.8 - commit a670ecf - fixed slider dots on mobile screen
 - 1.3.0 - commit daf8199 - api tests included, more tags and more platforms included
-- 1.3.1 - commit last - alter tags component styling, waiting window fix and scroll to article details
+- 1.3.1 - commit b9f0e3a - alter tags component styling, waiting window fix and scroll to article details
+- 1.3.2 - work in progress
