@@ -16,10 +16,19 @@
     }
   },
   "FrontendUrl": "http://localhost:3000",
+  "AllowedHosts": "*",
   "RootPath": "/app/MarkAsPlayed.Api",
   "Firebase": {
-    "ProjectId": "mark-as-played-auth",
+    "ProjectId": "", //needs to be supplemented
     "TestUserId": ""
   },
-  "TestingEnvironment": "false"
+  "TestingEnvironment": "false",
+  "AdministrationUsers": [
+    {
+      "FirebaseId": "", //needs to be supplemented
+      "Name": "", //needs to be supplemented
+      "DescriptionPl": "", //needs to be supplemented
+      "DescriptionEn": "" //needs to be supplemented
+    }
+  ]
 }

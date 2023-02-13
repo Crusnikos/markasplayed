@@ -7,5 +7,6 @@ public enum StatusCodesHelper
     NoContent,
     NotFound,
     Conflict,
-    InternalError
+    InternalError,
+    UnprocessableContent
 }

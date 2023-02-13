@@ -39,6 +39,18 @@ public sealed class ArticleCommand
                 };
             }
 
+            if (request.ArticleType == (int)ArticleTypeHelper.review && 
+                !request.AvailableOn!.Any(ao => ao == request.PlayedOn!.Value))
+            {
+                return new CommonResponseTemplate
+                {
+                    ArticleIdentifier = null,
+                    Status = StatusCodesHelper.UnprocessableContent,
+                    ExceptionCaptured = null,
+                    Message = "Platform list is invalid (missing playedOn value)"
+                };
+            }
+
             var trimmedLongDescription = request.LongDescription.Trim();
             var trimmedShortDescription = request.ShortDescription.Trim();
 
@@ -51,7 +63,7 @@ public sealed class ArticleCommand
                     LongDescription = trimmedLongDescription,
                     ShortDescription = trimmedShortDescription,
                     PlayedOnGamingPlatformId = request.PlayedOn,
-                    ArticleTypeId = request.ArticleType!.Value,
+                    ArticleTypeId = (int)request.ArticleType,
                     CreatedBy = author.Id
                 },
                 cancellationToken
@@ -127,13 +139,25 @@ public sealed class ArticleCommand
                 };
             }
 
+            if (request.ArticleType == (int)ArticleTypeHelper.review &&
+                !request.AvailableOn!.Any(ao => ao == request.PlayedOn!.Value))
+            {
+                return new CommonResponseTemplate
+                {
+                    ArticleIdentifier = null,
+                    Status = StatusCodesHelper.UnprocessableContent,
+                    ExceptionCaptured = null,
+                    Message = "Platform list is invalid (missing playedOn value)"
+                };
+            }
+
             var trimmedLongDescription = request.LongDescription.Trim();
             var trimmedShortDescription = request.ShortDescription.Trim();
 
             var updatedRecords = await db.Articles.Where(a => a.Id == id).
                 Set(a => a.CreatedAt, oldArticleData!.CreatedAt).
                 Set(a => a.PlayedOnGamingPlatformId, request.PlayedOn).
-                Set(a => a.ArticleTypeId, request.ArticleType).
+                Set(a => a.ArticleTypeId, (int)request.ArticleType).
                 Set(a => a.LongDescription, trimmedLongDescription).
                 Set(a => a.ShortDescription, trimmedShortDescription).
                 Set(a => a.PlayTime, request.PlayTime).

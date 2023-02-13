@@ -8,8 +8,8 @@ namespace MarkAsPlayed.Api.Modules.Files.Models;
 public class GalleryAddRequest
 {
     /// <summary>
-    ///     Files list
+    ///     File data
     /// </summary>
     [Required]
-    public IReadOnlyList<IFormFile> Files { get; init; } = default!;
+    public IFormFile File { get; init; } = default!;
 }

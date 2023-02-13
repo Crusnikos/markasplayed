@@ -17,3 +17,4 @@ dist
 api/**/*.xml
 *.log
 *eslintcache
+api/**/appsettings*.json

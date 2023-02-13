@@ -1,5 +1,6 @@
 import React, {
   Dispatch,
+  ReactNode,
   SetStateAction,
   useEffect,
   useMemo,
@@ -20,6 +21,7 @@ import {
 import { makeStyles } from "tss-react/mui";
 import { useNavigate } from "react-router-dom";
 import AnnouncementIcon from "@mui/icons-material/Announcement";
+import ArticleIcon from "@mui/icons-material/Article";
 import { DashboardArticleData } from "../api/article";
 import { getFrontImage, ImageData } from "../api/files";
 import IconSelector from "../IconSelector";
@@ -93,7 +95,7 @@ const useStyles = makeStyles()((theme) => ({
     minHeight: theme.spacing(8),
     padding: theme.spacing(2),
     paddingRight: theme.spacing(4),
-    background: `linear-gradient(90deg, rgba(1,36,0,0) 20%, ${theme.palette.warning.main} 80%)`,
+    background: `linear-gradient(90deg, rgba(1,36,0,0) 20%, ${theme.palette.error.main} 80%)`,
     marginTop: "auto",
   },
   eachFooterIcons: {
@@ -122,7 +124,25 @@ export default function ArticleDashboardItem(props: {
     () => IconGrouping(data.availableOn),
     [data]
   );
-  const platform = IconSelector(data.playedOn.groupName, "white");
+
+  function ArticleIconSelector(): ReactNode {
+    switch (data.articleType.name) {
+      case "review":
+        return (
+          <CardMedia
+            component="img"
+            image={IconSelector(data.playedOn.groupName, "white")}
+            alt={i18next.t("image.missing")}
+            height="64"
+            className={classes.playedOnIcon}
+          />
+        );
+      case "news":
+        return <AnnouncementIcon className={classes.announcementIcon} />;
+      default:
+        return <ArticleIcon className={classes.announcementIcon} />;
+    }
+  }
   const navigate = useNavigate();
 
   const theme = useTheme();
@@ -214,19 +234,7 @@ export default function ArticleDashboardItem(props: {
             <Grid container direction="row" justifyContent="space-between">
               <Grid item xl={10} md={9} xs={12} className={classes.header}>
                 <CardHeader
-                  avatar={
-                    data.playedOn.id !== null ? (
-                      <CardMedia
-                        component="img"
-                        image={platform}
-                        alt={i18next.t("image.missing")}
-                        height="64"
-                        className={classes.playedOnIcon}
-                      />
-                    ) : (
-                      <AnnouncementIcon className={classes.announcementIcon} />
-                    )
-                  }
+                  avatar={ArticleIconSelector()}
                   title={data.title}
                   subheader={
                     <Typography color={classes.subheader}>

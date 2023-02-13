@@ -83,6 +83,7 @@ public sealed class ArticleController : ControllerBase
         return response.Status switch
         {
             StatusCodesHelper.NotFound => NotFound(),
+            StatusCodesHelper.UnprocessableContent => UnprocessableEntity(),
             StatusCodesHelper.InternalError => Problem(
                 statusCode: 500, 
                 title: "Failed to create article"
@@ -111,6 +112,7 @@ public sealed class ArticleController : ControllerBase
         return response.Status switch
         {
             StatusCodesHelper.NotFound => NotFound(),
+            StatusCodesHelper.UnprocessableContent => UnprocessableEntity(),
             StatusCodesHelper.InternalError => Problem(
                 statusCode: 500,
                 title: $"Failed to update {response.ArticleIdentifier} article"

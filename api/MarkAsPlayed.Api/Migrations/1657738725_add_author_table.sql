@@ -15,12 +15,10 @@ into author (
 )
 values
 (
-    'tyNb24iSjGPBGJUZeLQut4QV0Pu2',
-    'Michał Kubrak',
-    'Urodzony 4 stycznia 1990 roku w Łomży (miasto w północno-wschodniej Polsce). Z wykształcenia inżynier informatyk. 
-    Początkujący programista. Fan gier video, gier planszowych, horrorów i ciężkiej muzyki.',
-    'Born on January 4, 1990 in Lomza (city in north-eastern Poland). An IT engineer.
-    Beginner programmer. Fan of video games, board games, horrors and heavy music.'
+    'unique1',
+    'John Doe',
+    'Polish Lorem ipsum',
+    'English Lorem ipsum'
 );
 
 alter table article

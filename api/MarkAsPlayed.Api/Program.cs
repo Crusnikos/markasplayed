@@ -1,3 +1,4 @@
+using MarkAsPlayed.Api;
 using MarkAsPlayed.Api.Data;
 using MarkAsPlayed.Api.Lookups;
 using MarkAsPlayed.Api.Modules.Article;
@@ -11,6 +12,11 @@ using Microsoft.Extensions.FileProviders;
 using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Check for appsettings.json
+
+var isTest = Convert.ToBoolean(builder.Configuration["TestingEnvironment"]);
+SetupConfigurationHandler.CheckForConfiguration(builder.Configuration["RootPath"], isTest);
 
 // Add services to the container.
 
@@ -73,8 +79,6 @@ builder.Services.
             .SetMinimumLevel(LogLevel.Information);
     });
 
-var testMode = Convert.ToBoolean(builder.Configuration["TestingEnvironment"]);
-
 // Setting modules
 
 ArticleConfiguration.ConfigureModule(builder.Services);
@@ -88,9 +92,9 @@ var app = builder.Build();
 
 app.MapHealthChecks("/health");
 
-if(testMode is false)
+if(isTest is false)
 {
-    Console.WriteLine("Starting the application");
+    Console.WriteLine("-----\nStarting the application");
     var configuration = app.Services.GetService<IConfiguration>();
     if (configuration is null)
     {
@@ -100,9 +104,19 @@ if(testMode is false)
     Console.WriteLine("Configuration resolved correctly");
     Console.ResetColor();
 
-    Console.WriteLine("Start migrations");
+    Console.WriteLine("-----\nStart migrations");
     var migrator = new Migrator();
-    await migrator.RunAsync(configuration.GetConnectionString("MainDatabase"));
+    var executedScripts = await migrator.RunAsync(configuration.GetConnectionString("MainDatabase"));
+
+    var administrationUsers = configuration.GetSection("AdministrationUsers").Get<List<AdministrationUserData>>();
+    var setupConfigurationHandler = new SetupConfigurationHandler();
+    Console.WriteLine($"-----\nInsert {administrationUsers.Count} administration users");
+    await setupConfigurationHandler.InsertAdministrationUsers(administrationUsers, postgresConnection);
+
+    Console.WriteLine("-----\nRun post database fixes");
+    await setupConfigurationHandler.DatabasePostFixer(postgresConnection, executedScripts);
+
+    Console.WriteLine("-----\n");
 }
 
 if (app.Environment.IsDevelopment())

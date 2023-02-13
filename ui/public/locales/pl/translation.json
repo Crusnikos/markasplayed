@@ -48,8 +48,8 @@
 
   "footer": {
     "about": {
-      "p1": "Mark As Played jest blogiem poświeconym grom oraz portfoliem. Czytaj recenzje, sprawdzaj aktualności, poznaj lepiej autora!",
-      "p2": "Tworzenie bloga o tematyce około gamingowej było moim skromnym marzeniem już od dobrych kilku lat. Ambitnie czekałem do momentu, kiedy moje zdolności programistyczne osiągną wystarczający poziom abym mógł sam wszystko zakodować. Dzień ten w końcu nadszedł, blog ruszył, a moja głowa wypełniona jest tuzinami pomysłów co mogę zrobić lepiej, co dodać nowego.",
+      "p1": "Mark As Played - Aplikacja webowa - Blog - Portfolio - Małe i przyjazne miejsce stworzone do dzielenia pasji do gier oraz programowania",
+      "p2": "Mark As Played prawdopodobnie nigdy nie będzie w czołówce blogów związanych z grami. Bardzo prawdopodobne również, że nigdy nie będzie idealnie zakodowany i dalej będzie przy nim mnóstwo pracy. Natomiast pewne jest, że ja oraz osoby zangażowane w projekt dołożą wszelkich starań aby MAP żył i się rozwijał. Dlatego jest mi niezmiernie miło zaprosić Cię wędrowcze do regularnych wizyt oraz do kontaktu.",
       "p3": "Serwis jest cały czas w trakcie budowy. W przypadku wystąpienia jakichkolwiek problemów serdecznie przepraszam."
     },
     "header": {
@@ -73,11 +73,6 @@
         "notSelected": "Nie wybrałeś zdjęcia",
         "set": "Wystąpił problem podczas zapisu głównego zdjęcia, proszę spróbuj później"
       },
-      "gallery": {
-        "add": "Wystąpił problem podczas dodawania do galerii, proszę spróbuj później",
-        "noChange": "Brak zmian do wykonania",
-        "update": "Wystąpił problem podczas edytowania galerii, proszę spróbuj później"
-      },
       "login": "Nie udało się zalogować, sprawdź poprawność danych i spróbuj ponownie",
       "lookup": {
         "retrieve": "Wystąpił problem podczas pobierania danych"
@@ -93,11 +88,6 @@
         "producer": "Producent",
         "shortDescription": "Wprowadzenie",
         "title": "Tytuł"
-      },
-      "gallery": {
-        "active": "Aktywne",
-        "delete": "Usuń",
-        "hidden": "Ukryte"
       },
       "user": {
         "email": "Email",
@@ -117,11 +107,7 @@
     "submit": {
       "article": {
         "edit": "Edytuj artykuł",
-        "save": "Zapisz"
-      },
-      "gallery": {
-        "add": "Dodaj artykuł",
-        "edit": "Edytuj obrazy"
+        "save": "Zapisz artykuł"
       },
       "login": "Zaloguj",
       "notAvailable": "Niedostępne"
@@ -130,19 +116,18 @@
       "article": {
         "add": "Artykuł dodany",
         "update": "Artykuł zaktualizowany"
-      },
-      "gallery": {
-        "update": "Obrazy zaktualizowane"
       }
     },
     "view": {
       "article": "ARTYKUŁ",
+      "cover": "OKŁADKA",
       "gallery": "GALERIA"
     },
     "warning": {
       "gallery": {
-        "partiallyAdd": "Nie wszystkie obrazy zostały dodane do galerii",
-        "setHidden": "Zdjęcie oznaczone jako ukryte zostanę zdezaktywowane po zatwierdzeniu edycji galerii"
+        "deactivatedInfo": " obrazów zostanie zdezaktywowanych",
+        "failedAdd": " obrazów nie zostało dodanych do galerii",
+        "failedUpdate": " obrazów nie zostało zdezaktywowanych w galerii"
       }
     }
   },
@@ -151,7 +136,21 @@
     "missing": "Obraz niedostępny"
   },
 
-  "loading": "Proszę czekać...",
+  "loading": {
+    "defaultMessage": "Proszę czekać...",
+    "prefix": {
+      "done": "Gotowe",
+      "inprogress": "W trakcie"
+    },
+    "progress": {
+      "articleCreate": "Tworzenie artykułu",
+      "articleUpdate": "Aktualizowanie artykułu",
+      "authentication": "Uwierzytelnianie",
+      "frontImageCreate": "Dodawanie głównego zdjęcia",
+      "galleryAdd": "Dodawanie obrazów do galerii",
+      "galleryUpdate": "Dezaktywowanie wybranych obrazów galerii"
+    }
+  },
 
   "routing": {
     "error": {
@@ -167,6 +166,7 @@
   "subtitle": {
     "article": "Zapisywanie oraz edytowanie formularza dostępne tylko dla zalogowanych",
     "login": "Logowanie dostępne tylko dla użytkowników administracji",
+    "galleryImage": "Akceptowany wyłącznie format webp i zalecana rozdzielczość 1920x1080",
     "mainPicture": "Akceptowany wyłącznie format webp i zalecana rozdzielczość 1280x720"
   },
 

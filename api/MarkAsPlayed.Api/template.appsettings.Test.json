@@ -3,7 +3,7 @@
     "MainDatabase": "Host=db;Database=markasplayed;Username=markasplayed;Password=markasplayed;Pooling=false"
   },
   "Cors": {
-    "ExposedHeaders": [ "articles-count", "display-page" ]
+    "ExposedHeaders": ["articles-count", "display-page"]
   },
   "Logging": {
     "LogLevel": {
@@ -19,7 +19,15 @@
   "RootPath": "/app/MarkAsPlayed.Api",
   "Firebase": {
     "ProjectId": "test",
-    "TestUserId": "tyNb24iSjGPBGJUZeLQut4QV0Pu2"
+    "TestUserId": "unique1"
   },
-  "TestingEnvironment": "true"
+  "TestingEnvironment": "true",
+  "AdministrationUsers": [
+    {
+      "FirebaseId": "unique1",
+      "Name": "John Doe",
+      "DescriptionPl": "Polish Lorem ipsum",
+      "DescriptionEn": "English Lorem ipsum"
+    }
+  ]
 }

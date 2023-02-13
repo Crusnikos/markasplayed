@@ -23,14 +23,19 @@ const theme = createTheme({
   palette: {
     primary: {
       main: "#519657",
-      light: "#81c784",
-    },
-    secondary: {
-      main: "#efebe9",
+      light: "#aece90",
     },
     warning: {
-      main: "#ff6200",
-      light: "#ffffa7",
+      main: "#fb8c00",
+      light: "#ffb74d",
+    },
+    error: {
+      main: "#dc2323",
+      light: "#e34f4f",
+    },
+    info: {
+      main: "#0275d8",
+      light: "#8dc9fc",
     },
     background: {
       default: "#e0e0e0",
@@ -38,7 +43,7 @@ const theme = createTheme({
   },
   typography: {
     fontFamily: ["Oswald"].join(","),
-    fontSize: 18,
+    fontSize: 17,
   },
 });
 
@@ -54,7 +59,7 @@ export default function App(): JSX.Element {
   function notification() {
     return (
       <SnackbarDialog
-        message={userNotification.message}
+        message={userNotification.message ?? ""}
         clearMessage={setUserNotification}
         severity={userNotification.severity}
       />
