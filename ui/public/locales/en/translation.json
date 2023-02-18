@@ -73,11 +73,6 @@
         "notSelected": "You have not selected a photo",
         "set": "Failed while saving front image, please try again later"
       },
-      "gallery": {
-        "add": "Failed while adding to gallery, please try again later",
-        "noChange": "No changes to be made",
-        "update": "Failed while updating gallery, please try again later"
-      },
       "login": "Failed to login, please check your data and try again",
       "lookup": {
         "retrieve": "Failed to retrieve lookups"
@@ -93,11 +88,6 @@
         "producer": "Producer",
         "shortDescription": "Short description",
         "title": "Title"
-      },
-      "gallery": {
-        "active": "Active",
-        "delete": "Delete",
-        "hidden": "Hidden"
       },
       "user": {
         "email": "Email",
@@ -117,11 +107,7 @@
     "submit": {
       "article": {
         "edit": "Edit article",
-        "save": "Save"
-      },
-      "gallery": {
-        "add": "Add article",
-        "edit": "Edit images"
+        "save": "Save article"
       },
       "login": "Login",
       "notAvailable": "Not available"
@@ -130,19 +116,18 @@
       "article": {
         "add": "Article added",
         "update": "Article updated"
-      },
-      "gallery": {
-        "update": "Images updated"
       }
     },
     "view": {
       "article": "ARTICLE",
+      "cover": "COVER",
       "gallery": "GALLERY"
     },
     "warning": {
       "gallery": {
-        "partiallyAdd": "Not all images have been added to the gallery",
-        "setHidden": "After editing the gallery photos marked as hidden will be deactivated"
+        "deactivatedInfo": " images will be deactivated",
+        "failedAdd": " images have't been added to the gallery",
+        "failedUpdate": " images have't been deactivated in the gallery"
       }
     }
   },
@@ -151,7 +136,21 @@
     "missing": "Missing picture"
   },
 
-  "loading": "Please wait...",
+  "loading": {
+    "defaultMessage": "Please wait...",
+    "prefix": {
+      "done": "Done",
+      "inprogress": "In progress"
+    },
+    "progress": {
+      "articleCreate": "Article creation",
+      "articleUpdate": "Article update",
+      "authentication": "Authentication",
+      "frontImageCreate": "Front image creation",
+      "galleryAdd": "Adding images to gallery",
+      "galleryUpdate": "Deactivate selected gallery images"
+    }
+  },
 
   "routing": {
     "error": {
@@ -167,6 +166,7 @@
   "subtitle": {
     "article": "Saving and editing form available only to administration users",
     "login": "Login available only to administration users",
+    "galleryImage": "Only webp format is accepted and 1920x1080 resolution is recommended",
     "mainPicture": "Only webp format is accepted and 1280x720 resolution is recommended"
   },
 

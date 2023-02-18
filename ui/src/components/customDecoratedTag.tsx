@@ -11,7 +11,7 @@ const useStyles = makeStyles()((theme) => ({
   },
   background: {
     margin: theme.spacing(1.5),
-    backgroundImage: `linear-gradient(45deg, ${theme.palette.warning.main} 0%, #ffb31a 51%, ${theme.palette.warning.main}  100%)`,
+    backgroundImage: `linear-gradient(45deg, ${theme.palette.error.main} 0%, #ffb31a 51%, ${theme.palette.error.main}  100%)`,
     borderRadius: theme.spacing(1),
     alignSelf: "start",
     boxShadow: "2px 4px 6px 4px rgba(63, 63, 68, 1)",

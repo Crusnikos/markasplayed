@@ -1,80 +1,92 @@
-import {
-  Button,
-  Chip,
-  Dialog,
-  DialogContent,
-  DialogContentText,
-  DialogTitle,
-  Grid,
-  IconButton,
-  MenuItem,
-  Typography,
-  useMediaQuery,
-  useTheme,
-} from "@mui/material";
-import React, { Dispatch, SetStateAction, useEffect, useState } from "react";
-import LoadingIndicator from "../components/LoadingIndicator";
-import {
-  ArticleFormData,
-  FullArticleData,
-  ArticleTypes,
-  updateArticle,
-  createArticle,
-} from "./api/article";
-import { getLookup, Lookups } from "./api/lookup";
-import { makeStyles } from "tss-react/mui";
-import CloseIcon from "@mui/icons-material/Close";
-import KeyboardDoubleArrowLeftIcon from "@mui/icons-material/KeyboardDoubleArrowLeft";
-import KeyboardDoubleArrowRightIcon from "@mui/icons-material/KeyboardDoubleArrowRight";
-import { useNavigate } from "react-router-dom";
-import ExceptionPage from "../components/ExceptionPage";
-import {
-  addToGallery,
-  ImageData,
-  setFrontImage,
-  updateGallery,
-} from "./api/files";
-import { useArticleData } from "../ArticleListProvider";
-import ArticleContentForm from "./form/ArticleContentForm";
-import ArticleGalleryForm from "./form/ArticleGalleryForm";
-import { useFirebaseAuth } from "../firebase";
-import i18next from "i18next";
-import { AxiosError } from "axios";
-import EditIcon from "@mui/icons-material/Edit";
+import React, { useEffect, useReducer, useState } from "react";
 import { DispatchSnackbar } from "../components/SnackbarDialog";
-import { stopPropagationForTab } from "../stopPropagationForTab";
+import { MaintenceState } from "../popup/state";
+import { ArticleFormData, ArticleTypes, FullArticleData } from "./api/article";
+import { Lookups } from "./api/lookup";
+import { ImageData } from "./api/files";
+import { makeStyles } from "tss-react/mui";
+import {
+  Accordion,
+  AccordionDetails,
+  AccordionSummary,
+  Button,
+  FormControl,
+  Grid,
+  Typography,
+} from "@mui/material";
+import i18next from "i18next";
+import ExpandCircleDownIcon from "@mui/icons-material/ExpandCircleDown";
+import ArticleContentForm from "./form/ArticleContentForm";
+import ArticleCoverImageForm from "./form/ArticleCoverImageForm";
+import ArticleGalleryForm from "./form/ArticleGalleryForm";
+import { useForm } from "react-hook-form";
+import {
+  createCoverData,
+  createGalleryData,
+  defaultFormValues,
+} from "./form/defaultFormValues";
+import { useFirebaseAuth } from "../firebase";
+import imagesReducer from "./form/imagesReducer";
+import submitForm from "./form/submitForm";
+import { useArticleData } from "../ArticleListProvider";
+import { useNavigate } from "react-router-dom";
+
+type Content = "article" | "cover" | "gallery";
 
 const useStyles = makeStyles()((theme) => ({
-  closeIcon: {
+  accordionSummary: {
+    background: `linear-gradient(90deg, ${theme.palette.primary.main} 2%, ${theme.palette.primary.light} 0%)`,
     color: theme.palette.common.white,
   },
-  topInfo: {
-    backgroundColor: theme.palette.primary.main,
+  activeAccordionSummary: {
+    background: `linear-gradient(90deg, ${theme.palette.info.main} 2%, ${theme.palette.info.light} 0%)`,
     color: theme.palette.common.white,
   },
-  nav: {
-    backgroundColor: theme.palette.primary.light,
-    padding: theme.spacing(1),
-  },
-  navChip: {
-    color: theme.palette.common.white,
-    padding: theme.spacing(2),
-    fontSize: "22px",
-  },
-  button: {
+  errorAccordionSummary: {
+    background: `linear-gradient(90deg, ${theme.palette.error.main} 2%, ${theme.palette.error.light} 0%)`,
     color: theme.palette.common.white,
   },
-  warning: {
-    backgroundColor: theme.palette.warning.light,
-    padding: theme.spacing(2),
-    marginTop: theme.spacing(1),
-    marginBottom: theme.spacing(2),
-    borderRadius: theme.spacing(1),
+  buttonSection: {
+    marginTop: theme.spacing(2),
   },
-  edit: {
-    cursor: "pointer",
+  accordionIconRotated: {
+    transform: "rotate(180deg)",
   },
 }));
+
+function createSuccessMessage(
+  id: number | null,
+  addToGalleryFailedCalls: number,
+  updateGalleryFailedCalls: number
+): string {
+  const message = i18next.t(
+    `form.success.article.${id === null ? "add" : "update"}`
+  );
+  const submessage1 =
+    addToGalleryFailedCalls > 0
+      ? `;( ${addToGalleryFailedCalls} )${i18next.t(
+          "form.warning.gallery.failedAdd"
+        )}`
+      : "";
+
+  const submessage2 =
+    updateGalleryFailedCalls > 0
+      ? `;( ${updateGalleryFailedCalls} )${i18next.t(
+          "form.warning.gallery.failedUpdate"
+        )}`
+      : "";
+
+  return message + submessage1 + submessage2;
+}
+
+function createButtonText(
+  authenticated: boolean | undefined,
+  id: number | undefined
+): string {
+  if (authenticated && id) return i18next.t("form.submit.article.edit");
+  if (authenticated && !id) return i18next.t("form.submit.article.save");
+  return i18next.t("form.submit.notAvailable");
+}
 
 export default function ArticleForm(props: {
   responseOnSubmitForm: DispatchSnackbar;
@@ -83,439 +95,214 @@ export default function ArticleForm(props: {
     main: ImageData | undefined;
     gallery: ImageData[] | undefined;
   };
-  returnFunction?: Dispatch<SetStateAction<boolean>>;
-  setAnchorEl?: Dispatch<SetStateAction<null | HTMLElement>>;
+  lookups: Lookups | undefined;
+  setLoadingProgressInfo: (element: string | undefined) => void;
+  returnFunction?: (element: boolean) => void;
+  setMaintence: (element: MaintenceState) => void;
+  closeDialog: () => void;
 }) {
   const { classes } = useStyles();
-  const { data, images, returnFunction, responseOnSubmitForm } = props;
-  const { app } = useFirebaseAuth();
+  const {
+    responseOnSubmitForm,
+    data,
+    images,
+    lookups,
+    setLoadingProgressInfo,
+    returnFunction,
+    setMaintence,
+    closeDialog,
+  } = props;
+  const [expanded, setExpanded] = useState<Content | false>(false);
+  const [articleType, setArticleType] = useState<ArticleTypes>(undefined);
+  const [contents] = useState<Content[]>(["article", "cover", "gallery"]);
+
+  const { app, authenticated } = useFirebaseAuth();
   const [[, , page], getNextPage] = useArticleData();
-
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<boolean>(false);
-  const [view, setView] = useState<"article" | "gallery">("article");
-  const [lookups, setLookups] = useState<Lookups | undefined>(undefined);
-  const [draftArticle, setDraftArticle] = useState<
-    { article: ArticleFormData; articleType: ArticleTypes } | undefined
-  >(undefined);
-
   const navigate = useNavigate();
-  const theme = useTheme();
-  const smallView = useMediaQuery(theme.breakpoints.up("sm"));
 
-  const [open, setOpen] = useState<boolean>(false);
-  const closeDialog = () => {
-    setOpen(false);
-  };
+  const { handleSubmit, control, formState, watch } = useForm<ArticleFormData>({
+    defaultValues: defaultFormValues({ data }),
+    mode: "onChange",
+  });
+  const { isValid, submitCount } = formState;
 
+  const type = watch("articleType");
   useEffect(() => {
-    async function fetchLookups() {
-      try {
-        const articleTypes = await getLookup({ lookupName: "articleTypes" });
-        const platforms = await getLookup({ lookupName: "gamingPlatforms" });
-
-        setLookups({ articleTypes, platforms });
-      } catch {
-        setError(true);
-      } finally {
-        setLoading(false);
-      }
+    switch (type) {
+      case 1:
+        setArticleType("review");
+        return;
+      case 2:
+        setArticleType("news");
+        return;
+      case 3:
+        setArticleType("other");
+        return;
+      default:
+        setArticleType(undefined);
+        return;
     }
+  }, [type]);
 
-    if (!open) {
-      return;
+  const [imagesState, imagesDispatch] = useReducer(imagesReducer, {
+    coverImage: createCoverData(images),
+    gallery: createGalleryData(images),
+  });
+
+  const coverImageError =
+    submitCount > 0 && imagesState.coverImage.preview === undefined
+      ? i18next.t("form.error.frontImage.notSelected")
+      : undefined;
+
+  const handleAccordionChange =
+    (panel: Content) => (event: React.SyntheticEvent, newExpanded: boolean) => {
+      setExpanded(newExpanded ? panel : false);
+    };
+
+  function selectAccordionColorScheme(content: Content): string {
+    if (content === expanded) {
+      return classes.activeAccordionSummary;
     }
-
-    void fetchLookups();
-  }, [open]);
-
-  async function createArticleExecution(draftArticle: {
-    article: ArticleFormData;
-    articleType: ArticleTypes;
-  }): Promise<{
-    status: string;
-    id: number | undefined;
-  }> {
-    try {
-      const token = await app!.auth().currentUser?.getIdToken();
-      if (!token) {
-        throw new Error();
-      }
-
-      const id = await createArticle(
-        draftArticle.article,
-        draftArticle.articleType,
-        token
-      );
-      return { status: "success", id };
-    } catch {
-      responseOnSubmitForm({
-        message: i18next.t("form.error.article.create"),
-        severity: `error`,
-      });
-      return { status: "failure", id: undefined };
+    if (submitCount > 0 && content === "article" && !isValid) {
+      return classes.errorAccordionSummary;
     }
+    if (
+      submitCount > 0 &&
+      content === "cover" &&
+      imagesState.coverImage.preview === undefined
+    ) {
+      return classes.errorAccordionSummary;
+    }
+    return classes.accordionSummary;
   }
 
-  async function updateArticleExecution(
-    formData: ArticleFormData,
-    articleType: ArticleTypes
-  ): Promise<{ status: string }> {
-    try {
-      const token = await app!.auth().currentUser?.getIdToken();
-      if (!token) {
-        throw new Error();
-      }
+  const selectForm = (content: Content): JSX.Element => {
+    switch (content) {
+      case "article":
+        return (
+          <ArticleContentForm
+            control={control}
+            lookups={lookups}
+            formState={formState}
+            articleType={articleType}
+          />
+        );
+      case "cover":
+        return (
+          <ArticleCoverImageForm
+            coverData={imagesState.coverImage}
+            imagesDispatch={imagesDispatch}
+            error={coverImageError}
+          />
+        );
+      default:
+        const activeGallery = imagesState.gallery.filter(
+          (i) => i.state !== "deactivated"
+        );
+        const numberOfDeactivatedImages =
+          imagesState.gallery.length - activeGallery.length;
 
-      await updateArticle(formData, articleType, token);
-      return { status: "success" };
-    } catch {
-      responseOnSubmitForm({
-        message: i18next.t("form.error.article.update"),
-        severity: `error`,
-      });
-      return { status: "failure" };
-    }
-  }
-
-  async function setFrontImageExecution(
-    id: number,
-    frontImage: File
-  ): Promise<{ status: string }> {
-    try {
-      const token = await app!.auth().currentUser?.getIdToken();
-      if (!token) {
-        throw new Error();
-      }
-
-      await setFrontImage({ id: id, file: frontImage }, token);
-      return { status: "success" };
-    } catch {
-      responseOnSubmitForm({
-        message: i18next.t("form.error.frontImage.set"),
-        severity: `error`,
-      });
-      return { status: "failure" };
-    }
-  }
-
-  async function updateGalleryExecution(
-    id: number,
-    galleryIds: number[]
-  ): Promise<{ status: string }> {
-    try {
-      const token = await app!.auth().currentUser?.getIdToken();
-      if (!token) {
-        throw new Error();
-      }
-
-      await updateGallery({ id, galleryIds }, token);
-      return { status: "success" };
-    } catch {
-      responseOnSubmitForm({
-        message: i18next.t("form.error.gallery.update"),
-        severity: `error`,
-      });
-      return { status: "failure" };
-    }
-  }
-
-  async function addToGalleryExecution(
-    articleId: number,
-    images: File[]
-  ): Promise<{ status: string }> {
-    try {
-      const token = await app!.auth().currentUser?.getIdToken();
-      if (!token) {
-        throw new Error();
-      }
-
-      await addToGallery(
-        {
-          articleId: articleId,
-          files: images,
-        },
-        token
-      );
-      return { status: "success" };
-    } catch (err) {
-      const error = err as AxiosError;
-      if (!error.isAxiosError) {
-        responseOnSubmitForm({
-          message: i18next.t("form.error.gallery.add"),
-          severity: `error`,
-        });
-        return { status: "failure" };
-      }
-
-      switch (error.response?.status) {
-        case 409: {
-          responseOnSubmitForm({
-            message: i18next.t("form.warning.gallery.partiallyAdd"),
-            severity: `warning`,
-          });
-          return { status: "success" };
-        }
-        default: {
-          responseOnSubmitForm({
-            message: i18next.t("form.error.gallery.add"),
-            severity: `error`,
-          });
-          return { status: "failure" };
-        }
-      }
-    }
-  }
-
-  const onArticleSubmit = async (
-    formData: ArticleFormData,
-    articleType: ArticleTypes
-  ) => {
-    if (data?.id) {
-      setLoading(true);
-
-      const response = await updateArticleExecution(formData, articleType);
-
-      if (response.status === "success") {
-        await getNextPage({ page });
-        responseOnSubmitForm({
-          message: i18next.t("form.success.article.update"),
-          severity: `success`,
-        });
-      }
-
-      closeDialog();
-      return returnFunction?.(true);
-    } else {
-      setDraftArticle({ article: formData, articleType });
-      setView("gallery");
+        return (
+          <ArticleGalleryForm
+            numberOfDeactivatedImages={numberOfDeactivatedImages}
+            gallery={activeGallery}
+            imagesDispatch={imagesDispatch}
+          />
+        );
     }
   };
 
-  const onGallerySubmit = async (
-    frontImage?: File,
-    oldGalleryImages?: number[],
-    newGalleryImages?: File[]
-  ) => {
-    setLoading(true);
-
-    if (data?.id) {
-      const frontImageResponse =
-        frontImage && (await setFrontImageExecution(data?.id, frontImage));
-      if (frontImageResponse && frontImageResponse.status === "failure") {
-        return closeDialog();
-      }
-
-      const updateGalleryResponse =
-        oldGalleryImages &&
-        (await updateGalleryExecution(data?.id, oldGalleryImages));
-      if (updateGalleryResponse && updateGalleryResponse.status === "failure") {
-        await getNextPage({ page });
-        closeDialog();
-        return returnFunction?.(true);
-      }
-
-      const addToGalleryResponse =
-        newGalleryImages &&
-        (await addToGalleryExecution(data?.id, newGalleryImages));
-      if (addToGalleryResponse && addToGalleryResponse.status === "failure") {
-        await getNextPage({ page });
-        closeDialog();
-        return returnFunction?.(true);
-      }
-
-      responseOnSubmitForm({
-        message: i18next.t("form.success.gallery.update"),
-        severity: `success`,
-      });
-      setView("article");
-      closeDialog();
-      return returnFunction?.(true);
-    }
-
-    if (draftArticle && frontImage) {
-      const createArticleResponse = await createArticleExecution(draftArticle);
-      if (
-        createArticleResponse &&
-        createArticleResponse.status === "failure" &&
-        createArticleResponse.id === undefined
-      ) {
-        return closeDialog();
-      }
-
-      const frontImageResponse = await setFrontImageExecution(
-        createArticleResponse.id!,
-        frontImage
-      );
-      if (frontImageResponse && frontImageResponse.status === "failure") {
-        await getNextPage({ page: 1 });
-        navigate("/");
-        return closeDialog();
-      }
-
-      const addToGalleryResponse =
-        newGalleryImages &&
-        (await addToGalleryExecution(
-          createArticleResponse.id!,
-          newGalleryImages
-        ));
-      if (addToGalleryResponse && addToGalleryResponse.status === "failure") {
-        await getNextPage({ page: 1 });
-        navigate("/");
-        return closeDialog();
-      }
-
-      await getNextPage({ page: 1 });
-      responseOnSubmitForm({
-        message: i18next.t("form.success.article.add"),
-        severity: `success`,
-      });
-      navigate("/");
-      setDraftArticle(undefined);
-      setView("article");
-      return closeDialog();
-    }
-  };
-
-  const editButton = (
-    <EditIcon
-      fontSize="large"
-      className={classes.edit}
-      onClick={() => setOpen(true)}
-    />
-  );
-
-  const createMenuItem = (
-    <MenuItem
-      onClick={() => {
-        props.setAnchorEl!(null);
-        setOpen(true);
-      }}
+  const button = (
+    <Button
+      type="submit"
+      variant="contained"
+      disabled={!authenticated}
+      fullWidth
+      className={classes.buttonSection}
     >
-      {i18next.t("title.addArticle")}
-    </MenuItem>
+      {createButtonText(authenticated, data?.id)}
+    </Button>
   );
-
-  if (loading) {
-    return (
-      <React.Fragment>
-        {data ? editButton : createMenuItem}
-        <Dialog open={open} fullWidth disableEscapeKeyDown={true}>
-          <DialogContent>
-            <LoadingIndicator message={i18next.t("loading")} />
-          </DialogContent>
-        </Dialog>
-      </React.Fragment>
-    );
-  }
-
-  if (error) {
-    return (
-      <React.Fragment>
-        {data ? editButton : createMenuItem}
-        <Dialog open={open} onClose={closeDialog} fullWidth>
-          <DialogContent>
-            <ExceptionPage message={i18next.t("form.error.lookup.retrieve")} />
-          </DialogContent>
-        </Dialog>
-      </React.Fragment>
-    );
-  }
 
   return (
     <React.Fragment>
-      {data ? editButton : createMenuItem}
-      <Dialog
-        onKeyDown={stopPropagationForTab}
-        open={open}
-        onClose={closeDialog}
-        fullWidth
+      <form
+        autoComplete="off"
+        noValidate
+        onSubmit={handleSubmit(async (formData, event) => {
+          //Prevent default
+          event?.preventDefault();
+
+          //Check front image
+          if (imagesState.coverImage.preview === undefined) return;
+
+          //Submit
+          const result = await submitForm(
+            responseOnSubmitForm,
+            formData,
+            articleType,
+            imagesState,
+            setMaintence,
+            setLoadingProgressInfo,
+            app
+          );
+
+          //Handling result
+          if (result.status === "success") {
+            if (formData.id === null) await getNextPage({ page: 1 });
+            else await getNextPage({ page });
+
+            //Success
+            responseOnSubmitForm({
+              message: createSuccessMessage(
+                formData.id,
+                result.processingData?.addToGalleryFailedCalls!,
+                result.processingData?.updateGalleryFailedCalls!
+              ),
+              severity: `success`,
+            });
+          }
+
+          //Handling after submit
+          if (formData.id === null) navigate("/");
+          closeDialog();
+          return returnFunction?.(true);
+        })}
       >
-        <DialogTitle className={classes.topInfo}>
-          <Grid
-            container
-            direction="row"
-            justifyContent="space-between"
-            alignItems="flex-start"
-          >
-            <Grid>
-              {i18next.t(data?.id ? "title.editArticle" : "title.addArticle")}
-            </Grid>
-            <Grid>
-              <IconButton
-                aria-label="close"
-                onClick={closeDialog}
-                className={classes.closeIcon}
-              >
-                <CloseIcon />
-              </IconButton>
-            </Grid>
-          </Grid>
-        </DialogTitle>
-        <DialogTitle className={classes.nav}>
-          <Grid
-            container
-            justifyContent="space-between"
-            wrap="nowrap"
-            alignItems="center"
-          >
-            <Grid item container xs={3} justifyContent="center">
-              <Button
-                className={classes.button}
-                disabled={view === "article"}
-                onClick={() => setView("article")}
-              >
-                <KeyboardDoubleArrowLeftIcon />
-                {smallView && (
-                  <Typography fontSize="medium">
-                    {i18next.t("form.view.article")}
-                  </Typography>
-                )}
-              </Button>
-            </Grid>
-            <Grid item container xs={6} justifyContent="center">
-              <Chip
-                label={i18next.t(`form.view.${view}`)}
-                className={classes.navChip}
-              />
-            </Grid>
-            <Grid item container xs={3} justifyContent="center">
-              <Button
-                className={classes.button}
-                disabled={view === "gallery" || data?.id === undefined}
-                onClick={() => setView("gallery")}
-              >
-                {smallView && (
-                  <Typography fontSize="medium">
-                    {i18next.t("form.view.gallery")}
-                  </Typography>
-                )}
-                <KeyboardDoubleArrowRightIcon />
-              </Button>
-            </Grid>
-          </Grid>
-        </DialogTitle>
-        <DialogContent>
-          <DialogContentText className={classes.warning}>
-            {i18next.t("subtitle.article")}
-          </DialogContentText>
-          {view === "article" && (
-            <ArticleContentForm
-              data={data}
-              draft={draftArticle?.article}
-              onArticleSubmit={onArticleSubmit}
-              lookups={lookups}
-            />
-          )}
-          {view === "gallery" && (
-            <ArticleGalleryForm
-              frontImage={images?.main}
-              gallery={images?.gallery}
-              onGallerySubmit={onGallerySubmit}
-            />
-          )}
-        </DialogContent>
-      </Dialog>
+        <FormControl fullWidth variant="outlined">
+          {contents.map((content) => (
+            <Accordion
+              key={content}
+              expanded={expanded === content}
+              onChange={handleAccordionChange(content)}
+            >
+              <AccordionSummary className={selectAccordionColorScheme(content)}>
+                <Grid
+                  container
+                  direction="row"
+                  justifyContent="space-between"
+                  alignItems="center"
+                >
+                  <Grid item>
+                    <Typography variant="body2" fontWeight="bold">
+                      {i18next.t(`form.view.${content}`)}
+                    </Typography>
+                  </Grid>
+                  <Grid item>
+                    <ExpandCircleDownIcon
+                      className={
+                        expanded === content ? classes.accordionIconRotated : ""
+                      }
+                    />
+                  </Grid>
+                </Grid>
+              </AccordionSummary>
+              <AccordionDetails>{selectForm(content)}</AccordionDetails>
+            </Accordion>
+          ))}
+          {button}
+        </FormControl>
+      </form>
     </React.Fragment>
   );
 }
