@@ -3,7 +3,7 @@
     "MainDatabase": "Host=db;Database=markasplayed;Username=markasplayed;Password=markasplayed;Pooling=false"
   },
   "Cors": {
-    "ExposedHeaders": [ "articles-count", "display-page" ]
+    "ExposedHeaders": ["articles-count", "display-page"]
   },
   "Logging": {
     "LogLevel": {
@@ -19,7 +19,7 @@
   "RootPath": "/app/MarkAsPlayed.Api",
   "Firebase": {
     "ProjectId": "test",
-    "TestUserId": "" //needs to be supplemented
+    "TestUserId": "unique1"
   },
   "TestingEnvironment": "true",
   "AdministrationUsers": [

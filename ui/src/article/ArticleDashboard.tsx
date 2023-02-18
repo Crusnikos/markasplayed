@@ -43,7 +43,7 @@ export default function ArticleDashboard(props: {
   }, [articleData]);
 
   if (loading) {
-    return <LoadingIndicator message={i18next.t("loading")} />;
+    return <LoadingIndicator message={i18next.t("loading.defaultMessage")} />;
   }
 
   if (articleData instanceof Error) {

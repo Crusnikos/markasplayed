@@ -93,7 +93,7 @@ const useStyles = makeStyles()((theme) => ({
     minHeight: theme.spacing(8),
     padding: theme.spacing(2),
     paddingRight: theme.spacing(4),
-    background: `linear-gradient(90deg, rgba(1,36,0,0) 20%, ${theme.palette.warning.main} 80%)`,
+    background: `linear-gradient(90deg, rgba(1,36,0,0) 20%, ${theme.palette.error.main} 80%)`,
     marginTop: "auto",
   },
   eachFooterIcons: {

@@ -1,0 +1,17 @@
+.animate {
+  transform-origin: 10% 100%;
+  animation-name: zoom-in-zoom-out;
+  animation-duration: 1s;
+}
+
+@keyframes zoom-in-zoom-out {
+  0% {
+    transform: scale(1, 1);
+  }
+  50% {
+    transform: scale(1.1, 1.1);
+  }
+  100% {
+    transform: scale(1, 1);
+  }
+}

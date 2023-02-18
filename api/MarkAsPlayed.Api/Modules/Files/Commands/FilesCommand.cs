@@ -74,7 +74,7 @@ public sealed class FilesCommand
     }
 
     public async Task<CommonResponseTemplate> UpdateGalleryAsync(
-        IReadOnlyList<int> updateIds,
+        int imageId,
         int articleId,
         CancellationToken cancellationToken = default)
     {
@@ -83,25 +83,22 @@ public sealed class FilesCommand
             await using var db = _databaseFactory();
             await using var transaction = await db.BeginTransactionAsync(cancellationToken);
 
-            var images = await db.ArticleImages.Where(image => updateIds.Contains((int)image.Id)).ToListAsync(cancellationToken);
+            var updateImage = await db.ArticleImages.FirstOrDefaultAsync(image => image.Id == imageId, cancellationToken);
 
-            if (images.Count < 1)
+            if (updateImage is null)
             {
                 return new CommonResponseTemplate
                 {
                     ArticleIdentifier = articleId,
                     Status = StatusCodesHelper.NotFound,
                     ExceptionCaptured = null,
-                    Message = "No images found"
+                    Message = "No image found"
                 };
             }
 
-            foreach (var image in images)
-            {
-                await db.ArticleImages.Where(ag => ag.Id == image.Id).
+            await db.ArticleImages.Where(image => image.Id == updateImage.Id).
                     Set(ag => ag.IsActive, false).
                     UpdateAsync(cancellationToken);
-            }
 
             await transaction.CommitAsync(cancellationToken);
 
@@ -110,7 +107,7 @@ public sealed class FilesCommand
                 ArticleIdentifier = articleId,
                 Status = StatusCodesHelper.OK,
                 ExceptionCaptured = null,
-                Message = "Gallery updated"
+                Message = "Gallery image updated"
             };
         }
         catch (Exception exception)
@@ -120,13 +117,13 @@ public sealed class FilesCommand
                 ArticleIdentifier = articleId,
                 Status = StatusCodesHelper.InternalError,
                 ExceptionCaptured = exception,
-                Message = "Failed to update gallery"
+                Message = "Failed to update gallery image"
             };
         }
     }
 
     public async Task<CommonResponseTemplate> AddToGalleryAsync(
-        IReadOnlyList<IFormFile> files,
+        IFormFile file,
         string pathName,
         int articleId,
         CancellationToken cancellationToken = default)
@@ -135,76 +132,56 @@ public sealed class FilesCommand
         {
             await using var db = _databaseFactory();
             await using var transaction = await db.BeginTransactionAsync(cancellationToken);
-            var successfulFilesUploadSum = files.Count;
 
             if (!Directory.Exists(pathName))
             {
                 Directory.CreateDirectory(pathName);
             }
 
-            foreach (var file in files)
+            var fileName = Guid.NewGuid().ToString() + ".webp";
+            var fileFullPath = Path.Combine(pathName, fileName);
+
+            try
             {
-                var fileName = string.Empty;
-                var fileFullPath = string.Empty;
-
-                try
-                {
-                    if (file.Length == 0 || Path.GetExtension(file.FileName) != ".webp")
+                if (file.Length == 0 || Path.GetExtension(file.FileName) != ".webp")
                     throw new Exception("Incorrect or missing file provided");
-
-                    fileName = Guid.NewGuid().ToString() + ".webp";
-                    fileFullPath = Path.Combine(pathName, fileName);
                 
-                    using (var stream = File.Create(fileFullPath))
-                    {
-                        await file.CopyToAsync(stream, cancellationToken);
-                    }
 
-                    await new ImageResolution(fileFullPath).
-                        OverwriteFileResolution(Resolution.FullHD, cancellationToken);
-
-                    await db.ArticleImages.InsertWithInt64IdentityAsync(
-                        () => new Data.Models.ArticleImage
-                        {
-                            ArticleId = articleId,
-                            FileName = fileName,
-                            IsActive = true
-                        },
-                        cancellationToken
-                    );
-                }
-                catch (Exception)
+                using (var stream = File.Create(fileFullPath))
                 {
-                    if (String.IsNullOrEmpty(fileFullPath) is false && File.Exists(fileFullPath) is true)
+                    await file.CopyToAsync(stream, cancellationToken);
+                }
+
+                await new ImageResolution(fileFullPath).
+                    OverwriteFileResolution(Resolution.FullHD, cancellationToken);
+
+                await db.ArticleImages.InsertWithInt64IdentityAsync(
+                    () => new Data.Models.ArticleImage
                     {
-                        Console.WriteLine("test");
-                        File.Delete(fileFullPath);
-                    }
-                    successfulFilesUploadSum--;
+                        ArticleId = articleId,
+                        FileName = fileName,
+                        IsActive = true
+                    },
+                    cancellationToken
+                );
+            }
+            catch (Exception)
+            {
+                if (!string.IsNullOrEmpty(fileFullPath) && File.Exists(fileFullPath))
+                {
+                    File.Delete(fileFullPath);
+                    throw;
                 }
             }
 
             await transaction.CommitAsync(cancellationToken);
 
-            if (successfulFilesUploadSum == files.Count)
-            {
-                return new CommonResponseTemplate
-                {
-                    ArticleIdentifier = articleId,
-                    Status = StatusCodesHelper.NoContent,
-                    ExceptionCaptured = null,
-                    Message = "All images uploaded to gallery"
-                };
-            }
-            if (successfulFilesUploadSum == 0)
-                throw new Exception("0 files uploaded");
-
             return new CommonResponseTemplate
             {
                 ArticleIdentifier = articleId,
-                Status = StatusCodesHelper.Conflict,
+                Status = StatusCodesHelper.NoContent,
                 ExceptionCaptured = null,
-                Message = $"{successfulFilesUploadSum} from {files.Count} images uploaded"
+                Message = "Image uploaded to gallery"
             };
         }
         catch (Exception exception)
@@ -214,7 +191,7 @@ public sealed class FilesCommand
                 ArticleIdentifier = articleId,
                 Status = StatusCodesHelper.InternalError,
                 ExceptionCaptured = exception,
-                Message = "Failed add images to gallery"
+                Message = "Failed add image to gallery"
             };
         }
     }

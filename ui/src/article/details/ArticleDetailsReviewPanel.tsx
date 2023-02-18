@@ -29,7 +29,7 @@ const useStyles = makeStyles()((theme) => ({
     padding: theme.spacing(1),
   },
   divider: {
-    borderColor: theme.palette.secondary.light,
+    borderColor: theme.palette.common.white,
     borderWidth: theme.spacing(0.2),
     marginBottom: theme.spacing(1),
   },
