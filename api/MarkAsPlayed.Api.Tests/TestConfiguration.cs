@@ -9,19 +9,21 @@ internal class TestConfiguration : IAsyncDisposable
 {
     private readonly string _mainDbConnectionString;
 
-    private TestConfiguration(IConfiguration configuration, string mainDbConnectionString, string databaseName, string rootPath)
+    private TestConfiguration(IConfiguration configuration, string mainDbConnectionString, string databaseName, string rootPath, List<AdministrationUserData> administrationUsers)
     {
         _mainDbConnectionString = mainDbConnectionString;
         Value = configuration;
         DatabaseConnectionString = configuration.GetConnectionString("MainDatabase");
         DatabaseName = databaseName;
         RootPath = rootPath;
+        AdministrationUsers = administrationUsers;
     }
 
     public IConfiguration Value { get; }
     public string DatabaseConnectionString { get; }
     public string DatabaseName { get; }
     public string RootPath { get; }
+    public List<AdministrationUserData> AdministrationUsers { get; }
 
     private static string ExtractDatabaseNameFromConnectionString(string connectionString)
     {
@@ -49,6 +51,8 @@ internal class TestConfiguration : IAsyncDisposable
                 return $"DROP DATABASE {databaseName} WITH (FORCE)";
             case "CREATE":
                 return $"CREATE DATABASE {databaseName} TEMPLATE {template}";
+            case "CHECK IF DB EXIST":
+                return $"SELECT EXISTS (SELECT * FROM pg_database WHERE datname = '{databaseName}')";
             default:
                 throw new InvalidOperationException("command not recognized");
         }
@@ -67,23 +71,30 @@ internal class TestConfiguration : IAsyncDisposable
 
         configuration["ConnectionStrings:MainDatabase"] = testDbConnectionString;
 
+        var administrationUsers = configuration.GetSection("AdministrationUsers").Get<List<AdministrationUserData>>();
+
         return new TestConfiguration(
             configuration,
             mainDbConnectionString,
             testDbName,
-            rootPath
+            rootPath,
+            administrationUsers
         );
     }
 
     public async ValueTask DisposeAsync()
     {
         await using var db = new Database(_mainDbConnectionString);
+        var mainDbName = ExtractDatabaseNameFromConnectionString(_mainDbConnectionString);
 
         var attempt = 0;
         do
         {
             try
             {
+                if (!(await db.ExecuteAsync<bool>(GenerateSqlCommand("CHECK IF DB EXIST", DatabaseName, mainDbName))))
+                    return;
+
                 await db.ExecuteAsync(GenerateSqlCommand("DROP", DatabaseName));
                 return;
             }
@@ -92,7 +103,46 @@ internal class TestConfiguration : IAsyncDisposable
                 if (e.SqlState == PostgresErrorCodes.AdminShutdown)
                 {
                     attempt++;
-                    await Task.Delay(TimeSpan.FromMilliseconds(50));
+                    await Task.Delay(TimeSpan.FromMilliseconds(200));
+                }
+                else
+                {
+                    throw;
+                }
+            }
+        } while (attempt < 20);
+    }
+
+    public async Task SetUpTestDatabaseAsync()
+    {
+        var migrator = new Migrator();
+        await migrator.TestRunAsync(_mainDbConnectionString);
+        var mainDbName = ExtractDatabaseNameFromConnectionString(_mainDbConnectionString);
+        await using var db = new Database(_mainDbConnectionString);
+        var setupConfigurationHandler = new SetupConfigurationHandler();
+
+        var executedScripts = new List<string> { "1681487562_clear_author_table" };
+
+        var attempt = 0;
+        do
+        {
+            try
+            {
+                await SeverOtherConnections(db, mainDbName);
+                if (await db.ExecuteAsync<bool>(GenerateSqlCommand("CHECK IF DB EXIST", DatabaseName, mainDbName)))
+                    return;
+
+                await db.ExecuteAsync(GenerateSqlCommand("CREATE", DatabaseName, mainDbName));
+                await setupConfigurationHandler.InsertAdministrationUsers(AdministrationUsers, _mainDbConnectionString, false);
+                await setupConfigurationHandler.DatabasePostFixer(_mainDbConnectionString, executedScripts, false);
+                return;
+            }
+            catch (PostgresException e)
+            {
+                if (e.SqlState == PostgresErrorCodes.AdminShutdown)
+                {
+                    attempt++;
+                    await Task.Delay(TimeSpan.FromMilliseconds(200));
                 }
                 else
                 {
@@ -118,36 +168,5 @@ internal class TestConfiguration : IAsyncDisposable
             cancellationToken,
             (object)new DataParameter("db_name", databaseName)
         );
-    }
-
-    public async Task SetUpTestDatabaseAsync()
-    {
-        var migrator = new Migrator();
-        await migrator.TestRunAsync(_mainDbConnectionString);
-        var mainDbName = ExtractDatabaseNameFromConnectionString(_mainDbConnectionString);
-        await using var db = new Database(_mainDbConnectionString);
-
-        var attempt = 0;
-        do
-        {
-            try
-            {
-                await SeverOtherConnections(db, mainDbName);
-                await db.ExecuteAsync(GenerateSqlCommand("CREATE", DatabaseName, mainDbName));
-                return;
-            }
-            catch (PostgresException e)
-            {
-                if (e.SqlState == PostgresErrorCodes.AdminShutdown)
-                {
-                    attempt++;
-                    await Task.Delay(TimeSpan.FromMilliseconds(50));
-                }
-                else
-                {
-                    throw;
-                }
-            }
-        } while (attempt < 20);
     }
 }

@@ -133,7 +133,7 @@ public class ArticleDetailsEndpointTests : IClassFixture<ArticleDetailsFixture>
                     CreatedBy = new LookupData
                     {
                         Id = 1,
-                        Name = "Michał Kubrak",
+                        Name = "John Doe",
                         GroupName = null
                     },
                     LongDescription = "Review Long Description string",
@@ -180,7 +180,7 @@ public class ArticleDetailsEndpointTests : IClassFixture<ArticleDetailsFixture>
                     CreatedBy = new LookupData
                     {
                         Id = 1,
-                        Name = "Michał Kubrak",
+                        Name = "John Doe",
                         GroupName = null
                     },
                     LongDescription = "News Long Description string",
@@ -219,7 +219,7 @@ public class ArticleDetailsEndpointTests : IClassFixture<ArticleDetailsFixture>
                     CreatedBy = new LookupData
                     {
                         Id = 1,
-                        Name = "Michał Kubrak",
+                        Name = "John Doe",
                         GroupName = null
                     },
                     LongDescription = "Other Long Description string",
