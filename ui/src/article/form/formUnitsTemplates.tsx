@@ -86,7 +86,8 @@ function extractErrorMessage(
 
 function createLookupMenuItems(
   lookups: Lookups | undefined,
-  propertyName: PropertyName
+  propertyName: PropertyName,
+  blockedValues?: number[]
 ): JSX.Element[] | undefined {
   switch (propertyName) {
     case "articleType":
@@ -100,7 +101,11 @@ function createLookupMenuItems(
     case "playedOn":
     case "availableOn":
       return lookups?.platforms.map((p) => (
-        <MenuItem key={p.id} value={p.id}>
+        <MenuItem
+          key={p.id}
+          value={p.id}
+          disabled={blockedValues && blockedValues.includes(p.id)}
+        >
           {p.name}
         </MenuItem>
       ));
@@ -202,8 +207,16 @@ export function CustomMultipleDropdownSelect(props: {
   propertyName: PropertyName;
   lookups: Lookups | undefined;
   formState: FormState<ArticleFormData>;
+  blockedValues: number[];
 }): JSX.Element {
-  const { requiredField, control, propertyName, lookups, formState } = props;
+  const {
+    requiredField,
+    control,
+    propertyName,
+    lookups,
+    formState,
+    blockedValues,
+  } = props;
   const { errors } = formState;
   const errorMessage = extractErrorMessage(errors.availableOn);
 
@@ -228,7 +241,7 @@ export function CustomMultipleDropdownSelect(props: {
             }}
             {...field}
           >
-            {createLookupMenuItems(lookups, propertyName)}
+            {createLookupMenuItems(lookups, propertyName, blockedValues)}
           </TextField>
           <FormHelperText error>{errorMessage}</FormHelperText>
         </React.Fragment>

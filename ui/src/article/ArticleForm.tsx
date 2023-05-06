@@ -1,7 +1,7 @@
-import React, { useEffect, useReducer, useState } from "react";
+import React, { useReducer, useState } from "react";
 import { DispatchSnackbar } from "../components/SnackbarDialog";
 import { MaintenceState } from "../popup/state";
-import { ArticleFormData, ArticleTypes, FullArticleData } from "./api/article";
+import { ArticleFormData, FullArticleData } from "./api/article";
 import { Lookups } from "./api/lookup";
 import { ImageData } from "./api/files";
 import { makeStyles } from "tss-react/mui";
@@ -113,46 +113,23 @@ export default function ArticleForm(props: {
     closeDialog,
   } = props;
   const [expanded, setExpanded] = useState<Content | false>(false);
-  const [articleType, setArticleType] = useState<ArticleTypes>(undefined);
   const [contents] = useState<Content[]>(["article", "cover", "gallery"]);
 
   const { app, authenticated } = useFirebaseAuth();
   const [[, , page], getNextPage] = useArticleData();
   const navigate = useNavigate();
 
-  const { handleSubmit, control, formState, watch } = useForm<ArticleFormData>({
-    defaultValues: defaultFormValues({ data }),
-    mode: "onChange",
-  });
+  const { handleSubmit, control, formState, watch, setValue } =
+    useForm<ArticleFormData>({
+      defaultValues: defaultFormValues({ data }),
+      mode: "onChange",
+    });
   const { isValid, submitCount } = formState;
-
-  const type = watch("articleType");
-  useEffect(() => {
-    switch (type) {
-      case 1:
-        setArticleType("review");
-        return;
-      case 2:
-        setArticleType("news");
-        return;
-      case 3:
-        setArticleType("other");
-        return;
-      default:
-        setArticleType(undefined);
-        return;
-    }
-  }, [type]);
 
   const [imagesState, imagesDispatch] = useReducer(imagesReducer, {
     coverImage: createCoverData(images),
     gallery: createGalleryData(images),
   });
-
-  const coverImageError =
-    submitCount > 0 && imagesState.coverImage.preview === undefined
-      ? i18next.t("form.error.frontImage.notSelected")
-      : undefined;
 
   const handleAccordionChange =
     (panel: Content) => (event: React.SyntheticEvent, newExpanded: boolean) => {
@@ -184,10 +161,16 @@ export default function ArticleForm(props: {
             control={control}
             lookups={lookups}
             formState={formState}
-            articleType={articleType}
+            watch={watch}
+            setValue={setValue}
           />
         );
       case "cover":
+        const coverImageError =
+          submitCount > 0 && imagesState.coverImage.preview === undefined
+            ? i18next.t("form.error.frontImage.notSelected")
+            : undefined;
+
         return (
           <ArticleCoverImageForm
             coverData={imagesState.coverImage}
@@ -212,18 +195,6 @@ export default function ArticleForm(props: {
     }
   };
 
-  const button = (
-    <Button
-      type="submit"
-      variant="contained"
-      disabled={!authenticated}
-      fullWidth
-      className={classes.buttonSection}
-    >
-      {createButtonText(authenticated, data?.id)}
-    </Button>
-  );
-
   return (
     <React.Fragment>
       <form
@@ -240,7 +211,7 @@ export default function ArticleForm(props: {
           const result = await submitForm(
             responseOnSubmitForm,
             formData,
-            articleType,
+            formData.articleType,
             imagesState,
             setMaintence,
             setLoadingProgressInfo,
@@ -300,7 +271,15 @@ export default function ArticleForm(props: {
               <AccordionDetails>{selectForm(content)}</AccordionDetails>
             </Accordion>
           ))}
-          {button}
+          <Button
+            type="submit"
+            variant="contained"
+            disabled={!authenticated}
+            fullWidth
+            className={classes.buttonSection}
+          >
+            {createButtonText(authenticated, data?.id)}
+          </Button>
         </FormControl>
       </form>
     </React.Fragment>

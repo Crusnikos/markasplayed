@@ -1,6 +1,7 @@
 ﻿using FluentAssertions;
 using Flurl.Http;
 using LinqToDB;
+using MarkAsPlayed.Api.Modules;
 using MarkAsPlayed.Api.Modules.Article.Core.Models;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
@@ -59,6 +60,16 @@ public class ArticleCreatingEndpointTests : IClassFixture<IntegrationTest>, IAsy
         response.StatusCode.Should().Be((int)HttpStatusCode.NotFound);
     }
 
+    [Theory]
+    [ClassData(typeof(ArticleSharedTestData.InvalidUnprocessableEntity))]
+    public async Task ShouldReturn422WhenADataIsUnprocessable(ArticleRequestData request)
+    {
+        var response = await _suite.Client.AllowHttpStatus(HttpStatusCode.UnprocessableEntity).
+                                    Request("article").
+                                    PostJsonAsync(request);
+        response.StatusCode.Should().Be((int)HttpStatusCode.UnprocessableEntity);
+    }
+
     [Fact]
     public async Task ShouldCreateAnReviewArticle()
     {
@@ -74,7 +85,7 @@ public class ArticleCreatingEndpointTests : IClassFixture<IntegrationTest>, IAsy
                     PlayTime = 123,
                     ShortDescription = "Example Short Description",
                     LongDescription = "Example Long Description",
-                    ArticleType = 1
+                    ArticleType = (int)ArticleTypeHelper.review
                 }
             );
 
@@ -119,7 +130,7 @@ public class ArticleCreatingEndpointTests : IClassFixture<IntegrationTest>, IAsy
                     PlayTime = null,
                     ShortDescription = "Example Short Description",
                     LongDescription = "Example Long Description",
-                    ArticleType = 1
+                    ArticleType = (int)ArticleTypeHelper.news
                 }
             );
 
@@ -140,7 +151,7 @@ public class ArticleCreatingEndpointTests : IClassFixture<IntegrationTest>, IAsy
                      PlayedOnGamingPlatformId = null,
                      Producer = null,
                      PlayTime = null,
-                     ArticleTypeId = 1,
+                     ArticleTypeId = 2,
                      ShortDescription = "Example Short Description",
                      LongDescription = "Example Long Description",
                      CreatedBy = 1
@@ -164,7 +175,7 @@ public class ArticleCreatingEndpointTests : IClassFixture<IntegrationTest>, IAsy
                     PlayTime = null,
                     ShortDescription = "Example Short Description",
                     LongDescription = "Example Long Description",
-                    ArticleType = 1
+                    ArticleType = (int)ArticleTypeHelper.other
                 }
             );
 
@@ -185,7 +196,7 @@ public class ArticleCreatingEndpointTests : IClassFixture<IntegrationTest>, IAsy
                      PlayedOnGamingPlatformId = null,
                      Producer = null,
                      PlayTime = null,
-                     ArticleTypeId = 1,
+                     ArticleTypeId = 3,
                      ShortDescription = "Example Short Description",
                      LongDescription = "Example Long Description",
                      CreatedBy = 1
