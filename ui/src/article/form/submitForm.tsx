@@ -1,16 +1,12 @@
 import { DispatchSnackbar } from "../../components/SnackbarDialog";
 import { MaintenceState } from "../../popup/state";
-import {
-  ArticleFormData,
-  ArticleTypes,
-  createArticle,
-  updateArticle,
-} from "../api/article";
+import { ArticleFormData, createArticle, updateArticle } from "../api/article";
 import { ArticleImagesData } from "./imagesReducer";
 import i18next from "i18next";
 import firebase from "firebase/compat/app";
 import { addToGallery, setFrontImage, updateGallery } from "../api/files";
 import { AxiosError } from "axios";
+import { GetArticleTypeName } from "./ArticleContentForm";
 
 type ProcessingData = {
   token?: string;
@@ -24,10 +20,16 @@ type SubmitResponse = {
   processingData?: ProcessingData;
 };
 
+async function FilterNumberOfRejectedCalls(
+  result: PromiseSettledResult<void>[]
+): Promise<number> {
+  return result.filter((call) => call.status === "rejected").length;
+}
+
 export default async function submitForm(
   responseOnSubmitForm: DispatchSnackbar,
   data: ArticleFormData,
-  articleType: ArticleTypes,
+  articleType: number,
   images: ArticleImagesData,
   setMaintence: (element: MaintenceState) => void,
   setLoadingProgressInfo: (element: string | undefined) => void,
@@ -67,7 +69,7 @@ export default async function submitForm(
       //Update article
       setLoadingProgressInfo(i18next.t("loading.progress.articleUpdate"));
 
-      await updateArticle(data, articleType, token);
+      await updateArticle(data, GetArticleTypeName(articleType), token);
       articleId = data?.id;
     } catch {
       responseOnSubmitForm({
@@ -81,7 +83,11 @@ export default async function submitForm(
       //Create article
       setLoadingProgressInfo(i18next.t("loading.progress.articleCreate"));
 
-      articleId = await createArticle(data, articleType, token);
+      articleId = await createArticle(
+        data,
+        GetArticleTypeName(articleType),
+        token
+      );
     } catch {
       responseOnSubmitForm({
         message: i18next.t("form.error.article.create"),
@@ -165,10 +171,4 @@ export default async function submitForm(
       updateGalleryFailedCalls,
     },
   };
-}
-
-async function FilterNumberOfRejectedCalls(
-  result: PromiseSettledResult<void>[]
-): Promise<number> {
-  return result.filter((call) => call.status === "rejected").length;
 }

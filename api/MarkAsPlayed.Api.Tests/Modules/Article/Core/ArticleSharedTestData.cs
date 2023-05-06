@@ -1,4 +1,5 @@
-﻿using MarkAsPlayed.Api.Modules.Article.Core.Models;
+﻿using MarkAsPlayed.Api.Modules;
+using MarkAsPlayed.Api.Modules.Article.Core.Models;
 
 namespace MarkAsPlayed.Api.Tests.Modules.Article.Core;
 
@@ -18,7 +19,7 @@ public class ArticleSharedTestData
                     PlayTime = 123,
                     ShortDescription = "Example Short Description",
                     LongDescription = "Example Long Description",
-                    ArticleType = 1
+                    ArticleType = (int)ArticleTypeHelper.review
                 },
                 nameof(ArticleRequestData.Title),
                 "*maximum length of*"
@@ -33,7 +34,7 @@ public class ArticleSharedTestData
                     PlayTime = 123,
                     ShortDescription = "Example Short Description",
                     LongDescription = "Example Long Description",
-                    ArticleType = 1
+                    ArticleType = (int)ArticleTypeHelper.review
                 },
                 nameof(ArticleRequestData.Title),
                 "*required*"
@@ -49,7 +50,7 @@ public class ArticleSharedTestData
                     PlayTime = 123,
                     ShortDescription = "Example Short Description",
                     LongDescription = "Example Long Description",
-                    ArticleType = 1
+                    ArticleType = (int)ArticleTypeHelper.review
                 },
                 nameof(ArticleRequestData.Producer),
                 "*maximum length of*"
@@ -65,7 +66,7 @@ public class ArticleSharedTestData
                     PlayTime = 1001,
                     ShortDescription = "Example Short Description",
                     LongDescription = "Example Long Description",
-                    ArticleType = 1
+                    ArticleType = (int)ArticleTypeHelper.review
                 },
                 nameof(ArticleRequestData.PlayTime),
                 "*must be between*"
@@ -80,7 +81,7 @@ public class ArticleSharedTestData
                     Producer = "Example Producer",
                     PlayTime = 123,
                     LongDescription = "Example Long Description",
-                    ArticleType = 1
+                    ArticleType = (int)ArticleTypeHelper.review
                 },
                 nameof(ArticleRequestData.ShortDescription),
                 "*required*"
@@ -96,7 +97,7 @@ public class ArticleSharedTestData
                     PlayTime = 123,
                     ShortDescription = new string('A', 500),
                     LongDescription = "Example Long Description",
-                    ArticleType = 1
+                    ArticleType = (int)ArticleTypeHelper.review
                 },
                 nameof(ArticleRequestData.ShortDescription),
                 "*maximum length of*"
@@ -111,7 +112,7 @@ public class ArticleSharedTestData
                     Producer = "Example Producer",
                     PlayTime = 123,
                     ShortDescription = "Example Short Description",
-                    ArticleType = 1
+                    ArticleType = (int)ArticleTypeHelper.review
                 },
                 nameof(ArticleRequestData.LongDescription),
                 "*required*"
@@ -127,25 +128,10 @@ public class ArticleSharedTestData
                     PlayTime = 123,
                     ShortDescription = "Example Short Description",
                     LongDescription = new string('A', 10001),
-                    ArticleType = 1
+                    ArticleType = (int)ArticleTypeHelper.review
                 },
                 nameof(ArticleRequestData.LongDescription),
                 "*maximum length of*"
-            );
-
-            Add(
-                new ArticleRequestData
-                {
-                    Title = "Example Title",
-                    PlayedOn = 1,
-                    AvailableOn = new List<int> { 1, 2, 3 },
-                    Producer = "Example Producer",
-                    PlayTime = 123,
-                    ShortDescription = "Example Short Description",
-                    LongDescription = "Example Long Description",
-                },
-                nameof(ArticleRequestData.ArticleType),
-                "*required*"
             );
         }
     }
@@ -159,12 +145,12 @@ public class ArticleSharedTestData
                 {
                     Title = "Example Title",
                     PlayedOn = 100,
-                    AvailableOn = new List<int> { 1, 2, 3 },
+                    AvailableOn = new List<int> { 1, 2, 3, 100 },
                     Producer = "Example Producer",
                     PlayTime = 123,
                     ShortDescription = "Example Short Description",
                     LongDescription = "Example Long Description",
-                    ArticleType = 1
+                    ArticleType = (int)ArticleTypeHelper.review
                 }
             );
 
@@ -178,7 +164,7 @@ public class ArticleSharedTestData
                     PlayTime = 123,
                     ShortDescription = "Example Short Description",
                     LongDescription = "Example Long Description",
-                    ArticleType = 1
+                    ArticleType = (int)ArticleTypeHelper.review
                 }
             );
 
@@ -193,6 +179,20 @@ public class ArticleSharedTestData
                     ShortDescription = "Example Short Description",
                     LongDescription = "Example Long Description",
                     ArticleType = 1000
+                }
+            );
+
+            Add(
+                new ArticleRequestData
+                {
+                    Title = "Example Title",
+                    PlayedOn = 1,
+                    AvailableOn = new List<int> { 1, 2, 3 },
+                    Producer = "Example Producer",
+                    PlayTime = 123,
+                    ShortDescription = "Example Short Description",
+                    LongDescription = "Example Long Description",
+                    ArticleType = 0
                 }
             );
         }
@@ -212,7 +212,27 @@ public class ArticleSharedTestData
                     PlayTime = 123,
                     ShortDescription = "Example Short Description",
                     LongDescription = "Example Long Description",
-                    ArticleType = 1
+                    ArticleType = (int)ArticleTypeHelper.review
+                }
+            );
+        }
+    }
+
+    public class InvalidUnprocessableEntity : TheoryData<ArticleRequestData>
+    {
+        public InvalidUnprocessableEntity()
+        {
+            Add(
+                new ArticleRequestData
+                {
+                    Title = "Example Title",
+                    PlayedOn = 1,
+                    AvailableOn = new List<int> { 2, 3 },
+                    Producer = "Example Producer",
+                    PlayTime = 123,
+                    ShortDescription = "Example Short Description",
+                    LongDescription = "Example Long Description",
+                    ArticleType = (int)ArticleTypeHelper.review
                 }
             );
         }
