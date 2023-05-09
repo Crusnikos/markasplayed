@@ -8,7 +8,7 @@
 
 ## General info
 
-- Web application - blog - reviews and news from the world of games.
+- Web application - Blog - Portfolio - A small and friendly place created to share the passion for games and programming. Currently created and edited by one person, however, cooperation with other enthusiasts is not excluded.
 
 ## Technologies
 
@@ -20,6 +20,12 @@
 
 ## Setup
 
+Prerequisites:
+
+```
+1.Create Firebase Authentication. More You can read at official docs: https://firebase.google.com/docs/auth?hl=en
+```
+
 Before containers start:
 
 ```
@@ -27,6 +33,8 @@ Before containers start:
 2.In folder markasplayed/ui/ execute command npm ci
 3.Download, install and configure docker (if you dont have)
 4.I advice also use WSL2 and Ubuntu for containers launching
+5.Create appsettings.json and appsettings.Test.json file in MarkAsPlayed.Api folder and configure as shown in templates
+6.Create .env file in MarkAsPlayed folder and configure as shown in template
 ```
 
 Process launching containers in terminal:
@@ -53,7 +61,7 @@ Process launching containers in terminal:
 4.dotnet test MarkAsPlayed.sln
 ```
 
-71 tests passed!
+72 tests passed!!
 
 ## Releases
 
