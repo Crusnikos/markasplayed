@@ -2,52 +2,32 @@
 using Flurl.Http;
 using LinqToDB;
 using MarkAsPlayed.Api.Data.Models;
+using MarkAsPlayed.Api.Modules;
 using MarkAsPlayed.Api.Modules.Article.Tags.Models;
 
 namespace MarkAsPlayed.Api.Tests.Modules.Article.Tags;
 
 public sealed class TagsByArticleIdFixture : IntegrationTest
 {
+    public long ReviewArticleId = 0;
+    public long NewsArticleId = 0;
+
     protected override async Task SetUp()
     {
         await using var db = CreateDatabase();
+        var testData = new GeneralDatabaseTestData();
 
-        await db.Articles.InsertAsync(
-            () => new Data.Models.Article
-            {
-                Id = 1,
-                ArticleTypeId = 1,
-                CreatedAt = new DateTimeOffset(new DateTime(2022, 09, 19)),
-                CreatedBy = 1,
-                LongDescription = "Review Long Description string",
-                PlayedOnGamingPlatformId = 1,
-                PlayTime = 15,
-                Producer = "Review Producer string",
-                ShortDescription = "Review Short Description string",
-                Title = "Review Title string"
-            }
-        );
+        var reviewId = await db.InsertWithInt64IdentityAsync(testData.ReviewArticleExample, db.GetTable<Data.Models.Article>().TableName);
+        await db.InsertAsync(testData.CreateArticleReviewData(reviewId), db.GetTable<ArticleReviewData>().TableName);
+        await db.InsertAsync(testData.CreateArticleContentData(ArticleTypeHelper.review, reviewId), db.GetTable<ArticleContent>().TableName);
 
-        await db.Articles.InsertAsync(
-            () => new Data.Models.Article
-            {
-                Id = 2,
-                ArticleTypeId = 2,
-                CreatedAt = new DateTimeOffset(new DateTime(2022, 09, 18)),
-                CreatedBy = 1,
-                LongDescription = "News Long Description string",
-                PlayedOnGamingPlatformId = null,
-                PlayTime = null,
-                Producer = null,
-                ShortDescription = "News Short Description string",
-                Title = "News Title string"
-            }
-        );
+        var newsId = await db.InsertWithInt64IdentityAsync(testData.NewsArticleExample, db.GetTable<Data.Models.Article>().TableName);
+        await db.InsertAsync(testData.CreateArticleContentData(ArticleTypeHelper.news, newsId), db.GetTable<ArticleContent>().TableName);
 
         await db.ArticleGamingPlatforms.InsertAsync(
             () => new ArticleGamingPlatform
             {
-                ArticleId = 1,
+                ArticleId = reviewId,
                 GamingPlatformId = 1
             }
         );
@@ -56,7 +36,7 @@ public sealed class TagsByArticleIdFixture : IntegrationTest
             () => new ArticleTag
             {
                 TagId = 1,
-                ArticleId = 1,
+                ArticleId = reviewId,
                 IsActive = true,
             }
         );
@@ -65,7 +45,7 @@ public sealed class TagsByArticleIdFixture : IntegrationTest
             () => new ArticleTag
             {
                 TagId = 10,
-                ArticleId = 1,
+                ArticleId = reviewId,
                 IsActive = true,
             }
         );
@@ -74,10 +54,13 @@ public sealed class TagsByArticleIdFixture : IntegrationTest
             () => new ArticleTag
             {
                 TagId = 20,
-                ArticleId = 1,
+                ArticleId = reviewId,
                 IsActive = true,
             }
         );
+
+        ReviewArticleId = reviewId;
+        NewsArticleId = newsId;
     }
 }
 
@@ -93,7 +76,9 @@ public class TagsByArticleIdEndpointTests : IClassFixture<TagsByArticleIdFixture
     [Fact]
     public async Task ShouldRetrieveTagsData()
     {
-        var response = await _suite.Client.Request("tags", "article", "1").
+        var articleId = _suite.ReviewArticleId;
+
+        var response = await _suite.Client.Request("tags", "article", articleId).
                                     GetAsync();
 
         var jsonSerializedResponse = await response.GetJsonAsync<IEnumerable<TagData>>();
@@ -104,7 +89,9 @@ public class TagsByArticleIdEndpointTests : IClassFixture<TagsByArticleIdFixture
     [Fact]
     public async Task ShouldRetrieveEmptyListOnZeroArticleTags()
     {
-        var response = await _suite.Client.Request("tags", "article", "2").
+        var articleId = _suite.NewsArticleId;
+
+        var response = await _suite.Client.Request("tags", "article", articleId).
                                     GetAsync();
 
         var jsonSerializedResponse = await response.GetJsonAsync<IEnumerable<TagData>>();

@@ -8,10 +8,12 @@ namespace MarkAsPlayed.Api.Modules.Article.Tags.Commands;
 public class TagCommand
 {
     private readonly Database.Factory _databaseFactory;
+    private readonly IArticleHelper _articleHelper;
 
-    public TagCommand(Database.Factory databaseFactory)
+    public TagCommand(Database.Factory databaseFactory, IArticleHelper articleHelper)
     {
         _databaseFactory = databaseFactory;
+        _articleHelper = articleHelper;
     }
 
     public async Task<CommonResponseTemplate> CreateAsync(
@@ -22,27 +24,10 @@ public class TagCommand
 
         try
         {
-            var updatedRecords = await db.ArticleTags.
-                Where(at => 
-                    at.ArticleId == request.ArticleId && 
-                    at.TagId == request.TagId).
-                Set(at => at.ArticleId, request.ArticleId).
-                Set(at => at.TagId, request.TagId).
-                Set(at => at.IsActive, true).
-                UpdateAsync(cancellationToken);
+            var updatedRecords = await _articleHelper.UpdateArticleTagAsync(db, request, true, cancellationToken);
 
             if (updatedRecords == 0)
-            {
-                await db.ArticleTags.InsertAsync(
-                    () => new Data.Models.ArticleTag
-                    {
-                        ArticleId = request.ArticleId,
-                        TagId = request.TagId,
-                        IsActive = true
-                    },
-                    cancellationToken
-                );
-            }
+                await _articleHelper.InsertArticleTagAsync(db, request, cancellationToken);
 
             return new CommonResponseTemplate
             {
@@ -85,14 +70,7 @@ public class TagCommand
 
         try
         {
-            var updatedRecords = await db.ArticleTags.
-                Where(at =>
-                    at.ArticleId == request.ArticleId &&
-                    at.TagId == request.TagId).
-                Set(at => at.ArticleId, request.ArticleId).
-                Set(at => at.TagId, request.TagId).
-                Set(at => at.IsActive, false).
-                UpdateAsync(cancellationToken);
+            var updatedRecords = await _articleHelper.UpdateArticleTagAsync(db, request, false, cancellationToken);
 
             if (updatedRecords == 0)
             {

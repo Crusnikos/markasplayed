@@ -33,7 +33,8 @@ export default async function submitForm(
   images: ArticleImagesData,
   setMaintence: (element: MaintenceState) => void,
   setLoadingProgressInfo: (element: string | undefined) => void,
-  app: firebase.app.App | undefined
+  app: firebase.app.App | undefined,
+  transactionId: string
 ): Promise<SubmitResponse> {
   setMaintence("LoadingState");
 
@@ -69,7 +70,12 @@ export default async function submitForm(
       //Update article
       setLoadingProgressInfo(i18next.t("loading.progress.articleUpdate"));
 
-      await updateArticle(data, GetArticleTypeName(articleType), token);
+      await updateArticle(
+        data,
+        GetArticleTypeName(articleType),
+        transactionId,
+        token
+      );
       articleId = data?.id;
     } catch {
       responseOnSubmitForm({
@@ -86,6 +92,7 @@ export default async function submitForm(
       articleId = await createArticle(
         data,
         GetArticleTypeName(articleType),
+        transactionId,
         token
       );
     } catch {

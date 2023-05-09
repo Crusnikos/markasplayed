@@ -7,26 +7,18 @@ import i18next from "i18next";
 import { CustomInputImage } from "./formUnitsTemplates";
 import RemoveCircleIcon from "@mui/icons-material/RemoveCircle";
 import zoomInZoomOut from "../../animatedEffects/zoomInZoomOut.module.css";
+import useSwipe from "../../hooks/useSwipe";
+import { onBackwardIndex, onForwardIndex } from "../../swipe";
+import swipeImage from "../../animatedEffects/swipeImage.module.css";
 
 const useStyles = makeStyles()((theme) => ({
   stack: {
     paddingTop: theme.spacing(1),
   },
-  image: {
-    height: "300px",
-    [theme.breakpoints.down("lg")]: {
-      height: "180px",
-    },
-  },
-  deactivatedImagesInfo: {
-    color: theme.palette.error.main,
-    fontWeight: "bold",
-    width: "80%",
-  },
-  galleryImageSection: {
+  gallerySectionWrapper: {
     display: "grid",
   },
-  galleryImageSectionButton: {
+  removeImagecontainer: {
     marginTop: theme.spacing(1),
     marginRight: theme.spacing(1),
     gridRowStart: 1,
@@ -34,13 +26,33 @@ const useStyles = makeStyles()((theme) => ({
     justifySelf: "end",
     zIndex: 2,
   },
-  galleryImageSectionImage: {
+  removeImageButton: {
+    backgroundColor: theme.palette.common.white,
+  },
+  galleryPosition: {
     gridRowStart: 1,
     gridColumnStart: 1,
     zIndex: 1,
   },
-  removeCircleButton: {
-    backgroundColor: theme.palette.common.white,
+  imagesContainer: {
+    display: "flex",
+    flexWrap: "nowrap",
+    overflow: "hidden",
+    aspectRatio: "16/9",
+    width: "100%",
+  },
+  deactivatedImagesInfo: {
+    color: theme.palette.error.main,
+    width: "80%",
+  },
+  inputImager: {
+    aspectRatio: "16/9",
+    width: "100%",
+  },
+  cardImage: {
+    backgroundColor: theme.palette.grey[300],
+    minWidth: "100%",
+    objectFit: "contain",
   },
 }));
 
@@ -54,6 +66,13 @@ export default function ArticleGalleryForm(props: {
   const [galleryLength, setGalleryLength] = useState(gallery.length);
   const [activeStep, setActiveStep] = useState(0);
   const [initialRender, setInitialRender] = useState(true);
+
+  const swipeHandlers = useSwipe({
+    onSwipedLeft: () =>
+      onForwardIndex(gallery as any[], activeStep, setActiveStep),
+    onSwipedRight: () =>
+      onBackwardIndex(gallery as any[], activeStep, setActiveStep),
+  });
 
   useEffect(() => {
     async function onGalleryChange() {
@@ -102,40 +121,53 @@ export default function ArticleGalleryForm(props: {
       ? markImageAsConcealed
       : deleteNewImage;
 
-  const galleryImage = (
-    <Grid container className={classes.galleryImageSection}>
-      <Grid item className={classes.galleryImageSectionButton}>
-        <IconButton
-          onClick={onClickRemoveButton}
-          className={classes.removeCircleButton}
-        >
-          <RemoveCircleIcon color="error" fontSize="large" />
-        </IconButton>
-      </Grid>
-      <Grid item className={classes.galleryImageSectionImage}>
-        <CardMedia
-          className={classes.image}
-          component="img"
-          alt={i18next.t("image.missing")}
-          image={gallery[activeStep].preview}
-        />
-      </Grid>
+  const removeButton = galleryLength - 1 !== activeStep && (
+    <Grid item className={classes.removeImagecontainer}>
+      <IconButton
+        onClick={onClickRemoveButton}
+        className={classes.removeImageButton}
+      >
+        <RemoveCircleIcon color="error" fontSize="large" />
+      </IconButton>
+    </Grid>
+  );
+
+  const imagesContainer = (
+    <Grid container className={classes.imagesContainer}>
+      {galleryLength - 1 !== activeStep ? (
+        gallery.map((item, index) => (
+          <CardMedia
+            key={index}
+            className={`${classes.cardImage} ${swipeImage.animate}`}
+            style={{ transform: `translate(-${activeStep * 100}%)` }}
+            component="img"
+            alt={i18next.t("image.missing")}
+            image={item.preview}
+            {...swipeHandlers}
+          />
+        ))
+      ) : (
+        <Grid item className={classes.inputImager} {...swipeHandlers}>
+          <CustomInputImage
+            image={undefined}
+            onImagesChange={addNewImages}
+            isAddPhoto={true}
+            error={undefined}
+            multipleUpload={true}
+          />
+        </Grid>
+      )}
     </Grid>
   );
 
   return (
     <Stack direction="column" className={classes.stack}>
-      {galleryLength - 1 !== activeStep ? (
-        galleryImage
-      ) : (
-        <CustomInputImage
-          image={undefined}
-          onImagesChange={addNewImages}
-          isAddPhoto={true}
-          error={undefined}
-          multipleUpload={true}
-        />
-      )}
+      <Grid container className={classes.gallerySectionWrapper}>
+        {removeButton}
+        <Grid item className={classes.galleryPosition}>
+          {imagesContainer}
+        </Grid>
+      </Grid>
       <Stepper
         activeStep={activeStep}
         setActiveStep={setActiveStep}
@@ -145,8 +177,9 @@ export default function ArticleGalleryForm(props: {
         <Typography
           key={numberOfDeactivatedImages}
           variant="body2"
-          className={`${classes.deactivatedImagesInfo} ${zoomInZoomOut.animate}`}
           noWrap={true}
+          fontWeight="bold"
+          className={`${classes.deactivatedImagesInfo} ${zoomInZoomOut.animate}`}
         >
           {`*( ${numberOfDeactivatedImages} ) ${i18next
             .t("form.warning.gallery.deactivatedInfo")

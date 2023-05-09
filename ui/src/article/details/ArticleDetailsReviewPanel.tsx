@@ -75,7 +75,7 @@ export default function ArticleDetailsReviewPanel(props: {
             md={6}
             className={classes.infoBoxItem}
           >
-            <Typography variant="h6">
+            <Typography variant="h5" fontWeight="bold">
               {i18next.t("details.reviewPanel.gameTime")}
             </Typography>
             <Divider className={classes.divider} flexItem />
@@ -92,7 +92,7 @@ export default function ArticleDetailsReviewPanel(props: {
             md={6}
             className={classes.infoBoxItem}
           >
-            <Typography variant="h6">
+            <Typography variant="h5" fontWeight="bold">
               {i18next.t("details.reviewPanel.playedOn")}
             </Typography>
             <Divider className={classes.divider} flexItem />
@@ -103,7 +103,7 @@ export default function ArticleDetailsReviewPanel(props: {
                 alt={i18next.t("image.missing")}
                 image={IconSelector(playedOn.groupName, "white")}
               />
-              <Typography>{playedOnName}</Typography>
+              <Typography variant="h6">{playedOnName}</Typography>
             </Grid>
           </Grid>
           <Grid
@@ -115,7 +115,7 @@ export default function ArticleDetailsReviewPanel(props: {
             md={12}
             className={classes.infoBoxItem}
           >
-            <Typography variant="h6">
+            <Typography variant="h5" fontWeight="bold">
               {i18next.t("details.reviewPanel.availableOn")}
             </Typography>
             <Divider className={classes.divider} flexItem />
@@ -140,7 +140,9 @@ export default function ArticleDetailsReviewPanel(props: {
                     image={IconSelector(platform.groupName, "white")}
                   />
                   <Box component="div" className={classes.groupedPlatformsBox}>
-                    <Typography noWrap>{platform.groupedPlatforms}</Typography>
+                    <Typography variant="h6" noWrap>
+                      {platform.groupedPlatforms}
+                    </Typography>
                   </Box>
                 </Grid>
               ))}

@@ -2,6 +2,7 @@
 using Flurl.Http;
 using LinqToDB;
 using MarkAsPlayed.Api.Data.Models;
+using MarkAsPlayed.Api.Modules;
 using MarkAsPlayed.Api.Modules.Article.Core.Models;
 
 namespace MarkAsPlayed.Api.Tests.Modules.Article.Core;
@@ -11,40 +12,16 @@ public sealed class ArticleListingFixture : IntegrationTest
     protected override async Task SetUp()
     {
         await using var db = CreateDatabase();
+        var testData = new GeneralDatabaseTestData();
 
-        await db.Articles.InsertAsync(
-            () => new Data.Models.Article
-            {
-                Id = 1,
-                ArticleTypeId = 1,
-                CreatedAt = new DateTimeOffset(new DateTime(2022, 09, 19)),
-                CreatedBy = 1,
-                LongDescription = "Review Long Description string",
-                PlayedOnGamingPlatformId = 1,
-                PlayTime = 15,
-                Producer = "Review Producer string",
-                ShortDescription = "Review Short Description string",
-                Title = "Review Title string"
-            }
-        );
+        var reviewId = await db.InsertWithInt64IdentityAsync(testData.ReviewArticleExample, db.GetTable<Data.Models.Article>().TableName);
+        await db.InsertAsync(testData.CreateArticleReviewData(reviewId), db.GetTable<ArticleReviewData>().TableName);
+        await db.InsertAsync(testData.CreateArticleContentData(ArticleTypeHelper.review, reviewId), db.GetTable<ArticleContent>().TableName);
 
-        await db.Articles.InsertAsync(
-            () => new Data.Models.Article
-            {
-                Id = 2,
-                ArticleTypeId = 2,
-                CreatedAt = new DateTimeOffset(new DateTime(2022, 09, 18)),
-                CreatedBy = 1,
-                LongDescription = "News Long Description string",
-                PlayedOnGamingPlatformId = null,
-                PlayTime = null,
-                Producer = null,
-                ShortDescription = "News Short Description string",
-                Title = "News Title string"
-            }
-        );
+        var newsId = await db.InsertWithInt64IdentityAsync(testData.NewsArticleExample, db.GetTable<Data.Models.Article>().TableName);
+        await db.InsertAsync(testData.CreateArticleContentData(ArticleTypeHelper.news, newsId), db.GetTable<ArticleContent>().TableName);
 
-        for (int i = 3; i < 7; i++)
+        for (int i = (int)(newsId + 1); i < (int)(newsId + 5); i++)
         {
             await db.Articles.InsertAsync(
                 () => new Data.Models.Article
@@ -53,12 +30,16 @@ public sealed class ArticleListingFixture : IntegrationTest
                     ArticleTypeId = 3,
                     CreatedAt = new DateTimeOffset(new DateTime(2022, i, 17)),
                     CreatedBy = 1,
-                    LongDescription = "Other Long Description string",
-                    PlayedOnGamingPlatformId = null,
-                    PlayTime = null,
-                    Producer = null,
                     ShortDescription = "Other Short Description string",
                     Title = "Other Title string"
+                }
+            );
+
+            await db.ArticlesContent.InsertAsync(
+                () => new ArticleContent
+                {
+                    ArticleId = i,
+                    LongDescription = "Other Long Description string"
                 }
             );
         }
@@ -66,7 +47,7 @@ public sealed class ArticleListingFixture : IntegrationTest
         await db.ArticleGamingPlatforms.InsertAsync(
             () => new ArticleGamingPlatform
             {
-                ArticleId = 1,
+                ArticleId = reviewId,
                 GamingPlatformId = 1
             }
         );
@@ -74,7 +55,7 @@ public sealed class ArticleListingFixture : IntegrationTest
         await db.ArticleGamingPlatforms.InsertAsync(
             () => new ArticleGamingPlatform
             {
-                ArticleId = 1,
+                ArticleId = reviewId,
                 GamingPlatformId = 2
             }
         );
@@ -82,7 +63,7 @@ public sealed class ArticleListingFixture : IntegrationTest
         await db.ArticleGamingPlatforms.InsertAsync(
             () => new ArticleGamingPlatform
             {
-                ArticleId = 2,
+                ArticleId = newsId,
                 GamingPlatformId = 3
             }
         );
