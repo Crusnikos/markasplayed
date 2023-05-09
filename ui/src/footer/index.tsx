@@ -16,7 +16,6 @@ const useStyles = makeStyles()((theme) => ({
     padding: theme.spacing(1.5),
   },
   text: {
-    fontSize: 14,
     marginBottom: theme.spacing(1.5),
     marginRight: theme.spacing(2),
   },
@@ -53,7 +52,7 @@ export default function Footer(): JSX.Element {
 
     for (let i = 1; i < 4; i++) {
       array.push(
-        <Typography className={classes.text} variant="body2" key={i}>
+        <Typography variant="body2" key={i} className={classes.text}>
           {i18next.t(`footer.about.p${i}`)}
         </Typography>
       );
@@ -66,13 +65,13 @@ export default function Footer(): JSX.Element {
     <footer className={classes.footer}>
       <Grid container className={classes.footerContent}>
         <Grid item lg={8} md={8}>
-          <Typography variant="h6">
+          <Typography variant="h5">
             {i18next.t("footer.header.about")}
           </Typography>
           {createAboutSection()}
         </Grid>
         <Grid item lg={4} md={4}>
-          <Typography variant="h6">
+          <Typography variant="h5">
             {i18next.t("footer.header.social")}
           </Typography>
           {data &&

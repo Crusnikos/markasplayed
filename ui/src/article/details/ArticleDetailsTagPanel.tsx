@@ -41,13 +41,15 @@ const useStyles = makeStyles()((theme) => ({
     borderColor: theme.palette.common.white,
     boxShadow: "8px 8px 29px -5px rgba(66, 68, 90, 1)",
   },
+  componentTitle: { textShadow: "5px 5px 10px rgba(66, 68, 90, 1)" },
   tagChip: {
-    padding: theme.spacing(1),
+    padding: theme.spacing(0.5),
     color: theme.palette.common.white,
+    fontWeight: "bold",
     "& .MuiChip-deleteIcon": {
       color: "white",
     },
-    boxShadow: "8px 8px 29px -5px rgba(66, 68, 90, 1)",
+    boxShadow: "8px 8px 15px -5px rgba(66, 68, 90, 1)",
   },
   searchBox: {
     boxShadow: "8px 8px 29px -5px rgba(66, 68, 90, 1)",
@@ -67,6 +69,9 @@ const useStyles = makeStyles()((theme) => ({
     borderColor: theme.palette.common.white,
     borderWidth: theme.spacing(0.2),
     marginBottom: theme.spacing(1),
+  },
+  searchNoResults: {
+    marginLeft: theme.spacing(1),
   },
 }));
 
@@ -236,12 +241,6 @@ export default function ArticleDetailsTagPanel(props: {
     );
   }
 
-  const title = (
-    <Grid item>
-      <Typography variant="h6">{i18next.t("details.title.tag")}</Typography>
-    </Grid>
-  );
-
   const buttonsSection =
     !edit || !lookup ? (
       <Grid item>
@@ -326,7 +325,8 @@ export default function ArticleDetailsTagPanel(props: {
     <Grid container item md={4}>
       <TextField
         label={i18next.t("details.tag.search")}
-        InputLabelProps={{ shrink: true }}
+        InputLabelProps={{ shrink: true, htmlFor: `search-section` }}
+        inputProps={{ id: `search-section` }}
         size="small"
         fullWidth
         select
@@ -388,7 +388,10 @@ export default function ArticleDetailsTagPanel(props: {
             ))
           ) : (
             <Grid item>
-              <Typography variant="subtitle2" sx={{ marginLeft: "8px" }}>
+              <Typography
+                variant="subtitle2"
+                className={classes.searchNoResults}
+              >
                 {i18next.t("details.tag.noResults")}
               </Typography>
             </Grid>
@@ -410,7 +413,13 @@ export default function ArticleDetailsTagPanel(props: {
             justifyContent="space-between"
             className={classes.infoBoxItem}
           >
-            {title}
+            <Typography
+              variant="h5"
+              fontWeight="bold"
+              className={classes.componentTitle}
+            >
+              {i18next.t("details.title.tag")}
+            </Typography>
             {buttonsSection}
           </Grid>
           <Grid item>
