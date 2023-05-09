@@ -6,43 +6,32 @@ using MarkAsPlayed.Api.Modules;
 using MarkAsPlayed.Api.Modules.Article.Core.Models;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
-using ArticleData = MarkAsPlayed.Api.Data.Models.Article;
 
 namespace MarkAsPlayed.Api.Tests.Modules.Article.Core;
 
 public sealed class ArticleUpdateEndpointTests : IClassFixture<IntegrationTest>, IAsyncLifetime
 {
     private readonly IntegrationTest _suite;
+    private readonly GeneralDatabaseTestData _testData;
+    private long _articleId = 0;
 
     public ArticleUpdateEndpointTests(IntegrationTest suite)
     {
         _suite = suite;
+        _testData = new GeneralDatabaseTestData();
     }
 
     public async Task InitializeAsync()
     {
         await using var db = _suite.CreateDatabase();
-
-        await db.Articles.InsertAsync(
-            () => new Data.Models.Article
-            {
-                Id = 1,
-                ArticleTypeId = 1,
-                CreatedAt = new DateTimeOffset(new DateTime(2022, 09, 19)),
-                CreatedBy = 1,
-                LongDescription = "Review Long Description string",
-                PlayedOnGamingPlatformId = 1,
-                PlayTime = 15,
-                Producer = "Review Producer string",
-                ShortDescription = "Review Short Description string",
-                Title = "Review Title string"
-            }
-        );
+        var id = await db.InsertWithInt64IdentityAsync(_testData.ReviewArticleExample, db.GetTable<Data.Models.Article>().TableName);
+        await db.InsertAsync(_testData.CreateArticleReviewData(id), db.GetTable<ArticleReviewData>().TableName);
+        await db.InsertAsync(_testData.CreateArticleContentData(ArticleTypeHelper.review, id), db.GetTable<ArticleContent>().TableName);
 
         await db.ArticleGamingPlatforms.InsertAsync(
             () => new ArticleGamingPlatform
             {
-                ArticleId = 1,
+                ArticleId = id,
                 GamingPlatformId = 1
             }
         );
@@ -50,28 +39,29 @@ public sealed class ArticleUpdateEndpointTests : IClassFixture<IntegrationTest>,
         await db.ArticleGamingPlatforms.InsertAsync(
             () => new ArticleGamingPlatform
             {
-                ArticleId = 1,
+                ArticleId = id,
                 GamingPlatformId = 2
             }
         );
+
+        _articleId = id;
     }
 
-    public async Task DisposeAsync()
+    public Task DisposeAsync()
     {
-        await using var db = _suite.CreateDatabase();
-        await db.Articles.DeleteAsync();
-        await db.ArticleGamingPlatforms.DeleteAsync();
+        return Task.CompletedTask;
     }
 
     [Theory]
     [ClassData(typeof(ArticleSharedTestData.MalformedArticleData))]
     public async Task ShouldFailValidationWithMalformedRequest(
-        ArticleRequestData request,
+        ArticleFoundationData request,
         string property,
         string pattern)
     {
         var response = await _suite.Client.AllowHttpStatus(HttpStatusCode.BadRequest).
                                     Request("article/1").
+                                    SetQueryParam("transactionId", Guid.NewGuid()).
                                     PutJsonAsync(request);
         response.StatusCode.Should().Be((int)HttpStatusCode.BadRequest);
 
@@ -85,30 +75,33 @@ public sealed class ArticleUpdateEndpointTests : IClassFixture<IntegrationTest>,
 
     [Theory]
     [ClassData(typeof(ArticleSharedTestData.InvalidReferenceArticleData))]
-    public async Task ShouldReturn404WhenADataReferenceIsInvalid(ArticleRequestData request)
+    public async Task ShouldReturn404WhenADataReferenceIsInvalid(ArticleFoundationData request)
     {
         var response = await _suite.Client.AllowHttpStatus(HttpStatusCode.NotFound).
                                     Request("article/1").
+                                    SetQueryParam("transactionId", Guid.NewGuid()).
                                     PutJsonAsync(request);
         response.StatusCode.Should().Be((int)HttpStatusCode.NotFound);
     }
 
     [Theory]
     [ClassData(typeof(ArticleSharedTestData.InvalidArticleDataId))]
-    public async Task ShouldReturn404WhenArticleNotFound(ArticleRequestData request)
+    public async Task ShouldReturn404WhenArticleNotFound(ArticleFoundationData request)
     {
         var response = await _suite.Client.AllowHttpStatus(HttpStatusCode.NotFound).
                                     Request("article/2000").
+                                    SetQueryParam("transactionId", Guid.NewGuid()).
                                     PutJsonAsync(request);
         response.StatusCode.Should().Be((int)HttpStatusCode.NotFound);
     }
 
     [Theory]
     [ClassData(typeof(ArticleSharedTestData.InvalidUnprocessableEntity))]
-    public async Task ShouldReturn422WhenADataIsUnprocessable(ArticleRequestData request)
+    public async Task ShouldReturn422WhenADataIsUnprocessable(ArticleFoundationData request)
     {
         var response = await _suite.Client.AllowHttpStatus(HttpStatusCode.UnprocessableEntity).
                                     Request("article/1").
+                                    SetQueryParam("transactionId", Guid.NewGuid()).
                                     PutJsonAsync(request);
         response.StatusCode.Should().Be((int)HttpStatusCode.UnprocessableEntity);
     }
@@ -116,18 +109,21 @@ public sealed class ArticleUpdateEndpointTests : IClassFixture<IntegrationTest>,
     [Fact]
     public async Task ShouldUpdateToAnReviewArticle()
     {
+        var articleId = _articleId;
+
         var response = await _suite.Client.
-            Request("article/1").
+            Request($"article/{articleId}").
+            SetQueryParam("transactionId", Guid.NewGuid()).
             PutJsonAsync(
-                new ArticleRequestData
+                new ArticleFoundationData
                 {
-                    Title = "Example Title",
+                    Title = "Review Title string",
                     PlayedOn = 1,
                     AvailableOn = new List<int> { 1, 2, 3 },
-                    Producer = "Example Producer",
-                    PlayTime = 123,
-                    ShortDescription = "Example Short Description",
-                    LongDescription = "Example Long Description",
+                    Producer = "Review Producer string",
+                    PlayTime = 15,
+                    ShortDescription = "Review Short Description string",
+                    LongDescription = "Review Long Description string",
                     ArticleType = (int)ArticleTypeHelper.review
                 }
             );
@@ -136,42 +132,53 @@ public sealed class ArticleUpdateEndpointTests : IClassFixture<IntegrationTest>,
 
         await using var db = _suite.CreateDatabase();
 
-        var item = await db.Articles.Where(t => t.Id == 1).FirstOrDefaultAsync();
+        var article = await db.Articles.Where(t => t.Id == articleId).FirstOrDefaultAsync();
+        var articleReviewData = await db.ArticlesReviewData.Where(t => t.ArticleId == articleId).FirstOrDefaultAsync();
+        var articleContent = await db.ArticlesContent.Where(t => t.ArticleId == articleId).FirstOrDefaultAsync();
 
-        item.Should().
+        article.Should().
              NotBeNull().
              And.
              BeEquivalentTo(
-                 new ArticleData
-                 {
-                     Title = "Example Title",
-                     PlayedOnGamingPlatformId = 1,
-                     Producer = "Example Producer",
-                     PlayTime = 123,
-                     ArticleTypeId = 1,
-                     ShortDescription = "Example Short Description",
-                     LongDescription = "Example Long Description",
-                     CreatedBy = 1
-                 },
+                 _testData.ReviewArticleExample,
                  options => options.Excluding(o => o.Id).Excluding(o => o.CreatedAt)
+             );
+
+        articleReviewData.Should().
+             NotBeNull().
+             And.
+             BeEquivalentTo(
+                 _testData.CreateArticleReviewData(articleId),
+                 options => options.Excluding(o => o!.ArticleId)
+             );
+
+        articleContent.Should().
+             NotBeNull().
+             And.
+             BeEquivalentTo(
+                 _testData.CreateArticleContentData(ArticleTypeHelper.review, articleId),
+                 options => options.Excluding(o => o.ArticleId)
              );
     }
 
     [Fact]
     public async Task ShouldUpdateToANewsArticle()
     {
+        var articleId = _articleId;
+
         var response = await _suite.Client.
-            Request("article/1").
+            Request($"article/{articleId}").
+            SetQueryParam("transactionId", Guid.NewGuid()).
             PutJsonAsync(
-                new ArticleRequestData
+                new ArticleFoundationData
                 {
-                    Title = "Example Title",
+                    Title = "News Title string",
                     PlayedOn = null,
                     AvailableOn = new List<int> { 1, 2, 3 },
                     Producer = null,
                     PlayTime = null,
-                    ShortDescription = "Example Short Description",
-                    LongDescription = "Example Long Description",
+                    ShortDescription = "News Short Description string",
+                    LongDescription = "News Long Description string",
                     ArticleType = (int)ArticleTypeHelper.news
                 }
             );
@@ -180,42 +187,47 @@ public sealed class ArticleUpdateEndpointTests : IClassFixture<IntegrationTest>,
 
         await using var db = _suite.CreateDatabase();
 
-        var item = await db.Articles.Where(t => t.Id == 1).FirstOrDefaultAsync();
+        var article = await db.Articles.Where(t => t.Id == articleId).FirstOrDefaultAsync();
+        var articleReviewData = await db.ArticlesReviewData.Where(t => t.ArticleId == articleId).FirstOrDefaultAsync();
+        var articleContent = await db.ArticlesContent.Where(t => t.ArticleId == articleId).FirstOrDefaultAsync();
 
-        item.Should().
+        article.Should().
              NotBeNull().
              And.
              BeEquivalentTo(
-                 new ArticleData
-                 {
-                     Title = "Example Title",
-                     PlayedOnGamingPlatformId = null,
-                     Producer = null,
-                     PlayTime = null,
-                     ArticleTypeId = 2,
-                     ShortDescription = "Example Short Description",
-                     LongDescription = "Example Long Description",
-                     CreatedBy = 1
-                 },
+                 _testData.NewsArticleExample,
                  options => options.Excluding(o => o.Id).Excluding(o => o.CreatedAt)
+             );
+
+        articleReviewData.Should().BeNull();
+
+        articleContent.Should().
+             NotBeNull().
+             And.
+             BeEquivalentTo(
+                 _testData.CreateArticleContentData(ArticleTypeHelper.news, articleId),
+                 options => options.Excluding(o => o.ArticleId)
              );
     }
 
     [Fact]
     public async Task ShouldUpdateToAnOtherArticle()
     {
+        var articleId = _articleId;
+
         var response = await _suite.Client.
-            Request("article/1").
+            Request($"article/{articleId}").
+            SetQueryParam("transactionId", Guid.NewGuid()).
             PutJsonAsync(
-                new ArticleRequestData
+                new ArticleFoundationData
                 {
-                    Title = "Example Title",
+                    Title = "Other Title string",
                     PlayedOn = null,
                     AvailableOn = null,
                     Producer = null,
                     PlayTime = null,
-                    ShortDescription = "Example Short Description",
-                    LongDescription = "Example Long Description",
+                    ShortDescription = "Other Short Description string",
+                    LongDescription = "Other Long Description string",
                     ArticleType = (int)ArticleTypeHelper.other
                 }
             );
@@ -224,24 +236,69 @@ public sealed class ArticleUpdateEndpointTests : IClassFixture<IntegrationTest>,
 
         await using var db = _suite.CreateDatabase();
 
-        var item = await db.Articles.Where(t => t.Id == 1).FirstOrDefaultAsync();
+        var article = await db.Articles.Where(t => t.Id == articleId).FirstOrDefaultAsync();
+        var articleReviewData = await db.ArticlesReviewData.Where(t => t.ArticleId == articleId).FirstOrDefaultAsync();
+        var articleContent = await db.ArticlesContent.Where(t => t.ArticleId == articleId).FirstOrDefaultAsync();
 
-        item.Should().
+        article.Should().
              NotBeNull().
              And.
              BeEquivalentTo(
-                 new ArticleData
-                 {
-                     Title = "Example Title",
-                     PlayedOnGamingPlatformId = null,
-                     Producer = null,
-                     PlayTime = null,
-                     ArticleTypeId = 3,
-                     ShortDescription = "Example Short Description",
-                     LongDescription = "Example Long Description",
-                     CreatedBy = 1
-                 },
+                 _testData.OtherArticleExample,
                  options => options.Excluding(o => o.Id).Excluding(o => o.CreatedAt)
              );
+
+        articleReviewData.Should().BeNull();
+
+        articleContent.Should().
+             NotBeNull().
+             And.
+             BeEquivalentTo(
+                 _testData.CreateArticleContentData(ArticleTypeHelper.other, articleId),
+                 options => options.Excluding(o => o.ArticleId)
+             );
+    }
+
+    [Fact]
+    public async Task ShouldCreateAnEntryInVersionHistoryWhileEditingArticle()
+    {
+        var articleId = _articleId;
+        var transactionId = Guid.NewGuid();
+
+        var response = await _suite.Client.
+            Request($"article/{articleId}").
+            SetQueryParam("transactionId", transactionId).
+            PutJsonAsync(
+                new ArticleFoundationData
+                {
+                    Title = "Other Title string",
+                    PlayedOn = null,
+                    AvailableOn = null,
+                    Producer = null,
+                    PlayTime = null,
+                    ShortDescription = "Other Short Description string",
+                    LongDescription = "Other Long Description string",
+                    ArticleType = (int)ArticleTypeHelper.other
+                }
+            );
+
+        response.StatusCode.Should().Be((int)HttpStatusCode.NoContent);
+
+        await using var db = _suite.CreateDatabase();
+
+        var versionHistoryEntry = db.ArticleVersionHistory.FirstOrDefault(v => v.TransactionId == transactionId.ToString());
+
+        versionHistoryEntry.Should().
+            NotBeNull().
+            And.
+            BeEquivalentTo(
+                new ArticleVersionHistory
+                {
+                    ArticleId = _articleId,
+                    CreatedBy = 1,
+                    TransactionId = transactionId.ToString(),
+                },
+                options => options.Excluding(o => o.CreatedAt).Excluding(o => o.Differences)
+            );
     }
 }

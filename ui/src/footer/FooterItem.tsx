@@ -13,7 +13,6 @@ const useStyles = makeStyles()((theme) => ({
     marginRight: theme.spacing(1),
   },
   text: {
-    fontSize: 14,
     marginRight: theme.spacing(1),
   },
   link: {
@@ -61,7 +60,11 @@ export function FooterItemWithText(props: {
         src={`${window.location.protocol}//${window.location.host}/${icon}`}
         alt={i18next.t("image.missing")}
       />
-      <Typography className={classes.text} overflow="hidden">
+      <Typography
+        variant="subtitle2"
+        overflow="hidden"
+        className={classes.text}
+      >
         {i18next.t(text)}
         <a
           href={link}

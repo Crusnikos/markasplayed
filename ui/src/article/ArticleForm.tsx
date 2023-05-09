@@ -30,6 +30,7 @@ import imagesReducer from "./form/imagesReducer";
 import submitForm from "./form/submitForm";
 import { useArticleData } from "../ArticleListProvider";
 import { useNavigate } from "react-router-dom";
+import { v4 as uuidv4 } from "uuid";
 
 type Content = "article" | "cover" | "gallery";
 
@@ -48,9 +49,13 @@ const useStyles = makeStyles()((theme) => ({
   },
   buttonSection: {
     marginTop: theme.spacing(2),
+    padding: theme.spacing(1),
   },
   accordionIconRotated: {
     transform: "rotate(180deg)",
+  },
+  accordionDetails: {
+    padding: theme.spacing(1),
   },
 }));
 
@@ -207,6 +212,9 @@ export default function ArticleForm(props: {
           //Check front image
           if (imagesState.coverImage.preview === undefined) return;
 
+          //Generate transactionId
+          const transactionId = uuidv4();
+
           //Submit
           const result = await submitForm(
             responseOnSubmitForm,
@@ -215,7 +223,8 @@ export default function ArticleForm(props: {
             imagesState,
             setMaintence,
             setLoadingProgressInfo,
-            app
+            app,
+            transactionId
           );
 
           //Handling result
@@ -255,7 +264,7 @@ export default function ArticleForm(props: {
                   alignItems="center"
                 >
                   <Grid item>
-                    <Typography variant="body2" fontWeight="bold">
+                    <Typography variant="body1" fontWeight="bold">
                       {i18next.t(`form.view.${content}`)}
                     </Typography>
                   </Grid>
@@ -268,7 +277,9 @@ export default function ArticleForm(props: {
                   </Grid>
                 </Grid>
               </AccordionSummary>
-              <AccordionDetails>{selectForm(content)}</AccordionDetails>
+              <AccordionDetails className={classes.accordionDetails}>
+                {selectForm(content)}
+              </AccordionDetails>
             </Accordion>
           ))}
           <Button

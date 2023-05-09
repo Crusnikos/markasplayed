@@ -9,7 +9,12 @@ internal class TestConfiguration : IAsyncDisposable
 {
     private readonly string _mainDbConnectionString;
 
-    private TestConfiguration(IConfiguration configuration, string mainDbConnectionString, string databaseName, string rootPath, List<AdministrationUserData> administrationUsers)
+    private TestConfiguration(
+        IConfiguration configuration, 
+        string mainDbConnectionString, 
+        string databaseName, 
+        string rootPath,
+        List<AdministrationUserData> administrationUsers)
     {
         _mainDbConnectionString = mainDbConnectionString;
         Value = configuration;
@@ -103,7 +108,7 @@ internal class TestConfiguration : IAsyncDisposable
                 if (e.SqlState == PostgresErrorCodes.AdminShutdown)
                 {
                     attempt++;
-                    await Task.Delay(TimeSpan.FromMilliseconds(200));
+                    await Task.Delay(TimeSpan.FromMilliseconds(250));
                 }
                 else
                 {
@@ -134,7 +139,7 @@ internal class TestConfiguration : IAsyncDisposable
 
                 await db.ExecuteAsync(GenerateSqlCommand("CREATE", DatabaseName, mainDbName));
                 await setupConfigurationHandler.InsertAdministrationUsers(AdministrationUsers, _mainDbConnectionString, false);
-                await setupConfigurationHandler.DatabasePostFixer(_mainDbConnectionString, executedScripts, false);
+                await setupConfigurationHandler.IntegrationTestsDatabasePostFixer(_mainDbConnectionString, executedScripts);
                 return;
             }
             catch (PostgresException e)
@@ -142,7 +147,7 @@ internal class TestConfiguration : IAsyncDisposable
                 if (e.SqlState == PostgresErrorCodes.AdminShutdown)
                 {
                     attempt++;
-                    await Task.Delay(TimeSpan.FromMilliseconds(200));
+                    await Task.Delay(TimeSpan.FromMilliseconds(250));
                 }
                 else
                 {

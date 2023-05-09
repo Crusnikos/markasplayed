@@ -21,21 +21,12 @@ import { Lookups } from "../api/lookup";
 import AddPhotoAlternateIcon from "@mui/icons-material/AddPhotoAlternate";
 import { makeStyles } from "tss-react/mui";
 
-const useStyles = makeStyles()((theme) => ({
-  imageContainer: {
-    height: "300px",
-    [theme.breakpoints.down("lg")]: {
-      height: "180px",
-    },
+const useStyles = makeStyles()(() => ({
+  inputWrapper: {
+    aspectRatio: "16/9",
+    width: "100%",
     display: "flex",
-    alignItems: "center",
     justifyContent: "center",
-  },
-  image: {
-    height: "300px",
-    [theme.breakpoints.down("lg")]: {
-      height: "180px",
-    },
   },
 }));
 
@@ -137,7 +128,8 @@ export function CustomSingleDropdownSelect(props: {
           <TextField
             error={errorMessage !== undefined ? true : false}
             label={i18next.t(`form.label.article.${propertyName}`)}
-            InputLabelProps={{ shrink: true }}
+            InputLabelProps={{ shrink: true, htmlFor: `${propertyName}-id` }}
+            inputProps={{ id: `${propertyName}-id` }}
             size="small"
             select
             {...field}
@@ -232,7 +224,8 @@ export function CustomMultipleDropdownSelect(props: {
           <TextField
             error={errorMessage !== undefined ? true : false}
             label={i18next.t(`form.label.article.${propertyName}`)}
-            InputLabelProps={{ shrink: true }}
+            InputLabelProps={{ shrink: true, htmlFor: `${propertyName}-id` }}
+            inputProps={{ id: `${propertyName}-id` }}
             size="small"
             select
             SelectProps={{
@@ -274,6 +267,7 @@ export function CustomMultilineTextField(props: {
       render={({ field }) => (
         <React.Fragment>
           <TextField
+            id={`${propertyName}-id`}
             error={errorMessage !== undefined ? true : false}
             multiline
             rows={rows}
@@ -301,7 +295,7 @@ export function CustomInputImage(props: {
 
   return (
     <React.Fragment>
-      <CardActionArea component="label" className={classes.imageContainer}>
+      <CardActionArea component="label" className={classes.inputWrapper}>
         <input
           hidden
           accept="image/webp"
@@ -311,7 +305,6 @@ export function CustomInputImage(props: {
         />
         {image && (
           <CardMedia
-            className={classes.image}
             component="img"
             src={image}
             alt={i18next.t("image.missing")}

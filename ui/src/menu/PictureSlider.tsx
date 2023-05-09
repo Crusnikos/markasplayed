@@ -8,6 +8,8 @@ import { SliderData } from "../article/api/files";
 import i18next from "i18next";
 import CustomDecoratedTag from "../components/customDecoratedTag";
 import fadeIn from "../animatedEffects/fadeIn.module.css";
+import useSwipe from "../hooks/useSwipe";
+import { onBackwardIndexWithLoop, onForwardIndexWithLoop } from "../swipe";
 
 const useStyles = makeStyles()((theme) => ({
   mobileComponentHeight: {
@@ -16,7 +18,7 @@ const useStyles = makeStyles()((theme) => ({
   },
   desktopComponentHeight: {
     minHeight: "200px",
-    height: "38vh",
+    height: "36vh",
   },
   image: {
     width: "100%",
@@ -97,15 +99,18 @@ export function PictureSlider(props: {
     return;
   };
 
+  const swipeHandlers = useSwipe({
+    onSwipedLeft: () =>
+      onForwardIndexWithLoop(images as any[], currentIndex, setCurrentIndex),
+    onSwipedRight: () =>
+      onBackwardIndexWithLoop(images as any[], currentIndex, setCurrentIndex),
+  });
+
   useEffect(() => {
-    if (!isPaused && images) {
+    if (!isPaused) {
       const intervalId = setInterval(() => {
         // displays the last 5 articles
-        if (currentIndex + 1 === 5 || currentIndex + 1 === images.length) {
-          setCurrentIndex(0);
-        } else {
-          setCurrentIndex(currentIndex + 1);
-        }
+        onForwardIndexWithLoop(images as any[], currentIndex, setCurrentIndex);
       }, 5000);
 
       return () => clearInterval(intervalId);
@@ -124,6 +129,7 @@ export function PictureSlider(props: {
             src={`${images[currentIndex].imagePathName}?${Date.now()}`}
             alt={i18next.t("image.missing")}
             onClick={handleRedirect}
+            {...swipeHandlers}
           />
         )}
         {(!images || (images && isPaused)) && (

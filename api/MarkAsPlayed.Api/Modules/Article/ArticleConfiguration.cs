@@ -13,5 +13,6 @@ public static class ArticleConfiguration
         services.AddScoped<ArticleCommand>();
         services.AddScoped<TagQuery>();
         services.AddScoped<TagCommand>();
+        services.AddScoped<IArticleHelper, ArticleHelper>();
     }
 }
