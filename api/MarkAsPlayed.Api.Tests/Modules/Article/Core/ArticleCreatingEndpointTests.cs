@@ -1,21 +1,23 @@
 ﻿using FluentAssertions;
 using Flurl.Http;
 using LinqToDB;
+using MarkAsPlayed.Api.Data.Models;
 using MarkAsPlayed.Api.Modules;
 using MarkAsPlayed.Api.Modules.Article.Core.Models;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
-using ArticleData = MarkAsPlayed.Api.Data.Models.Article;
 
 namespace MarkAsPlayed.Api.Tests.Modules.Article.Core;
 
 public class ArticleCreatingEndpointTests : IClassFixture<IntegrationTest>, IAsyncLifetime
 {
     private readonly IntegrationTest _suite;
+    private readonly GeneralDatabaseTestData _testData;
 
     public ArticleCreatingEndpointTests(IntegrationTest suite)
     {
         _suite = suite;
+        _testData = new GeneralDatabaseTestData();
     }
 
     public Task InitializeAsync()
@@ -23,11 +25,9 @@ public class ArticleCreatingEndpointTests : IClassFixture<IntegrationTest>, IAsy
         return Task.CompletedTask;
     }
 
-    public async Task DisposeAsync()
+    public Task DisposeAsync()
     {
-        await using var db = _suite.CreateDatabase();
-        await db.Articles.DeleteAsync();
-        await db.ArticleGamingPlatforms.DeleteAsync();
+        return Task.CompletedTask;
     }
 
     [Theory]
@@ -78,13 +78,13 @@ public class ArticleCreatingEndpointTests : IClassFixture<IntegrationTest>, IAsy
             PostJsonAsync(
                 new ArticleRequestData
                 {
-                    Title = "Example Title",
+                    Title = "Review Title string",
                     PlayedOn = 1,
                     AvailableOn = new List<int> { 1, 2, 3 },
-                    Producer = "Example Producer",
-                    PlayTime = 123,
-                    ShortDescription = "Example Short Description",
-                    LongDescription = "Example Long Description",
+                    Producer = "Review Producer string",
+                    PlayTime = 15,
+                    ShortDescription = "Review Short Description string",
+                    LongDescription = "Review Long Description string",
                     ArticleType = (int)ArticleTypeHelper.review
                 }
             );
@@ -94,24 +94,32 @@ public class ArticleCreatingEndpointTests : IClassFixture<IntegrationTest>, IAsy
 
         await using var db = _suite.CreateDatabase();
 
-        var item = await db.Articles.Where(t => t.Id == data).FirstOrDefaultAsync();
+        var article = await db.Articles.Where(t => t.Id == data).FirstOrDefaultAsync();
+        var articleReviewData = await db.ArticlesReviewData.Where(t => t.ArticleId == data).FirstOrDefaultAsync();
+        var articleContent = await db.ArticlesContent.Where(t => t.ArticleId == data).FirstOrDefaultAsync();
 
-        item.Should().
+        article.Should().
              NotBeNull().
              And.
              BeEquivalentTo(
-                 new ArticleData
-                 {
-                     Title = "Example Title",
-                     PlayedOnGamingPlatformId = 1,
-                     Producer = "Example Producer",
-                     PlayTime = 123,
-                     ArticleTypeId = 1,
-                     ShortDescription = "Example Short Description",
-                     LongDescription = "Example Long Description",
-                     CreatedBy = 1
-                 },
+                 _testData.ReviewArticleExample,
                  options => options.Excluding(o => o.Id).Excluding(o => o.CreatedAt)
+             );
+
+        articleReviewData.Should().
+             NotBeNull().
+             And.
+             BeEquivalentTo(
+                 _testData.CreateArticleReviewData(data),
+                 options => options.Excluding(o => o!.ArticleId)
+             );
+
+        articleContent.Should().
+             NotBeNull().
+             And.
+             BeEquivalentTo(
+                 _testData.CreateArticleContentData(ArticleTypeHelper.review, data),
+                 options => options.Excluding(o => o.ArticleId)
              );
     }
 
@@ -123,13 +131,13 @@ public class ArticleCreatingEndpointTests : IClassFixture<IntegrationTest>, IAsy
             PostJsonAsync(
                 new ArticleRequestData
                 {
-                    Title = "Example Title",
+                    Title = "News Title string",
                     PlayedOn = null,
                     AvailableOn = new List<int> { 1, 2, 3 },
                     Producer = null,
                     PlayTime = null,
-                    ShortDescription = "Example Short Description",
-                    LongDescription = "Example Long Description",
+                    ShortDescription = "News Short Description string",
+                    LongDescription = "News Long Description string",
                     ArticleType = (int)ArticleTypeHelper.news
                 }
             );
@@ -139,24 +147,26 @@ public class ArticleCreatingEndpointTests : IClassFixture<IntegrationTest>, IAsy
 
         await using var db = _suite.CreateDatabase();
 
-        var item = await db.Articles.Where(t => t.Id == data).FirstOrDefaultAsync();
+        var article = await db.Articles.Where(t => t.Id == data).FirstOrDefaultAsync();
+        var articleReviewData = await db.ArticlesReviewData.Where(t => t.ArticleId == data).FirstOrDefaultAsync();
+        var articleContent = await db.ArticlesContent.Where(t => t.ArticleId == data).FirstOrDefaultAsync();
 
-        item.Should().
+        article.Should().
              NotBeNull().
              And.
              BeEquivalentTo(
-                 new ArticleData
-                 {
-                     Title = "Example Title",
-                     PlayedOnGamingPlatformId = null,
-                     Producer = null,
-                     PlayTime = null,
-                     ArticleTypeId = 2,
-                     ShortDescription = "Example Short Description",
-                     LongDescription = "Example Long Description",
-                     CreatedBy = 1
-                 },
+                 _testData.NewsArticleExample,
                  options => options.Excluding(o => o.Id).Excluding(o => o.CreatedAt)
+             );
+
+        articleReviewData.Should().BeNull();
+
+        articleContent.Should().
+             NotBeNull().
+             And.
+             BeEquivalentTo(
+                 _testData.CreateArticleContentData(ArticleTypeHelper.news, data),
+                 options => options.Excluding(o => o.ArticleId)
              );
     }
 
@@ -168,13 +178,13 @@ public class ArticleCreatingEndpointTests : IClassFixture<IntegrationTest>, IAsy
             PostJsonAsync(
                 new ArticleRequestData
                 {
-                    Title = "Example Title",
+                    Title = "Other Title string",
                     PlayedOn = null,
                     AvailableOn = null,
                     Producer = null,
                     PlayTime = null,
-                    ShortDescription = "Example Short Description",
-                    LongDescription = "Example Long Description",
+                    ShortDescription = "Other Short Description string",
+                    LongDescription = "Other Long Description string",
                     ArticleType = (int)ArticleTypeHelper.other
                 }
             );
@@ -184,24 +194,26 @@ public class ArticleCreatingEndpointTests : IClassFixture<IntegrationTest>, IAsy
 
         await using var db = _suite.CreateDatabase();
 
-        var item = await db.Articles.Where(t => t.Id == data).FirstOrDefaultAsync();
+        var article = await db.Articles.Where(t => t.Id == data).FirstOrDefaultAsync();
+        var articleReviewData = await db.ArticlesReviewData.Where(t => t.ArticleId == data).FirstOrDefaultAsync();
+        var articleContent = await db.ArticlesContent.Where(t => t.ArticleId == data).FirstOrDefaultAsync();
 
-        item.Should().
+        article.Should().
              NotBeNull().
              And.
              BeEquivalentTo(
-                 new ArticleData
-                 {
-                     Title = "Example Title",
-                     PlayedOnGamingPlatformId = null,
-                     Producer = null,
-                     PlayTime = null,
-                     ArticleTypeId = 3,
-                     ShortDescription = "Example Short Description",
-                     LongDescription = "Example Long Description",
-                     CreatedBy = 1
-                 },
+                 _testData.OtherArticleExample,
                  options => options.Excluding(o => o.Id).Excluding(o => o.CreatedAt)
+             );
+
+        articleReviewData.Should().BeNull();
+
+        articleContent.Should().
+             NotBeNull().
+             And.
+             BeEquivalentTo(
+                 _testData.CreateArticleContentData(ArticleTypeHelper.other, data),
+                 options => options.Excluding(o => o.ArticleId)
              );
     }
 }

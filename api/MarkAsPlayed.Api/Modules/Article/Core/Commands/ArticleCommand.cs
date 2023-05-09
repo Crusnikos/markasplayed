@@ -1,6 +1,5 @@
 ﻿using LinqToDB;
 using MarkAsPlayed.Api.Data;
-using MarkAsPlayed.Api.Data.Models;
 using MarkAsPlayed.Api.Modules.Article.Core.Models;
 using Npgsql;
 
@@ -9,10 +8,12 @@ namespace MarkAsPlayed.Api.Modules.Article.Core.Commands;
 public sealed class ArticleCommand
 {
     private readonly Database.Factory _databaseFactory;
+    private readonly IArticleHelper _articleHelper;
 
-    public ArticleCommand(Database.Factory databaseFactory)
+    public ArticleCommand(Database.Factory databaseFactory, IArticleHelper articleHelper)
     {
         _databaseFactory = databaseFactory;
+        _articleHelper = articleHelper;
     }
 
     public async Task<CommonResponseTemplate> CreateAsync(
@@ -26,8 +27,7 @@ public sealed class ArticleCommand
         {
             await using var transaction = await db.BeginTransactionAsync(cancellationToken);
 
-            var author = await db.Authors.Where(a => a.FirebaseId == authorOfRequest).FirstOrDefaultAsync(cancellationToken);
-
+            var author = db.Authors.Where(a => a.FirebaseId == authorOfRequest).FirstOrDefault();
             if (author is null)
             {
                 return new CommonResponseTemplate
@@ -51,36 +51,19 @@ public sealed class ArticleCommand
                 };
             }
 
-            var trimmedLongDescription = request.LongDescription.Trim();
-            var trimmedShortDescription = request.ShortDescription.Trim();
+            var identifier = await _articleHelper.InsertArticleAsync(db, request, author.Id, cancellationToken);
+            await _articleHelper.InsertArticleContentAsync(db, request, identifier, cancellationToken);
+            await _articleHelper.InsertArticleStatisticsAsync(db, identifier, cancellationToken);
 
-            var identifier = await db.Articles.InsertWithInt64IdentityAsync(
-                () => new Data.Models.Article
-                {
-                    Title = request.Title,
-                    Producer = request.Producer,
-                    PlayTime = request.PlayTime,
-                    LongDescription = trimmedLongDescription,
-                    ShortDescription = trimmedShortDescription,
-                    PlayedOnGamingPlatformId = request.PlayedOn,
-                    ArticleTypeId = (int)request.ArticleType,
-                    CreatedBy = author.Id
-                },
-                cancellationToken
-            );
+            if (request.ArticleType == (int)ArticleTypeHelper.review)
+            {
+                await _articleHelper.InsertArticleReviewDataAsync(db, request, identifier, cancellationToken);
+            }
 
             var platforms = request.AvailableOn ?? Enumerable.Empty<int>();
-
             foreach (var platform in platforms.Distinct())
             {
-                await db.ArticleGamingPlatforms.InsertAsync(
-                    () => new ArticleGamingPlatform
-                    {
-                        ArticleId = identifier,
-                        GamingPlatformId = platform
-                    },
-                    cancellationToken
-                );
+                await _articleHelper.InsertArticleGamingPlatformAsync(db, identifier, platform, cancellationToken);
             }
 
             await transaction.CommitAsync(cancellationToken);
@@ -127,7 +110,6 @@ public sealed class ArticleCommand
             await using var transaction = await db.BeginTransactionAsync(cancellationToken);
 
             var oldArticleData = await db.Articles.Where(a => a.Id == id).FirstOrDefaultAsync(cancellationToken);
-
             if (oldArticleData is null)
             {
                 return new CommonResponseTemplate
@@ -151,22 +133,8 @@ public sealed class ArticleCommand
                 };
             }
 
-            var trimmedLongDescription = request.LongDescription.Trim();
-            var trimmedShortDescription = request.ShortDescription.Trim();
-
-            var updatedRecords = await db.Articles.Where(a => a.Id == id).
-                Set(a => a.CreatedAt, oldArticleData!.CreatedAt).
-                Set(a => a.PlayedOnGamingPlatformId, request.PlayedOn).
-                Set(a => a.ArticleTypeId, (int)request.ArticleType).
-                Set(a => a.LongDescription, trimmedLongDescription).
-                Set(a => a.ShortDescription, trimmedShortDescription).
-                Set(a => a.PlayTime, request.PlayTime).
-                Set(a => a.Producer, request.Producer).
-                Set(a => a.Title, request.Title).
-                Set(a => a.CreatedBy, oldArticleData!.CreatedBy).
-                UpdateAsync(cancellationToken);
-
-            if (updatedRecords == 0)
+            var updatedArticleRecords = await _articleHelper.UpdateArticleAsync(db, request, oldArticleData, id, cancellationToken);
+            if (updatedArticleRecords == 0)
             {
                 return new CommonResponseTemplate
                 {
@@ -177,20 +145,26 @@ public sealed class ArticleCommand
                 };
             }
 
-            await db.ArticleGamingPlatforms.DeleteAsync(p => p.ArticleId == id, cancellationToken);
+            await _articleHelper.UpdateArticleContentAsync(db, request, id, cancellationToken);
 
-            var platforms = request.AvailableOn ?? Enumerable.Empty<int>();
-
-            foreach (var platform in platforms.Distinct())
+            if (request.ArticleType == (int)ArticleTypeHelper.review)
             {
-                await db.ArticleGamingPlatforms.InsertAsync(
-                    () => new ArticleGamingPlatform
-                    {
-                        ArticleId = (long)id!,
-                        GamingPlatformId = platform
-                    },
-                    cancellationToken
-                );
+                var updatedArticleReviewDataRecords = await _articleHelper.UpdateArticleReviewDataAsync(db, request, id, cancellationToken);
+
+                if (updatedArticleReviewDataRecords == 0)
+                    await _articleHelper.InsertArticleReviewDataAsync(db, request, id, cancellationToken);
+            }
+            else
+                await db.ArticlesReviewData.DeleteAsync(p => p.ArticleId == id, cancellationToken);
+
+            await db.ArticleGamingPlatforms.DeleteAsync(p => p.ArticleId == id, cancellationToken);
+            if (request.ArticleType != (int)ArticleTypeHelper.other)
+            {
+                var platforms = request.AvailableOn ?? Enumerable.Empty<int>();
+                foreach (var platform in platforms.Distinct())
+                {
+                    await _articleHelper.InsertArticleGamingPlatformAsync(db, (long)id!, platform, cancellationToken);
+                }
             }
 
             await transaction.CommitAsync(cancellationToken);

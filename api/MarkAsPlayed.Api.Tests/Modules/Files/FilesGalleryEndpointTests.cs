@@ -1,34 +1,28 @@
 ﻿using FluentAssertions;
 using Flurl.Http;
 using LinqToDB;
+using MarkAsPlayed.Api.Data.Models;
+using MarkAsPlayed.Api.Modules;
 using MarkAsPlayed.Api.Modules.Files.Models;
 
 namespace MarkAsPlayed.Api.Tests.Modules.Files;
 
 public sealed class FilesGalleryFixture : IntegrationTest
 {
+    public long OtherArticleId = 0;
+
     protected override async Task SetUp()
     {
         await using var db = CreateDatabase();
+        var testData = new GeneralDatabaseTestData();
 
-        await db.Articles.InsertAsync(
-            () => new Data.Models.Article
-            {
-                Id = 1,
-                ArticleTypeId = 3,
-                CreatedAt = new DateTimeOffset(new DateTime(2022, 1, 17)),
-                CreatedBy = 1,
-                LongDescription = "Other Long Description string",
-                PlayedOnGamingPlatformId = null,
-                PlayTime = null,
-                Producer = null,
-                ShortDescription = "Other Short Description string",
-                Title = "Other Title string"
-            }
-        );
+        var otherId = await db.InsertWithInt64IdentityAsync(testData.OtherArticleExample, db.GetTable<Data.Models.Article>().TableName);
+        await db.InsertAsync(testData.CreateArticleContentData(ArticleTypeHelper.other, otherId), db.GetTable<ArticleContent>().TableName);
+
+        OtherArticleId = otherId;
 
         await db.ArticleImages.InsertAsync(
-            () => new Data.Models.ArticleImage
+            () => new ArticleImage
             {
                 Id = 1,
                 ArticleId = 1,
@@ -38,7 +32,7 @@ public sealed class FilesGalleryFixture : IntegrationTest
         );
 
         await db.ArticleImages.InsertAsync(
-            () => new Data.Models.ArticleImage
+            () => new ArticleImage
             {
                 Id = 2,
                 ArticleId = 1,
@@ -48,7 +42,7 @@ public sealed class FilesGalleryFixture : IntegrationTest
         );
 
         await db.ArticleImages.InsertAsync(
-            () => new Data.Models.ArticleImage
+            () => new ArticleImage
             {
                 Id = 3,
                 ArticleId = 1,
@@ -58,7 +52,7 @@ public sealed class FilesGalleryFixture : IntegrationTest
         );
 
         await db.ArticleImages.InsertAsync(
-            () => new Data.Models.ArticleImage
+            () => new ArticleImage
             {
                 Id = 4,
                 ArticleId = 1,
@@ -91,7 +85,7 @@ public class FilesGalleryEndpointTests : IClassFixture<FilesGalleryFixture>
     [Fact]
     public async Task ShouldRetrieveGalleryList()
     {
-        var response = await _suite.Client.Request("files", "article", "1", "gallery").GetAsync();
+        var response = await _suite.Client.Request("files", "article", _suite.OtherArticleId, "gallery").GetAsync();
 
         var jsonSerializedResponse = await response.GetJsonAsync<IEnumerable<SliderData>>();
 

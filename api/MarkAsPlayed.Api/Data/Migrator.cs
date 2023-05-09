@@ -33,10 +33,10 @@ public sealed class Migrator
             return Task.FromResult(new List<string>());
         }
 
+        var executedScripts = engine.GetScriptsToExecute().Select(s => s.Name).ToList();
         Console.WriteLine($"Number of scripts to execute: {engine.GetScriptsToExecute().Count}");
 
         var operation = engine.PerformUpgrade();
-        var executedScripts = engine.GetExecutedScripts();
 
         if (operation.Successful)
         {
@@ -50,7 +50,6 @@ public sealed class Migrator
             Console.ForegroundColor = ConsoleColor.Red;
             Console.WriteLine("Database could not be updated");
             Console.ResetColor();
-            Console.WriteLine("\n");
 
             Console.WriteLine("Error:");
             Console.WriteLine(operation.Error.Message);

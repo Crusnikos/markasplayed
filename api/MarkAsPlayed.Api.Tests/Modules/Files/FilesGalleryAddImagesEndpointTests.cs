@@ -7,7 +7,7 @@ namespace MarkAsPlayed.Api.Tests.Modules.Files;
 
 public sealed class FilesGalleryAddImagesFixture : IntegrationTest
 {
-    public readonly int testId = 2;
+    public long OtherArticleId = 2;
 
     protected override async Task SetUp()
     {
@@ -16,16 +16,20 @@ public sealed class FilesGalleryAddImagesFixture : IntegrationTest
         await db.Articles.InsertAsync(
             () => new Data.Models.Article
             {
-                Id = testId,
+                Id = OtherArticleId,
                 ArticleTypeId = 3,
                 CreatedAt = new DateTimeOffset(new DateTime(2022, 1, 17)),
                 CreatedBy = 1,
-                LongDescription = "Other Long Description string",
-                PlayedOnGamingPlatformId = null,
-                PlayTime = null,
-                Producer = null,
                 ShortDescription = "Other Short Description string",
                 Title = "Other Title string"
+            }
+        );
+
+        await db.ArticlesContent.InsertAsync(
+            () => new Data.Models.ArticleContent
+            {
+                ArticleId = OtherArticleId,
+                LongDescription = "Other Long Description string"
             }
         );
     }
@@ -42,7 +46,7 @@ public class FilesGalleryAddImagesEndpointTests : IClassFixture<FilesGalleryAddI
 
     public async Task DisposeAsync()
     {
-        await _suite.DisposeTestFilesAsync(new string[] { _suite.testId.ToString() });
+        await _suite.DisposeTestFilesAsync(new string[] { _suite.OtherArticleId.ToString() });
     }
 
     public Task InitializeAsync()
@@ -54,7 +58,7 @@ public class FilesGalleryAddImagesEndpointTests : IClassFixture<FilesGalleryAddI
     public async Task ShouldFailValidationWithMalformedRequest()
     {
         var response = await _suite.Client.AllowHttpStatus(HttpStatusCode.BadRequest).
-            Request("files", "article", _suite.testId.ToString(), "gallery").
+            Request("files", "article", _suite.OtherArticleId, "gallery").
             PostMultipartAsync(mp => { });
         response.StatusCode.Should().Be((int)HttpStatusCode.BadRequest);
     }
@@ -62,7 +66,9 @@ public class FilesGalleryAddImagesEndpointTests : IClassFixture<FilesGalleryAddI
     [Fact]
     public async Task ShouldSaveGalleryImage()
     {
-        var response = await _suite.Client.Request("files", "article", _suite.testId.ToString(), "gallery").
+        var articleID = _suite.OtherArticleId;
+
+        var response = await _suite.Client.Request("files", "article", articleID, "gallery").
             PostMultipartAsync(mp =>
             {
                 mp.AddFile("file", "/app/MarkAsPlayed.Api.Tests/TestImages/test1webp.webp");
@@ -72,7 +78,7 @@ public class FilesGalleryAddImagesEndpointTests : IClassFixture<FilesGalleryAddI
 
         await using var db = _suite.CreateDatabase();
 
-        var items = await db.ArticleImages.Where(image => image.ArticleId == _suite.testId).ToListAsync();
+        var items = await db.ArticleImages.Where(image => image.ArticleId == articleID).ToListAsync();
 
         items.Should().HaveCount(1);
     }

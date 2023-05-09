@@ -6,7 +6,8 @@ import { ActionType, CoverData } from "./imagesReducer";
 
 const useStyles = makeStyles()((theme) => ({
   stack: {
-    paddingTop: theme.spacing(1),
+    aspectRatio: "16/9",
+    width: "100%",
   },
 }));
 
@@ -25,7 +26,7 @@ export default function ArticleFrontImageForm(props: {
   }
 
   return (
-    <Stack direction="column" className={classes.stack} spacing={1}>
+    <Stack direction="column" className={classes.stack}>
       <CustomInputImage
         image={props.coverData.preview}
         onImagesChange={onImagesChange}

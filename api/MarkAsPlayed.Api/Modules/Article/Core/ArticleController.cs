@@ -30,7 +30,7 @@ public sealed class ArticleController : ControllerBase
         [Range(1, int.MaxValue)]
         int? page)
     {
-        var listing = await _articleQuery.GetListingAsync(page ?? 1, HttpContext.RequestAborted);
+        var listing = await _articleQuery.GetListingAsync(page ?? 1);
 
         Response.Headers.Add("display-page", listing.Page.ToString());
         Response.Headers.Add("articles-count", listing.Total.ToString());
@@ -48,7 +48,7 @@ public sealed class ArticleController : ControllerBase
         [Range(1, int.MaxValue)]
         int id)
     {
-        var article = await _articleQuery.GetSingleArticleAsync(id, HttpContext.RequestAborted);
+        var article = await _articleQuery.GetSingleArticleAsync(id);
 
         if (article is null)
         {

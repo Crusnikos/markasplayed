@@ -3,6 +3,7 @@ using Flurl.Http;
 using LinqToDB;
 using MarkAsPlayed.Api.Data.Models;
 using MarkAsPlayed.Api.Lookups;
+using MarkAsPlayed.Api.Modules;
 using MarkAsPlayed.Api.Modules.Article.Core.Models;
 using System.Net;
 
@@ -10,62 +11,30 @@ namespace MarkAsPlayed.Api.Tests.Modules.Article.Core;
 
 public sealed class ArticleDetailsFixture : IntegrationTest
 {
+    public long ReviewArticleId = 0;
+    public long NewsArticleId = 0;
+    public long OtherArticleId = 0;
+    public long EmptyArticleId = 0;
+
     protected override async Task SetUp()
     {
         await using var db = CreateDatabase();
+        var testData = new GeneralDatabaseTestData();
 
-        await db.Articles.InsertAsync(
-            () => new Data.Models.Article
-            {
-                Id = 1,
-                ArticleTypeId = 1,
-                CreatedAt = new DateTimeOffset(new DateTime(2022, 09, 19)),
-                CreatedBy = 1,
-                LongDescription = "Review Long Description string",
-                PlayedOnGamingPlatformId = 1,
-                PlayTime = 15,
-                Producer = "Review Producer string",
-                ShortDescription = "Review Short Description string",
-                Title = "Review Title string"
-            }
-        );
+        var reviewId = await db.InsertWithInt64IdentityAsync(testData.ReviewArticleExample, db.GetTable<Data.Models.Article>().TableName);
+        await db.InsertAsync(testData.CreateArticleReviewData(reviewId), db.GetTable<ArticleReviewData>().TableName);
+        await db.InsertAsync(testData.CreateArticleContentData(ArticleTypeHelper.review, reviewId), db.GetTable<ArticleContent>().TableName);
 
-        await db.Articles.InsertAsync(
-            () => new Data.Models.Article
-            {
-                Id = 2,
-                ArticleTypeId = 2,
-                CreatedAt = new DateTimeOffset(new DateTime(2022, 09, 18)),
-                CreatedBy = 1,
-                LongDescription = "News Long Description string",
-                PlayedOnGamingPlatformId = null,
-                PlayTime = null,
-                Producer = null,
-                ShortDescription = "News Short Description string",
-                Title = "News Title string"
-            }
-        );
+        var newsId = await db.InsertWithInt64IdentityAsync(testData.NewsArticleExample, db.GetTable<Data.Models.Article>().TableName);
+        await db.InsertAsync(testData.CreateArticleContentData(ArticleTypeHelper.news, newsId), db.GetTable<ArticleContent>().TableName);
 
-        await db.Articles.InsertAsync(
-            () => new Data.Models.Article
-            {
-                Id = 3,
-                ArticleTypeId = 3,
-                CreatedAt = new DateTimeOffset(new DateTime(2022, 09, 17)),
-                CreatedBy = 1,
-                LongDescription = "Other Long Description string",
-                PlayedOnGamingPlatformId = null,
-                PlayTime = null,
-                Producer = null,
-                ShortDescription = "Other Short Description string",
-                Title = "Other Title string"
-            }
-        );
+        var otherId = await db.InsertWithInt64IdentityAsync(testData.OtherArticleExample, db.GetTable<Data.Models.Article>().TableName);
+        await db.InsertAsync(testData.CreateArticleContentData(ArticleTypeHelper.other, otherId), db.GetTable<ArticleContent>().TableName);
 
         await db.ArticleGamingPlatforms.InsertAsync(
             () => new ArticleGamingPlatform
             {
-                ArticleId = 1,
+                ArticleId = reviewId,
                 GamingPlatformId = 1
             }
         );
@@ -73,7 +42,7 @@ public sealed class ArticleDetailsFixture : IntegrationTest
         await db.ArticleGamingPlatforms.InsertAsync(
             () => new ArticleGamingPlatform
             {
-                ArticleId = 1,
+                ArticleId = reviewId,
                 GamingPlatformId = 2
             }
         );
@@ -81,10 +50,15 @@ public sealed class ArticleDetailsFixture : IntegrationTest
         await db.ArticleGamingPlatforms.InsertAsync(
             () => new ArticleGamingPlatform
             {
-                ArticleId = 2,
+                ArticleId = newsId,
                 GamingPlatformId = 3
             }
         );
+
+        ReviewArticleId = reviewId;
+        NewsArticleId = newsId;
+        OtherArticleId = otherId;
+        EmptyArticleId = reviewId + newsId + otherId;
     }
 }
 
@@ -100,7 +74,9 @@ public class ArticleDetailsEndpointTests : IClassFixture<ArticleDetailsFixture>
     [Fact]
     public async Task ShouldRetrieveReviewArticleData()
     {
-        var response = await _suite.Client.Request("article", "1").
+        var articleId = _suite.ReviewArticleId;
+
+        var response = await _suite.Client.Request("article", articleId).
                                     GetJsonAsync<FullArticleData>();
 
         response.Should().BeEquivalentTo(
@@ -154,7 +130,9 @@ public class ArticleDetailsEndpointTests : IClassFixture<ArticleDetailsFixture>
     [Fact]
     public async Task ShouldRetrieveNewsArticleData()
     {
-        var response = await _suite.Client.Request("article", "2").
+        var articleId = _suite.NewsArticleId;
+
+        var response = await _suite.Client.Request("article", articleId).
                                     GetJsonAsync<FullArticleData>();
 
         response.Should().BeEquivalentTo(
@@ -201,7 +179,9 @@ public class ArticleDetailsEndpointTests : IClassFixture<ArticleDetailsFixture>
     [Fact]
     public async Task ShouldRetrieveOtherArticleData()
     {
-        var response = await _suite.Client.Request("article", "3").
+        var articleId = _suite.OtherArticleId;
+
+        var response = await _suite.Client.Request("article", articleId).
                                     GetJsonAsync<FullArticleData>();
 
         response.Should().BeEquivalentTo(
@@ -240,8 +220,10 @@ public class ArticleDetailsEndpointTests : IClassFixture<ArticleDetailsFixture>
     [Fact]
     public async Task ShouldRetrieveNotFoundOnNotExistingArticle()
     {
+        var articleId = _suite.EmptyArticleId;
+
         var response = await _suite.Client.AllowHttpStatus(HttpStatusCode.NotFound).
-                                    Request("article", "4").
+                                    Request("article", articleId).
                                     GetAsync();
 
         response.StatusCode.Should().Be((int)HttpStatusCode.NotFound);

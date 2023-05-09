@@ -1,4 +1,5 @@
 import {
+  Box,
   Breakpoint,
   Dialog,
   DialogContent,
@@ -6,6 +7,7 @@ import {
   Grid,
   IconButton,
   MenuItem,
+  Typography,
 } from "@mui/material";
 import React, { ReactNode } from "react";
 import i18next from "i18next";
@@ -135,7 +137,9 @@ export default function MasterPopup({
           )}
         </Grid>
         <Grid item xs>
-          {errorMessage ?? i18next.t(setContentTextMessage())}
+          <Typography variant="body1">
+            {errorMessage ?? i18next.t(setContentTextMessage())}
+          </Typography>
         </Grid>
       </Grid>
     );
@@ -156,7 +160,7 @@ export default function MasterPopup({
         setOpen(true);
       }}
     >
-      {i18next.t(`title.${displayDialog}`)}
+      <Typography>{i18next.t(`title.${displayDialog}`)}</Typography>
     </MenuItem>
   );
 
@@ -201,20 +205,22 @@ export default function MasterPopup({
         maxWidth={setDialogWidth()}
       >
         <DialogTitle className={classes.topInfo}>
-          <Grid
-            container
-            direction="row"
-            justifyContent="space-between"
-            alignItems="flex-start"
-          >
-            {i18next.t(`title.${displayDialog}`)}
-            <IconButton
-              aria-label="close"
-              onClick={closeDialog}
-              className={classes.closeIcon}
-            >
-              <CloseIcon />
-            </IconButton>
+          <Grid container direction="row" alignItems="center">
+            <Grid item>
+              <Typography variant="h6">
+                {i18next.t(`title.${displayDialog}`)}
+              </Typography>
+            </Grid>
+            <Box sx={{ flexGrow: 1 }} />
+            <Grid item>
+              <IconButton
+                aria-label="close"
+                onClick={closeDialog}
+                className={classes.closeIcon}
+              >
+                <CloseIcon />
+              </IconButton>
+            </Grid>
           </Grid>
         </DialogTitle>
         <DialogContent
