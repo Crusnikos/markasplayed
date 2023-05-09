@@ -1,4 +1,4 @@
-import { Pagination } from "@mui/material";
+import { Pagination, useMediaQuery, useTheme } from "@mui/material";
 import { useEffect, useMemo } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useArticleData } from "../ArticleListProvider";
@@ -15,6 +15,9 @@ export default function ArticlePagination(props: {
     [location.search]
   );
   const pageCount = Math.ceil(totalCount / 5);
+
+  const theme = useTheme();
+  const smallView = useMediaQuery(theme.breakpoints.up("sm"));
 
   useEffect(() => {
     if (page > 1) {
@@ -33,7 +36,9 @@ export default function ArticlePagination(props: {
       page={page}
       onChange={(_, nextPage) => onPageChange(nextPage)}
       color="primary"
-      size="large"
+      size="medium"
+      hidePrevButton={!smallView}
+      hideNextButton={!smallView}
     />
   );
 }

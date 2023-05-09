@@ -11,11 +11,11 @@ const useStyles = makeStyles()((theme) => ({
   },
   background: {
     margin: theme.spacing(1.5),
-    backgroundImage: `linear-gradient(45deg, ${theme.palette.error.main} 0%, #ffb31a 51%, ${theme.palette.error.main}  100%)`,
-    borderRadius: theme.spacing(1),
+    background: `linear-gradient(90deg, ${theme.palette.primary.main} 8px, rgba(0, 0, 0, 0.4) 0%)`,
+    boxShadow: "5px 5px 4px 0px rgba(0, 0, 0, 1)",
+    color: theme.palette.common.white,
+    borderRadius: `0px ${theme.spacing(1)} ${theme.spacing(1)} 0px`,
     alignSelf: "start",
-    boxShadow: "2px 4px 6px 4px rgba(63, 63, 68, 1)",
-    opacity: 0.8,
     pointerEvents: "none",
   },
   text: {
@@ -24,8 +24,8 @@ const useStyles = makeStyles()((theme) => ({
     paddingLeft: theme.spacing(2),
     paddingRight: theme.spacing(2),
     color: theme.palette.common.white,
+    textShadow: "0px 0px 60px #000000",
     fontWeight: "bolder",
-    textShadow: "4px 4px 8px #000000",
     whiteSpace: "nowrap",
     overflow: "hidden",
     textOverflow: "ellipsis",
@@ -49,7 +49,7 @@ export default function CustomDecoratedTag(props: {
           className={classes.text}
           textAlign="center"
         >
-          {text}
+          {text.toUpperCase()}
         </Typography>
       </Grid>
     </Grid>

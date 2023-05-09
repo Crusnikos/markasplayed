@@ -184,9 +184,7 @@ export default function ArticleDashboardItem(props: {
               className={classes.imageSection}
             >
               <CustomDecoratedTag
-                text={i18next
-                  .t(`dashboard.item.type.${data.articleType.name}`)
-                  .toLocaleUpperCase()}
+                text={i18next.t(`dashboard.item.type.${data.articleType.name}`)}
               />
               {!desktopScreen && (
                 <Typography

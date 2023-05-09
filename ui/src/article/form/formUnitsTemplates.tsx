@@ -137,7 +137,8 @@ export function CustomSingleDropdownSelect(props: {
           <TextField
             error={errorMessage !== undefined ? true : false}
             label={i18next.t(`form.label.article.${propertyName}`)}
-            InputLabelProps={{ shrink: true }}
+            InputLabelProps={{ shrink: true, htmlFor: `${propertyName}-id` }}
+            inputProps={{ id: `${propertyName}-id` }}
             size="small"
             select
             {...field}
@@ -232,7 +233,8 @@ export function CustomMultipleDropdownSelect(props: {
           <TextField
             error={errorMessage !== undefined ? true : false}
             label={i18next.t(`form.label.article.${propertyName}`)}
-            InputLabelProps={{ shrink: true }}
+            InputLabelProps={{ shrink: true, htmlFor: `${propertyName}-id` }}
+            inputProps={{ id: `${propertyName}-id` }}
             size="small"
             select
             SelectProps={{
@@ -274,6 +276,7 @@ export function CustomMultilineTextField(props: {
       render={({ field }) => (
         <React.Fragment>
           <TextField
+            id={`${propertyName}-id`}
             error={errorMessage !== undefined ? true : false}
             multiline
             rows={rows}
