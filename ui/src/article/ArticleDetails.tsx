@@ -41,17 +41,12 @@ const useStyles = makeStyles()((theme) => ({
     transition: "2s",
   },
   content: {
-    whiteSpace: "pre-line",
     paddingBottom: theme.spacing(2),
   },
   textBox: {
     overflow: "hidden",
     textOverflow: "ellipsis",
     width: "100%",
-  },
-  title: {
-    textAlign: "center",
-    fontWeight: "bold",
   },
 }));
 
@@ -191,7 +186,7 @@ export default function ArticleDetails(props: {
             justifyContent="center"
             alignItems="stretch"
           >
-            <Typography variant="h4" className={classes.title}>
+            <Typography variant="h3" textAlign="center" fontWeight="bold">
               {article.title.toLocaleUpperCase()}
               <ArticlePopup
                 data={article}
@@ -201,11 +196,11 @@ export default function ArticleDetails(props: {
               />
             </Typography>
           </Grid>
-          <Typography variant="h6" textAlign="justify">
+          <Typography variant="h5" textAlign="justify">
             {article.shortDescription}
           </Typography>
           <Grid container item alignItems="flex-start">
-            <Typography variant="body2">
+            <Typography variant="body1">
               {new Date(article.createdAt).toLocaleDateString()} |{" "}
               {article.createdBy.name}
             </Typography>
@@ -232,9 +227,10 @@ export default function ArticleDetails(props: {
               <Typography
                 key={index}
                 variant="body1"
-                className={classes.content}
                 textAlign="justify"
                 noWrap
+                whiteSpace="pre-line"
+                className={classes.content}
               >
                 {paragraph}
               </Typography>

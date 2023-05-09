@@ -20,7 +20,6 @@ const useStyles = makeStyles()((theme) => ({
   },
   deactivatedImagesInfo: {
     color: theme.palette.error.main,
-    fontWeight: "bold",
     width: "80%",
   },
   galleryImageSection: {
@@ -145,8 +144,9 @@ export default function ArticleGalleryForm(props: {
         <Typography
           key={numberOfDeactivatedImages}
           variant="body2"
-          className={`${classes.deactivatedImagesInfo} ${zoomInZoomOut.animate}`}
           noWrap={true}
+          fontWeight="bold"
+          className={`${classes.deactivatedImagesInfo} ${zoomInZoomOut.animate}`}
         >
           {`*( ${numberOfDeactivatedImages} ) ${i18next
             .t("form.warning.gallery.deactivatedInfo")

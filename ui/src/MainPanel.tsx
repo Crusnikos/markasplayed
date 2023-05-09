@@ -84,7 +84,7 @@ export default function MainPanel(props: {
               path="*"
               element={
                 <React.Fragment>
-                  <Typography>
+                  <Typography variant="h5">
                     {i18next.t("routing.error.missingPage")}
                   </Typography>
                   <ArticleDashboard setLoading={setLoading} loading={loading} />
