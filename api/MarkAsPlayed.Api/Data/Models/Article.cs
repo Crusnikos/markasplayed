@@ -3,7 +3,7 @@
 namespace MarkAsPlayed.Api.Data.Models;
 
 [Table("article")]
-public sealed class Article
+public class Article
 {
     [Column("article_id")]
     [PrimaryKey]
@@ -15,32 +15,19 @@ public sealed class Article
     [NotNull]
     public string Title { get; set; } = default!;
 
-    [Column("played_on_gaming_platform_id")]
-    public int? PlayedOnGamingPlatformId { get; set; }
+    [Column("created_at")]
+    [NotNull]
+    public DateTimeOffset CreatedAt { get; set; }
 
-    [Column("producer")]
-    public string? Producer { get; set; }
-
-    [Column("play_time")]
-    public int? PlayTime { get; set; }
+    [Column("created_by_author_id")]
+    [NotNull]
+    public int CreatedBy { get; set; }
 
     [Column("article_type_id")]
     [NotNull]
     public int ArticleTypeId { get; set; }
 
-    [Column("created_at")]
-    [NotNull]
-    public DateTimeOffset CreatedAt { get; set; }
-
     [Column("short_description")]
     [NotNull]
     public string ShortDescription { get; set; } = default!;
-
-    [Column("long_description")]
-    [NotNull]
-    public string LongDescription { get; set; } = default!;
-
-    [Column("created_by_author_id")]
-    [NotNull]
-    public int CreatedBy { get; set; }
 }

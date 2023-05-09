@@ -23,12 +23,15 @@ export type DispatchSnackbar = Dispatch<
   }>
 >;
 
+function displayMessage(message: string) {
+  return <Typography variant="body1">{message}</Typography>;
+}
+
 function displaySubmessages(message: string) {
   return (
     <Typography
-      variant="subtitle1"
-      lineHeight={"0.6rem"}
-      fontSize={13}
+      variant="subtitle2"
+      lineHeight={"0.4rem"}
     >{`\n${message}`}</Typography>
   );
 }
@@ -69,7 +72,7 @@ export default function SnackbarDialog(props: {
         severity={severity ?? `info`}
         className={classes.alert}
       >
-        {splitMessage[0]}
+        {displayMessage(splitMessage[0])}
         {splitMessage.slice(1).map((sm) => displaySubmessages(sm))}
       </Alert>
     </Snackbar>

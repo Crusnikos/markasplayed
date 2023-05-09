@@ -61,7 +61,7 @@ Process launching containers in terminal:
 4.dotnet test MarkAsPlayed.sln
 ```
 
-72 tests passed!!
+74 tests passed!!
 
 ## Releases
 
@@ -85,4 +85,6 @@ Process launching containers in terminal:
 - 1.2.8 - commit a670ecf - fixed slider dots on mobile screen
 - 1.3.0 - commit daf8199 - api tests included, more tags and more platforms included
 - 1.3.1 - commit b9f0e3a - alter tags component styling, waiting window fix and scroll to article details
-- 1.3.2 - commit last - combined popups, new article form, administration users data injection
+- 1.3.2 - commit 8db8b29 - combined popups, new article form, administration users data injection
+- 1.3.3 - commit last - split article table, save version history, add swipe on images, new tag design, few fixes
+- 1.3.4 - in progress

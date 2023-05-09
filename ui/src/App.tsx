@@ -42,8 +42,7 @@ const theme = createTheme({
     },
   },
   typography: {
-    fontFamily: ["Oswald"].join(","),
-    fontSize: 17,
+    fontFamily: ["Roboto"].join(","),
   },
 });
 

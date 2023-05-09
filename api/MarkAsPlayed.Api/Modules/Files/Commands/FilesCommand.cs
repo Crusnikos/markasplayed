@@ -155,7 +155,7 @@ public sealed class FilesCommand
                 await new ImageResolution(fileFullPath).
                     OverwriteFileResolution(Resolution.FullHD, cancellationToken);
 
-                await db.ArticleImages.InsertWithInt64IdentityAsync(
+                await db.ArticleImages.InsertAsync(
                     () => new Data.Models.ArticleImage
                     {
                         ArticleId = articleId,

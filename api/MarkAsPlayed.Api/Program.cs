@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
 using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -114,7 +115,12 @@ if(isTest is false)
     await setupConfigurationHandler.InsertAdministrationUsers(administrationUsers, postgresConnection);
 
     Console.WriteLine("-----\nRun post database fixes");
-    await setupConfigurationHandler.DatabasePostFixer(postgresConnection, executedScripts);
+    using (var scope = app.Services.CreateScope())
+    {
+        var services = scope.ServiceProvider;
+        var articleHelper = services.GetRequiredService<IArticleHelper>();
+        await setupConfigurationHandler.DatabasePostFixer(postgresConnection, executedScripts, articleHelper);
+    }
 
     Console.WriteLine("-----\n");
 }

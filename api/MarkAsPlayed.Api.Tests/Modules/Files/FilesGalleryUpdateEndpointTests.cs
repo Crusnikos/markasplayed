@@ -2,6 +2,7 @@
 using Flurl.Http;
 using LinqToDB;
 using MarkAsPlayed.Api.Data.Models;
+using MarkAsPlayed.Api.Modules;
 using MarkAsPlayed.Api.Modules.Files.Models;
 using System.Net;
 
@@ -9,29 +10,18 @@ namespace MarkAsPlayed.Api.Tests.Modules.Files;
 
 public sealed class FilesGalleryUpdateFixture : IntegrationTest
 {
-    public readonly int testId = 1;
+    public long ReviewArticleId = 0;
     protected override async Task SetUp()
     {
         await using var db = CreateDatabase();
+        var testData = new GeneralDatabaseTestData();
 
-        await db.Articles.InsertAsync(
-            () => new Data.Models.Article
-            {
-                Id = 1,
-                ArticleTypeId = 1,
-                CreatedAt = new DateTimeOffset(new DateTime(2022, 09, 19)),
-                CreatedBy = 1,
-                LongDescription = "Review Long Description string",
-                PlayedOnGamingPlatformId = 1,
-                PlayTime = 15,
-                Producer = "Review Producer string",
-                ShortDescription = "Review Short Description string",
-                Title = "Review Title string"
-            }
-        );
+        var reviewId = await db.InsertWithInt64IdentityAsync(testData.ReviewArticleExample, db.GetTable<Data.Models.Article>().TableName);
+        await db.InsertAsync(testData.CreateArticleReviewData(reviewId), db.GetTable<ArticleReviewData>().TableName);
+        await db.InsertAsync(testData.CreateArticleContentData(ArticleTypeHelper.review, reviewId), db.GetTable<ArticleContent>().TableName);
 
         await db.ArticleImages.InsertAsync(
-            () => new Data.Models.ArticleImage
+            () => new ArticleImage
             {
                 Id = 1,
                 ArticleId = 1,
@@ -41,7 +31,7 @@ public sealed class FilesGalleryUpdateFixture : IntegrationTest
         );
 
         await db.ArticleImages.InsertAsync(
-            () => new Data.Models.ArticleImage
+            () => new ArticleImage
             {
                 Id = 2,
                 ArticleId = 1,
@@ -51,7 +41,7 @@ public sealed class FilesGalleryUpdateFixture : IntegrationTest
         );
 
         await db.ArticleImages.InsertAsync(
-            () => new Data.Models.ArticleImage
+            () => new ArticleImage
             {
                 Id = 3,
                 ArticleId = 1,
@@ -61,7 +51,7 @@ public sealed class FilesGalleryUpdateFixture : IntegrationTest
         );
 
         await db.ArticleImages.InsertAsync(
-            () => new Data.Models.ArticleImage
+            () => new ArticleImage
             {
                 Id = 4,
                 ArticleId = 1,
@@ -69,6 +59,8 @@ public sealed class FilesGalleryUpdateFixture : IntegrationTest
                 IsActive = false
             }
         );
+
+        ReviewArticleId = reviewId;
     }
 }
 
@@ -85,7 +77,7 @@ public class FilesGalleryUpdateEndpointTests : IClassFixture<FilesGalleryUpdateF
     public async Task ShouldFailValidationWithMalformedRequest()
     {
         var response = await _suite.Client.AllowHttpStatus(HttpStatusCode.BadRequest).
-                Request("files", "article", _suite.testId, "gallery").
+                Request("files", "article", _suite.ReviewArticleId, "gallery").
                 PutJsonAsync(new { Id = "" });
 
         response.StatusCode.Should().Be((int)HttpStatusCode.BadRequest);
@@ -95,7 +87,7 @@ public class FilesGalleryUpdateEndpointTests : IClassFixture<FilesGalleryUpdateF
     public async Task ShouldRetrieveNotFoundOnNotExistingImage()
     {
         var response = await _suite.Client.AllowHttpStatus(HttpStatusCode.NotFound).
-                Request("files", "article", _suite.testId, "gallery").
+                Request("files", "article", _suite.ReviewArticleId, "gallery").
                 PutJsonAsync(new GalleryUpdateRequest 
                 {
                     Id = 5
@@ -107,12 +99,13 @@ public class FilesGalleryUpdateEndpointTests : IClassFixture<FilesGalleryUpdateF
     [Fact]
     public async Task ShouldUpdateGallery()
     {
-        var testingId = 2;
+        var articleId = _suite.ReviewArticleId;
+        var imageId = 2;
 
-        var response = await _suite.Client.Request("files", "article", "1", "gallery").
+        var response = await _suite.Client.Request("files", "article", articleId, "gallery").
                 PutJsonAsync(new GalleryUpdateRequest
                 {
-                    Id = 2
+                    Id = imageId
                 });
 
         var data = await response.GetJsonAsync<int>();
@@ -120,12 +113,12 @@ public class FilesGalleryUpdateEndpointTests : IClassFixture<FilesGalleryUpdateF
 
         await using var db = _suite.CreateDatabase();
 
-        var item = await db.ArticleImages.FirstOrDefaultAsync(image => image.Id == testingId);
+        var item = await db.ArticleImages.FirstOrDefaultAsync(image => image.Id == imageId && image.ArticleId == articleId);
 
         item.Should().BeEquivalentTo(
             new ArticleImage
             {
-                ArticleId = 1,
+                ArticleId = articleId,
                 IsActive = false
             },
             options => options.Excluding(o => o.Id).Excluding(o => o.FileName)

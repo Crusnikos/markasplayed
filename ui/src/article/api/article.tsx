@@ -73,6 +73,7 @@ function createRequestFromFormData(
 export async function createArticle(
   data: ArticleFormData,
   articleType: ArticleTypes,
+  transactionId: string,
   token: string
 ): Promise<number> {
   const { id, ...newRequest } = createRequestFromFormData(data, articleType);
@@ -84,6 +85,9 @@ export async function createArticle(
       headers: {
         Authorization: `Bearer ${token}`,
       },
+      params: {
+        transactionId: transactionId,
+      },
     }
   );
 
@@ -93,6 +97,7 @@ export async function createArticle(
 export async function updateArticle(
   data: ArticleFormData,
   articleType: ArticleTypes,
+  transactionId: string,
   token: string
 ): Promise<number> {
   const { id, ...newRequest } = createRequestFromFormData(data, articleType);
@@ -102,6 +107,9 @@ export async function updateArticle(
     {
       headers: {
         Authorization: `Bearer ${token}`,
+      },
+      params: {
+        transactionId: transactionId,
       },
     }
   );

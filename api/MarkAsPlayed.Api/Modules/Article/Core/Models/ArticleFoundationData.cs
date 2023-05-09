@@ -5,7 +5,7 @@ namespace MarkAsPlayed.Api.Modules.Article.Core.Models;
 /// <summary>
 ///     Article creation request
 /// </summary>
-public class ArticleRequestData
+public class ArticleFoundationData
 {
     /// <summary>
     ///     Article title
