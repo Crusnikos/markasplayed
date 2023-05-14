@@ -1,6 +1,7 @@
 ﻿using FluentAssertions;
 using Flurl.Http;
 using LinqToDB;
+using MarkAsPlayed.Api.Data.Models;
 using MarkAsPlayed.Api.Modules.Files.Models;
 
 namespace MarkAsPlayed.Api.Tests.Modules.Files;
@@ -20,12 +21,16 @@ public sealed class FilesSliderFixture : IntegrationTest
                     ArticleTypeId = 3,
                     CreatedAt = new DateTimeOffset(new DateTime(2022, i, 17)),
                     CreatedBy = 1,
-                    LongDescription = "Other Long Description string",
-                    PlayedOnGamingPlatformId = null,
-                    PlayTime = null,
-                    Producer = null,
                     ShortDescription = "Other Short Description string",
                     Title = "Other Title string"
+                }
+            );
+
+            await db.ArticlesContent.InsertAsync(
+                () => new ArticleContent
+                {
+                    ArticleId = i,
+                    LongDescription = "Other Long Description string"
                 }
             );
         }
