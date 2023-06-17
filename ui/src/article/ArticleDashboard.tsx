@@ -10,7 +10,7 @@ import i18next from "i18next";
 
 const useStyles = makeStyles()((theme) => ({
   paginationSection: {
-    marginTop: theme.spacing(2),
+    margin: theme.spacing(1),
   },
   articlesContainer: {
     width: "100%",

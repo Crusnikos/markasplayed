@@ -8,12 +8,18 @@ const useStyles = makeStyles()((theme) => ({
   stepperRoot: {
     flexGrow: 1,
     backgroundColor: theme.palette.primary.light,
-  },
-  stepperDotActive: {
-    backgroundColor: theme.palette.common.white,
+    color: theme.palette.common.white,
+    fontWeight: "bold",
+    textShadow: "3px 3px 10px #000000, -2px 1px 20px #000000",
   },
   buttonActive: {
     color: theme.palette.common.white,
+    fontWeight: "bold",
+    textShadow: "3px 3px 10px #000000, -2px 1px 20px #000000",
+  },
+  buttonDisabled: {
+    color: theme.palette.common.white,
+    fontWeight: "bold",
   },
 }));
 
@@ -37,13 +43,12 @@ export default function Stepper(props: {
 
   return (
     <MobileStepper
-      variant="dots"
+      variant="text"
       steps={length}
       position="static"
       activeStep={activeStep}
       classes={{
         root: classes.stepperRoot,
-        dotActive: classes.stepperDotActive,
       }}
       nextButton={
         <Button
@@ -51,7 +56,10 @@ export default function Stepper(props: {
           onClick={handleNext}
           disabled={activeStep === length - 1}
           classes={{
-            root: classes.buttonActive,
+            root:
+              activeStep === length - 1
+                ? classes.buttonDisabled
+                : classes.buttonActive,
           }}
         >
           {smallView && i18next.t("stepper.next")}
@@ -68,7 +76,8 @@ export default function Stepper(props: {
           onClick={handleBack}
           disabled={activeStep === 0}
           classes={{
-            root: classes.buttonActive,
+            root:
+              activeStep === 0 ? classes.buttonDisabled : classes.buttonActive,
           }}
         >
           {theme.direction === "rtl" ? (
