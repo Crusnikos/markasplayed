@@ -62,12 +62,8 @@ const useStyles = makeStyles()((theme) => ({
     background: `linear-gradient(90deg, ${theme.palette.primary.main} 70%, rgba(1,36,0,0) 100%)`,
     color: theme.palette.common.white,
   },
-  subheader: {
-    color: theme.palette.common.white,
-  },
   dateDesktop: {
     padding: theme.spacing(2),
-    fontWeight: "bold",
   },
   dateMobile: {
     padding: theme.spacing(2),
@@ -75,9 +71,7 @@ const useStyles = makeStyles()((theme) => ({
     gridRowStart: 5,
     gridColumnStart: 4,
     gridColumnEnd: 6,
-    alignSelf: "center",
     zIndex: 2,
-    fontWeight: "bold",
     textShadow: "3px 3px 10px #000000, -2px 1px 20px #000000",
   },
   gamingPlatformMinis: {
@@ -108,6 +102,12 @@ const useStyles = makeStyles()((theme) => ({
   shortDescriptionTextBox: {
     overflow: "hidden",
     textOverflow: "ellipsis",
+  },
+  cardHeader: {
+    "& .MuiCardHeader-content": {
+      display: "block",
+      overflow: "hidden",
+    },
   },
 }));
 
@@ -188,8 +188,10 @@ export default function ArticleDashboardItem(props: {
               />
               {!desktopScreen && (
                 <Typography
-                  variant="subtitle1"
+                  variant="body1"
                   align="right"
+                  alignSelf="center"
+                  fontWeight="bold"
                   className={classes.dateMobile}
                 >
                   {new Date(data.createdAt).toLocaleDateString()}
@@ -233,12 +235,15 @@ export default function ArticleDashboardItem(props: {
               <Grid item xl={10} md={9} xs={12} className={classes.header}>
                 <CardHeader
                   avatar={ArticleIconSelector()}
-                  title={data.title}
-                  subheader={
-                    <Typography color={classes.subheader}>
-                      {data.producer}
+                  title={
+                    <Typography variant="h6" noWrap>
+                      {data.title}
                     </Typography>
                   }
+                  subheader={
+                    <Typography variant="subtitle2">{data.producer}</Typography>
+                  }
+                  className={classes.cardHeader}
                 />
               </Grid>
               {desktopScreen && (
@@ -246,6 +251,7 @@ export default function ArticleDashboardItem(props: {
                   <Typography
                     variant="subtitle1"
                     align="right"
+                    fontWeight="bold"
                     className={classes.dateDesktop}
                   >
                     {new Date(data.createdAt).toLocaleDateString()}
@@ -256,9 +262,9 @@ export default function ArticleDashboardItem(props: {
             <Grid item>
               <Box component="div" className={classes.shortDescriptionTextBox}>
                 <Typography
-                  className={classes.shortDescription}
-                  variant="body2"
+                  variant="body1"
                   textAlign="justify"
+                  className={classes.shortDescription}
                 >
                   {data.shortDescription}
                 </Typography>

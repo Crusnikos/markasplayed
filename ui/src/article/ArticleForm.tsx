@@ -48,6 +48,7 @@ const useStyles = makeStyles()((theme) => ({
   },
   buttonSection: {
     marginTop: theme.spacing(2),
+    padding: theme.spacing(1),
   },
   accordionIconRotated: {
     transform: "rotate(180deg)",
@@ -255,7 +256,7 @@ export default function ArticleForm(props: {
                   alignItems="center"
                 >
                   <Grid item>
-                    <Typography variant="body2" fontWeight="bold">
+                    <Typography variant="body1" fontWeight="bold">
                       {i18next.t(`form.view.${content}`)}
                     </Typography>
                   </Grid>

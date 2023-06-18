@@ -25,10 +25,6 @@ const useStyles = makeStyles()((theme) => ({
     paddingRight: theme.spacing(2),
     color: theme.palette.common.white,
     textShadow: "0px 0px 60px #000000",
-    fontWeight: "bolder",
-    whiteSpace: "nowrap",
-    overflow: "hidden",
-    textOverflow: "ellipsis",
   },
 }));
 
@@ -46,8 +42,10 @@ export default function CustomDecoratedTag(props: {
       <Grid item className={classes.background}>
         <Typography
           variant={desktopScreen ? "body1" : "subtitle2"}
-          className={classes.text}
           textAlign="center"
+          fontWeight="bolder"
+          noWrap
+          className={classes.text}
         >
           {text.toUpperCase()}
         </Typography>
