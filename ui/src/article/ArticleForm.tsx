@@ -53,6 +53,9 @@ const useStyles = makeStyles()((theme) => ({
   accordionIconRotated: {
     transform: "rotate(180deg)",
   },
+  accordionDetails: {
+    padding: theme.spacing(1),
+  },
 }));
 
 function createSuccessMessage(
@@ -269,7 +272,9 @@ export default function ArticleForm(props: {
                   </Grid>
                 </Grid>
               </AccordionSummary>
-              <AccordionDetails>{selectForm(content)}</AccordionDetails>
+              <AccordionDetails className={classes.accordionDetails}>
+                {selectForm(content)}
+              </AccordionDetails>
             </Accordion>
           ))}
           <Button

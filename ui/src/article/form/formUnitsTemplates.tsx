@@ -21,21 +21,12 @@ import { Lookups } from "../api/lookup";
 import AddPhotoAlternateIcon from "@mui/icons-material/AddPhotoAlternate";
 import { makeStyles } from "tss-react/mui";
 
-const useStyles = makeStyles()((theme) => ({
-  imageContainer: {
-    height: "300px",
-    [theme.breakpoints.down("lg")]: {
-      height: "180px",
-    },
+const useStyles = makeStyles()(() => ({
+  inputWrapper: {
+    aspectRatio: "16/9",
+    width: "100%",
     display: "flex",
-    alignItems: "center",
     justifyContent: "center",
-  },
-  image: {
-    height: "300px",
-    [theme.breakpoints.down("lg")]: {
-      height: "180px",
-    },
   },
 }));
 
@@ -304,7 +295,7 @@ export function CustomInputImage(props: {
 
   return (
     <React.Fragment>
-      <CardActionArea component="label" className={classes.imageContainer}>
+      <CardActionArea component="label" className={classes.inputWrapper}>
         <input
           hidden
           accept="image/webp"
@@ -314,7 +305,6 @@ export function CustomInputImage(props: {
         />
         {image && (
           <CardMedia
-            className={classes.image}
             component="img"
             src={image}
             alt={i18next.t("image.missing")}

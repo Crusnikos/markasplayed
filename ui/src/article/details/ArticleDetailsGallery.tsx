@@ -1,23 +1,30 @@
 import React, { useEffect } from "react";
 import { makeStyles } from "tss-react/mui";
-import { Card, CardHeader, CardMedia, Typography } from "@mui/material";
+import { Card, CardHeader, CardMedia, Grid } from "@mui/material";
 import { ImageData } from "../api/files";
 import Stepper from "../../components/Stepper";
 import i18next from "i18next";
+import useSwipe from "../../hooks/useSwipe";
+import { onBackwardIndex, onForwardIndex } from "../../swipe";
+import swipeImage from "../../animatedEffects/swipeImage.module.css";
 
 const useStyles = makeStyles()((theme) => ({
   info: {
     color: theme.palette.common.white,
     backgroundColor: theme.palette.primary.light,
-  },
-  infoTitle: {
     textShadow: "5px 5px 10px rgba(66, 68, 90, 1)",
   },
   image: {
-    maxWidth: "100%",
-  },
-  galleryBox: {
+    minWidth: "100%",
     width: "100%",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  imagesContainer: {
+    display: "flex",
+    flexWrap: "nowrap",
+    overflow: "hidden",
   },
 }));
 
@@ -28,6 +35,13 @@ export default function ArticleDetailsGallery(props: {
   const { classes } = useStyles();
   const { gallery } = props;
   const [activeStep, setActiveStep] = React.useState(0);
+
+  const swipeHandlers = useSwipe({
+    onSwipedLeft: () =>
+      onForwardIndex(gallery as any[], activeStep, setActiveStep),
+    onSwipedRight: () =>
+      onBackwardIndex(gallery as any[], activeStep, setActiveStep),
+  });
 
   useEffect(() => {
     if (props.step === true) {
@@ -40,25 +54,24 @@ export default function ArticleDetailsGallery(props: {
   }
 
   return (
-    <Card className={classes.galleryBox}>
+    <Card>
       <CardHeader
-        title={
-          <Typography
-            variant="h5"
-            fontWeight="bold"
-            className={classes.infoTitle}
-          >
-            {i18next.t("details.title.gallery")}
-          </Typography>
-        }
+        title={i18next.t("details.title.gallery")}
         className={classes.info}
       />
-      <CardMedia
-        className={classes.image}
-        component="img"
-        alt={i18next.t("image.missing")}
-        image={gallery[activeStep].imagePathName}
-      />
+      <Grid className={classes.imagesContainer}>
+        {gallery.map((item, index) => (
+          <CardMedia
+            key={index}
+            className={`${classes.image} ${swipeImage.animate}`}
+            style={{ transform: `translate(-${activeStep * 100}%)` }}
+            component="img"
+            alt={i18next.t("image.missing")}
+            image={item.imagePathName}
+            {...swipeHandlers}
+          />
+        ))}
+      </Grid>
       <Stepper
         activeStep={activeStep}
         setActiveStep={setActiveStep}
