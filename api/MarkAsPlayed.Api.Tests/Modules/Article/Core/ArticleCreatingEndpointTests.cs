@@ -33,12 +33,13 @@ public class ArticleCreatingEndpointTests : IClassFixture<IntegrationTest>, IAsy
     [Theory]
     [ClassData(typeof(ArticleSharedTestData.MalformedArticleData))]
     public async Task ShouldFailValidationWithMalformedRequest(
-        ArticleRequestData request,
+        ArticleFoundationData request,
         string property,
         string pattern)
     {
         var response = await _suite.Client.AllowHttpStatus(HttpStatusCode.BadRequest).
                                     Request("article").
+                                    SetQueryParam("transactionId", Guid.NewGuid()).
                                     PostJsonAsync(request);
         response.StatusCode.Should().Be((int)HttpStatusCode.BadRequest);
 
@@ -52,20 +53,22 @@ public class ArticleCreatingEndpointTests : IClassFixture<IntegrationTest>, IAsy
 
     [Theory]
     [ClassData(typeof(ArticleSharedTestData.InvalidReferenceArticleData))]
-    public async Task ShouldReturn404WhenADataReferenceIsInvalid(ArticleRequestData request)
+    public async Task ShouldReturn404WhenADataReferenceIsInvalid(ArticleFoundationData request)
     {
         var response = await _suite.Client.AllowHttpStatus(HttpStatusCode.NotFound).
                                     Request("article").
+                                    SetQueryParam("transactionId", Guid.NewGuid()).
                                     PostJsonAsync(request);
         response.StatusCode.Should().Be((int)HttpStatusCode.NotFound);
     }
 
     [Theory]
     [ClassData(typeof(ArticleSharedTestData.InvalidUnprocessableEntity))]
-    public async Task ShouldReturn422WhenADataIsUnprocessable(ArticleRequestData request)
+    public async Task ShouldReturn422WhenADataIsUnprocessable(ArticleFoundationData request)
     {
         var response = await _suite.Client.AllowHttpStatus(HttpStatusCode.UnprocessableEntity).
                                     Request("article").
+                                    SetQueryParam("transactionId", Guid.NewGuid()).
                                     PostJsonAsync(request);
         response.StatusCode.Should().Be((int)HttpStatusCode.UnprocessableEntity);
     }
@@ -75,8 +78,9 @@ public class ArticleCreatingEndpointTests : IClassFixture<IntegrationTest>, IAsy
     {
         var response = await _suite.Client.
             Request("article").
+            SetQueryParam("transactionId", Guid.NewGuid()).
             PostJsonAsync(
-                new ArticleRequestData
+                new ArticleFoundationData
                 {
                     Title = "Review Title string",
                     PlayedOn = 1,
@@ -128,8 +132,9 @@ public class ArticleCreatingEndpointTests : IClassFixture<IntegrationTest>, IAsy
     {
         var response = await _suite.Client.
             Request("article").
+            SetQueryParam("transactionId", Guid.NewGuid()).
             PostJsonAsync(
-                new ArticleRequestData
+                new ArticleFoundationData
                 {
                     Title = "News Title string",
                     PlayedOn = null,
@@ -175,8 +180,9 @@ public class ArticleCreatingEndpointTests : IClassFixture<IntegrationTest>, IAsy
     {
         var response = await _suite.Client.
             Request("article").
+            SetQueryParam("transactionId", Guid.NewGuid()).
             PostJsonAsync(
-                new ArticleRequestData
+                new ArticleFoundationData
                 {
                     Title = "Other Title string",
                     PlayedOn = null,
@@ -215,5 +221,48 @@ public class ArticleCreatingEndpointTests : IClassFixture<IntegrationTest>, IAsy
                  _testData.CreateArticleContentData(ArticleTypeHelper.other, data),
                  options => options.Excluding(o => o.ArticleId)
              );
+    }
+
+    [Fact]
+    public async Task ShouldCreateAnEntryInVersionHistoryWhileCreatingArticle()
+    {
+        var transactionId = Guid.NewGuid();
+
+        var response = await _suite.Client.
+            Request("article").
+            SetQueryParam("transactionId", transactionId).
+            PostJsonAsync(
+                new ArticleFoundationData
+                {
+                    Title = "Review Title string",
+                    PlayedOn = 1,
+                    AvailableOn = new List<int> { 1, 2, 3 },
+                    Producer = "Review Producer string",
+                    PlayTime = 15,
+                    ShortDescription = "Review Short Description string",
+                    LongDescription = "Review Long Description string",
+                    ArticleType = (int)ArticleTypeHelper.review
+                }
+            );
+
+        var data = await response.GetJsonAsync<int>();
+        data.Should().BeGreaterThan(0);
+
+        await using var db = _suite.CreateDatabase();
+
+        var versionHistoryEntry = db.ArticleVersionHistory.FirstOrDefault(v => v.TransactionId == transactionId.ToString());
+
+        versionHistoryEntry.Should().
+            NotBeNull().
+            And.
+            BeEquivalentTo(
+                new ArticleVersionHistory
+                {
+                    ArticleId = data,
+                    CreatedBy = 1,
+                    TransactionId = transactionId.ToString(),
+                },
+                options => options.Excluding(o => o.CreatedAt).Excluding(o => o.Differences)
+            );
     }
 }

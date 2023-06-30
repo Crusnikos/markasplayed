@@ -55,12 +55,13 @@ public sealed class ArticleUpdateEndpointTests : IClassFixture<IntegrationTest>,
     [Theory]
     [ClassData(typeof(ArticleSharedTestData.MalformedArticleData))]
     public async Task ShouldFailValidationWithMalformedRequest(
-        ArticleRequestData request,
+        ArticleFoundationData request,
         string property,
         string pattern)
     {
         var response = await _suite.Client.AllowHttpStatus(HttpStatusCode.BadRequest).
                                     Request("article/1").
+                                    SetQueryParam("transactionId", Guid.NewGuid()).
                                     PutJsonAsync(request);
         response.StatusCode.Should().Be((int)HttpStatusCode.BadRequest);
 
@@ -74,30 +75,33 @@ public sealed class ArticleUpdateEndpointTests : IClassFixture<IntegrationTest>,
 
     [Theory]
     [ClassData(typeof(ArticleSharedTestData.InvalidReferenceArticleData))]
-    public async Task ShouldReturn404WhenADataReferenceIsInvalid(ArticleRequestData request)
+    public async Task ShouldReturn404WhenADataReferenceIsInvalid(ArticleFoundationData request)
     {
         var response = await _suite.Client.AllowHttpStatus(HttpStatusCode.NotFound).
                                     Request("article/1").
+                                    SetQueryParam("transactionId", Guid.NewGuid()).
                                     PutJsonAsync(request);
         response.StatusCode.Should().Be((int)HttpStatusCode.NotFound);
     }
 
     [Theory]
     [ClassData(typeof(ArticleSharedTestData.InvalidArticleDataId))]
-    public async Task ShouldReturn404WhenArticleNotFound(ArticleRequestData request)
+    public async Task ShouldReturn404WhenArticleNotFound(ArticleFoundationData request)
     {
         var response = await _suite.Client.AllowHttpStatus(HttpStatusCode.NotFound).
                                     Request("article/2000").
+                                    SetQueryParam("transactionId", Guid.NewGuid()).
                                     PutJsonAsync(request);
         response.StatusCode.Should().Be((int)HttpStatusCode.NotFound);
     }
 
     [Theory]
     [ClassData(typeof(ArticleSharedTestData.InvalidUnprocessableEntity))]
-    public async Task ShouldReturn422WhenADataIsUnprocessable(ArticleRequestData request)
+    public async Task ShouldReturn422WhenADataIsUnprocessable(ArticleFoundationData request)
     {
         var response = await _suite.Client.AllowHttpStatus(HttpStatusCode.UnprocessableEntity).
                                     Request("article/1").
+                                    SetQueryParam("transactionId", Guid.NewGuid()).
                                     PutJsonAsync(request);
         response.StatusCode.Should().Be((int)HttpStatusCode.UnprocessableEntity);
     }
@@ -109,8 +113,9 @@ public sealed class ArticleUpdateEndpointTests : IClassFixture<IntegrationTest>,
 
         var response = await _suite.Client.
             Request($"article/{articleId}").
+            SetQueryParam("transactionId", Guid.NewGuid()).
             PutJsonAsync(
-                new ArticleRequestData
+                new ArticleFoundationData
                 {
                     Title = "Review Title string",
                     PlayedOn = 1,
@@ -163,8 +168,9 @@ public sealed class ArticleUpdateEndpointTests : IClassFixture<IntegrationTest>,
 
         var response = await _suite.Client.
             Request($"article/{articleId}").
+            SetQueryParam("transactionId", Guid.NewGuid()).
             PutJsonAsync(
-                new ArticleRequestData
+                new ArticleFoundationData
                 {
                     Title = "News Title string",
                     PlayedOn = null,
@@ -211,8 +217,9 @@ public sealed class ArticleUpdateEndpointTests : IClassFixture<IntegrationTest>,
 
         var response = await _suite.Client.
             Request($"article/{articleId}").
+            SetQueryParam("transactionId", Guid.NewGuid()).
             PutJsonAsync(
-                new ArticleRequestData
+                new ArticleFoundationData
                 {
                     Title = "Other Title string",
                     PlayedOn = null,
@@ -250,5 +257,48 @@ public sealed class ArticleUpdateEndpointTests : IClassFixture<IntegrationTest>,
                  _testData.CreateArticleContentData(ArticleTypeHelper.other, articleId),
                  options => options.Excluding(o => o.ArticleId)
              );
+    }
+
+    [Fact]
+    public async Task ShouldCreateAnEntryInVersionHistoryWhileEditingArticle()
+    {
+        var articleId = _articleId;
+        var transactionId = Guid.NewGuid();
+
+        var response = await _suite.Client.
+            Request($"article/{articleId}").
+            SetQueryParam("transactionId", transactionId).
+            PutJsonAsync(
+                new ArticleFoundationData
+                {
+                    Title = "Other Title string",
+                    PlayedOn = null,
+                    AvailableOn = null,
+                    Producer = null,
+                    PlayTime = null,
+                    ShortDescription = "Other Short Description string",
+                    LongDescription = "Other Long Description string",
+                    ArticleType = (int)ArticleTypeHelper.other
+                }
+            );
+
+        response.StatusCode.Should().Be((int)HttpStatusCode.NoContent);
+
+        await using var db = _suite.CreateDatabase();
+
+        var versionHistoryEntry = db.ArticleVersionHistory.FirstOrDefault(v => v.TransactionId == transactionId.ToString());
+
+        versionHistoryEntry.Should().
+            NotBeNull().
+            And.
+            BeEquivalentTo(
+                new ArticleVersionHistory
+                {
+                    ArticleId = _articleId,
+                    CreatedBy = 1,
+                    TransactionId = transactionId.ToString(),
+                },
+                options => options.Excluding(o => o.CreatedAt).Excluding(o => o.Differences)
+            );
     }
 }

@@ -3,7 +3,7 @@ using MarkAsPlayed.Api.Data;
 using MarkAsPlayed.Api.Data.Models;
 using MarkAsPlayed.Api.Modules.Article.Core.Models;
 using MarkAsPlayed.Api.Modules.Article.Tags.Models;
-using System.Threading;
+using Newtonsoft.Json;
 
 namespace MarkAsPlayed.Api.Modules.Article;
 
@@ -13,7 +13,7 @@ class ArticleHelper : IArticleHelper
 
     public async Task<long> InsertArticleAsync(
         Database database,
-        ArticleRequestData request,
+        ArticleFoundationData request,
         int authorId,
         CancellationToken cancellationToken)
     {
@@ -40,7 +40,7 @@ class ArticleHelper : IArticleHelper
 
     public async Task InsertArticleContentAsync(
         Database database,
-        ArticleRequestData request,
+        ArticleFoundationData request,
         long identifier,
         CancellationToken cancellationToken)
     {
@@ -86,7 +86,7 @@ class ArticleHelper : IArticleHelper
 
     public async Task InsertArticleReviewDataAsync(
         Database database,
-        ArticleRequestData request,
+        ArticleFoundationData request,
         long identifier,
         CancellationToken cancellationToken)
     {
@@ -132,23 +132,55 @@ class ArticleHelper : IArticleHelper
         }
     }
 
+    public async Task InsertArticleHistoryRecord(Database database,
+        long id, List<Variance> variances, string requestor,
+        string transactionId, DateTimeOffset? createdAt, CancellationToken cancellationToken)
+    {
+        try
+        {
+            if (variances.Count == 0) return;
+
+            var author = database.Authors.Where(a => a.FirebaseId == requestor).FirstOrDefault();
+            if (author == null) return;
+
+            var json = JsonConvert.SerializeObject(variances);
+
+            await database.ArticleVersionHistory.InsertAsync(
+                () => new ArticleVersionHistory
+                {
+                    ArticleId = id,
+                    TransactionId = transactionId,
+                    CreatedAt = createdAt ?? DateTime.Now,
+                    CreatedBy = author.Id,
+                    Differences = json
+                },
+                cancellationToken
+            );
+        }
+        catch (Exception)
+        {
+            return;
+        }
+    }
+
     public async Task<int> UpdateArticleAsync(
         Database database,
-        ArticleRequestData request,
-        Data.Models.Article oldArticleData,
-        int articleId,
+        ArticleFoundationData request,
+        long articleId,
         CancellationToken cancellationToken)
     {
         var trimmedShortDescription = request.ShortDescription.Trim();
 
         try
         {
+            var tmpArticle = database.Articles.First(a => a.Id == articleId);
+
             return await database.Articles.Where(a => a.Id == articleId).
-               Set(a => a.CreatedAt, oldArticleData!.CreatedAt).
-               Set(a => a.ArticleTypeId, (int)request.ArticleType).
+               Set(a => a.CreatedAt, tmpArticle.CreatedAt).
+               Set(a => a.ArticleTypeId, request.ArticleType).
                Set(a => a.ShortDescription, trimmedShortDescription).
                Set(a => a.Title, request.Title).
-               Set(a => a.CreatedBy, oldArticleData!.CreatedBy).
+               Set(a => a.CreatedBy, tmpArticle.CreatedBy).
                UpdateAsync(cancellationToken);
         }
         catch (Exception)
@@ -159,8 +191,8 @@ class ArticleHelper : IArticleHelper
 
     public async Task UpdateArticleContentAsync(
         Database database,
-        ArticleRequestData request,
-        int articleId,
+        ArticleFoundationData request,
+        long articleId,
         CancellationToken cancellationToken)
     {
         var trimmedLongDescription = request.LongDescription.Trim();
@@ -180,8 +212,8 @@ class ArticleHelper : IArticleHelper
 
     public async Task<int> UpdateArticleReviewDataAsync(
         Database database,
-        ArticleRequestData request,
-        int articleId,
+        ArticleFoundationData request,
+        long articleId,
         CancellationToken cancellationToken)
     {
         try
@@ -218,6 +250,39 @@ class ArticleHelper : IArticleHelper
             return platformsSubquery.Where(a => a.ArticleId == articleId).ToList();
 
         return platformsSubquery.ToList();
+    }
+
+    public ArticleFoundationData GetArticleFoundationData(Database database, long? articleId = null)
+    {
+        var platformsList = GetPlatformsList(database, articleId).Select(pl => pl.PlatformId).ToList();
+
+        var article =
+            (from articleMetadata
+                in database.Articles.Where(am => am.Id == articleId)
+             from articleReviewData
+                 in database.ArticlesReviewData.LeftJoin(ard => ard.ArticleId == articleMetadata.Id)
+             from articleContent
+                in database.ArticlesContent.InnerJoin(ard => ard.ArticleId == articleMetadata.Id)
+             from playedOn
+                 in database.GamingPlatforms.LeftJoin(gp => gp.Id == articleReviewData.PlayedOnGamingPlatformId)
+             from articleType
+                 in database.ArticleTypes.InnerJoin(at => at.Id == articleMetadata.ArticleTypeId)
+             select new ArticleFoundationData
+             {
+                 Title = articleMetadata.Title,
+                 PlayedOn = playedOn.Id,
+                 AvailableOn = platformsList,
+                 Producer = articleReviewData.Producer,
+                 PlayTime = articleReviewData.PlayTime,
+                 ShortDescription = articleMetadata.ShortDescription,
+                 LongDescription = articleContent.LongDescription,
+                 ArticleType = articleMetadata.ArticleTypeId
+             }).FirstOrDefault();
+
+        if (article != null)
+            return article;
+        else
+            return new ArticleFoundationData();
     }
 
     #endregion

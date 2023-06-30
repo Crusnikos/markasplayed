@@ -139,7 +139,7 @@ internal class TestConfiguration : IAsyncDisposable
 
                 await db.ExecuteAsync(GenerateSqlCommand("CREATE", DatabaseName, mainDbName));
                 await setupConfigurationHandler.InsertAdministrationUsers(AdministrationUsers, _mainDbConnectionString, false);
-                await setupConfigurationHandler.DatabasePostFixer(_mainDbConnectionString, executedScripts, false);
+                await setupConfigurationHandler.IntegrationTestsDatabasePostFixer(_mainDbConnectionString, executedScripts);
                 return;
             }
             catch (PostgresException e)

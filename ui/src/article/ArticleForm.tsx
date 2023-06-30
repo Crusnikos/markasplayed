@@ -30,6 +30,7 @@ import imagesReducer from "./form/imagesReducer";
 import submitForm from "./form/submitForm";
 import { useArticleData } from "../ArticleListProvider";
 import { useNavigate } from "react-router-dom";
+import { v4 as uuidv4 } from "uuid";
 
 type Content = "article" | "cover" | "gallery";
 
@@ -211,6 +212,9 @@ export default function ArticleForm(props: {
           //Check front image
           if (imagesState.coverImage.preview === undefined) return;
 
+          //Generate transactionId
+          const transactionId = uuidv4();
+
           //Submit
           const result = await submitForm(
             responseOnSubmitForm,
@@ -219,7 +223,8 @@ export default function ArticleForm(props: {
             imagesState,
             setMaintence,
             setLoadingProgressInfo,
-            app
+            app,
+            transactionId
           );
 
           //Handling result

@@ -18,7 +18,7 @@ public sealed class ArticleQuery
         _articleHelper = articleHelper;
     }
 
-    public async Task<FullArticleData?> GetSingleArticleAsync(int articleId)
+    public async Task<FullArticleData?> GetSingleArticleAsync(long articleId)
     {
         await using var db = _databaseFactory();
 
@@ -34,9 +34,9 @@ public sealed class ArticleQuery
             (from articleMetadata
                 in db.Articles.Where(am => am.Id == articleId)
              from articleReviewData
-                 in db.ArticlesReviewData.LeftJoin(ard => ard.ArticleId == articleMetadata.ArticleTypeId)
+                 in db.ArticlesReviewData.LeftJoin(ard => ard.ArticleId == articleMetadata.Id)
              from articleContent
-                in db.ArticlesContent.InnerJoin(ard => ard.ArticleId == articleMetadata.ArticleTypeId)
+                in db.ArticlesContent.InnerJoin(ard => ard.ArticleId == articleMetadata.Id)
              from playedOn
                  in db.GamingPlatforms.LeftJoin(gp => gp.Id == articleReviewData.PlayedOnGamingPlatformId)
              from articleType
@@ -87,7 +87,7 @@ public sealed class ArticleQuery
             from articleMetadata
                 in db.Articles
             from articleReviewData
-                in db.ArticlesReviewData.LeftJoin(ard => ard.ArticleId == articleMetadata.ArticleTypeId)
+                in db.ArticlesReviewData.LeftJoin(ard => ard.ArticleId == articleMetadata.Id)
             from playedOn 
                 in db.GamingPlatforms.LeftJoin(gp => gp.Id == articleReviewData.PlayedOnGamingPlatformId)
             from articleType 

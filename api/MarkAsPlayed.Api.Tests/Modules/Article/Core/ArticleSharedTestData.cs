@@ -5,12 +5,12 @@ namespace MarkAsPlayed.Api.Tests.Modules.Article.Core;
 
 public class ArticleSharedTestData
 {
-    public class MalformedArticleData : TheoryData<ArticleRequestData, string, string>
+    public class MalformedArticleData : TheoryData<ArticleFoundationData, string, string>
     {
         public MalformedArticleData()
         {
             Add(
-                new ArticleRequestData
+                new ArticleFoundationData
                 {
                     Title = new string('A', 300),
                     PlayedOn = 1,
@@ -21,12 +21,12 @@ public class ArticleSharedTestData
                     LongDescription = "Example Long Description",
                     ArticleType = (int)ArticleTypeHelper.review
                 },
-                nameof(ArticleRequestData.Title),
+                nameof(ArticleFoundationData.Title),
                 "*maximum length of*"
             );
 
             Add(
-                new ArticleRequestData
+                new ArticleFoundationData
                 {
                     PlayedOn = 1,
                     AvailableOn = new List<int> { 1, 2, 3 },
@@ -36,12 +36,12 @@ public class ArticleSharedTestData
                     LongDescription = "Example Long Description",
                     ArticleType = (int)ArticleTypeHelper.review
                 },
-                nameof(ArticleRequestData.Title),
+                nameof(ArticleFoundationData.Title),
                 "*required*"
             );
 
             Add(
-                new ArticleRequestData
+                new ArticleFoundationData
                 {
                     Title = "Example Title",
                     PlayedOn = 1,
@@ -52,12 +52,12 @@ public class ArticleSharedTestData
                     LongDescription = "Example Long Description",
                     ArticleType = (int)ArticleTypeHelper.review
                 },
-                nameof(ArticleRequestData.Producer),
+                nameof(ArticleFoundationData.Producer),
                 "*maximum length of*"
             );
 
             Add(
-                new ArticleRequestData
+                new ArticleFoundationData
                 {
                     Title = "Example Title",
                     PlayedOn = 1,
@@ -68,12 +68,12 @@ public class ArticleSharedTestData
                     LongDescription = "Example Long Description",
                     ArticleType = (int)ArticleTypeHelper.review
                 },
-                nameof(ArticleRequestData.PlayTime),
+                nameof(ArticleFoundationData.PlayTime),
                 "*must be between*"
             );
 
             Add(
-                new ArticleRequestData
+                new ArticleFoundationData
                 {
                     Title = "Example Title",
                     PlayedOn = 1,
@@ -83,12 +83,12 @@ public class ArticleSharedTestData
                     LongDescription = "Example Long Description",
                     ArticleType = (int)ArticleTypeHelper.review
                 },
-                nameof(ArticleRequestData.ShortDescription),
+                nameof(ArticleFoundationData.ShortDescription),
                 "*required*"
             );
 
             Add(
-                new ArticleRequestData
+                new ArticleFoundationData
                 {
                     Title = "Example Title",
                     PlayedOn = 1,
@@ -99,12 +99,12 @@ public class ArticleSharedTestData
                     LongDescription = "Example Long Description",
                     ArticleType = (int)ArticleTypeHelper.review
                 },
-                nameof(ArticleRequestData.ShortDescription),
+                nameof(ArticleFoundationData.ShortDescription),
                 "*maximum length of*"
             );
 
             Add(
-                new ArticleRequestData
+                new ArticleFoundationData
                 {
                     Title = "Example Title",
                     PlayedOn = 1,
@@ -114,12 +114,12 @@ public class ArticleSharedTestData
                     ShortDescription = "Example Short Description",
                     ArticleType = (int)ArticleTypeHelper.review
                 },
-                nameof(ArticleRequestData.LongDescription),
+                nameof(ArticleFoundationData.LongDescription),
                 "*required*"
             );
 
             Add(
-                new ArticleRequestData
+                new ArticleFoundationData
                 {
                     Title = "Example Title",
                     PlayedOn = 1,
@@ -130,18 +130,18 @@ public class ArticleSharedTestData
                     LongDescription = new string('A', 10001),
                     ArticleType = (int)ArticleTypeHelper.review
                 },
-                nameof(ArticleRequestData.LongDescription),
+                nameof(ArticleFoundationData.LongDescription),
                 "*maximum length of*"
             );
         }
     }
 
-    public class InvalidReferenceArticleData : TheoryData<ArticleRequestData>
+    public class InvalidReferenceArticleData : TheoryData<ArticleFoundationData>
     {
         public InvalidReferenceArticleData()
         {
             Add(
-                new ArticleRequestData
+                new ArticleFoundationData
                 {
                     Title = "Example Title",
                     PlayedOn = 100,
@@ -155,7 +155,7 @@ public class ArticleSharedTestData
             );
 
             Add(
-                new ArticleRequestData
+                new ArticleFoundationData
                 {
                     Title = "Example Title",
                     PlayedOn = 1,
@@ -169,7 +169,7 @@ public class ArticleSharedTestData
             );
 
             Add(
-                new ArticleRequestData
+                new ArticleFoundationData
                 {
                     Title = "Example Title",
                     PlayedOn = 1,
@@ -183,7 +183,7 @@ public class ArticleSharedTestData
             );
 
             Add(
-                new ArticleRequestData
+                new ArticleFoundationData
                 {
                     Title = "Example Title",
                     PlayedOn = 1,
@@ -198,12 +198,12 @@ public class ArticleSharedTestData
         }
     }
 
-    public class InvalidArticleDataId : TheoryData<ArticleRequestData>
+    public class InvalidArticleDataId : TheoryData<ArticleFoundationData>
     {
         public InvalidArticleDataId()
         {
             Add(
-                new ArticleRequestData
+                new ArticleFoundationData
                 {
                     Title = "Example Title",
                     PlayedOn = 1,
@@ -218,12 +218,12 @@ public class ArticleSharedTestData
         }
     }
 
-    public class InvalidUnprocessableEntity : TheoryData<ArticleRequestData>
+    public class InvalidUnprocessableEntity : TheoryData<ArticleFoundationData>
     {
         public InvalidUnprocessableEntity()
         {
             Add(
-                new ArticleRequestData
+                new ArticleFoundationData
                 {
                     Title = "Example Title",
                     PlayedOn = 1,

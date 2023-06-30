@@ -45,8 +45,8 @@ public sealed class ArticleController : ControllerBase
     [ProducesResponseType(typeof(FullArticleData), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetArticleAsync(
-        [Range(1, int.MaxValue)]
-        int id)
+        [Range(1, long.MaxValue)]
+        long id)
     {
         var article = await _articleQuery.GetSingleArticleAsync(id);
 
@@ -70,15 +70,16 @@ public sealed class ArticleController : ControllerBase
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> CreateArticleAsync(
         [FromBody]
-        ArticleRequestData request)
+        ArticleFoundationData request,
+        string transactionId)
     {
         var userId = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier) ?? null;
-        if (userId is null)
+        if (userId is null || transactionId is null)
         {
             return NotFound();
         }
 
-        var response = await _articleCommand.CreateAsync(request, userId.Value, HttpContext.RequestAborted);
+        var response = await _articleCommand.CreateAsync(request, userId.Value, transactionId, HttpContext.RequestAborted);
 
         return response.Status switch
         {
@@ -104,10 +105,17 @@ public sealed class ArticleController : ControllerBase
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> UpdateArticleAsync(
         [FromBody]
-        ArticleRequestData request,
-        int id)
+        ArticleFoundationData request,
+        string transactionId,
+        long id)
     {
-        var response = await _articleCommand.UpdateAsync(id, request, HttpContext.RequestAborted);
+        var userId = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier) ?? null;
+        if (userId is null || transactionId is null)
+        {
+            return NotFound();
+        }
+
+        var response = await _articleCommand.UpdateAsync(id, request, userId.Value, transactionId, HttpContext.RequestAborted);
 
         return response.Status switch
         {
