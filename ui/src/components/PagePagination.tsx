@@ -1,7 +1,7 @@
 import { Pagination, useMediaQuery, useTheme } from "@mui/material";
 import { useEffect, useMemo } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { useArticleData } from "../ArticleListProvider";
+import { useArticleData } from "../context/ArticleListProvider";
 
 export default function ArticlePagination(props: {
   onPageChange: (page: number) => Promise<void>;

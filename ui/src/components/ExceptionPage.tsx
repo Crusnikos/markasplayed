@@ -10,12 +10,15 @@ const useStyles = makeStyles()((theme) => ({
   },
 }));
 
-export default function ExceptionPage(props: { message: string }): JSX.Element {
+export default function ExceptionPage(props: {
+  message: string | undefined;
+}): JSX.Element {
   const { classes } = useStyles();
 
   return (
     <Typography variant="h4" className={classes.exceptionSection}>
-      {props.message}
+      {props.message ??
+        "Connection problems or we are offline, please refresh page"}
     </Typography>
   );
 }
