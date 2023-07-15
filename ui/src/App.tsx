@@ -4,14 +4,14 @@ import { AlertColor, createTheme, ThemeProvider } from "@mui/material";
 import { BrowserRouter } from "react-router-dom";
 import createCache from "@emotion/cache";
 import { CacheProvider } from "@emotion/react";
-import MainPanel from "./MainPanel";
+import MainPanel from "./pages";
 import SnackbarDialog from "./components/SnackbarDialog";
-import { useFirebaseAuth } from "./firebase";
+import { useFirebaseAuth } from "./context/FirebaseProvider";
 import i18next from "i18next";
 import { useTranslation } from "react-i18next";
 import LoadingIndicator from "./components/LoadingIndicator";
-import Footer from "./footer";
-import Menu from "./menu";
+import Footer from "./layouts/Footer";
+import Menu from "./layouts/Menu";
 import FlexWrapper from "./components/FlexWrapper";
 
 export const muiCache = createCache({
