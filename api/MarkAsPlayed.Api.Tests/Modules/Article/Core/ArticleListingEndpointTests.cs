@@ -21,7 +21,7 @@ public sealed class ArticleListingFixture : IntegrationTest
         var newsId = await db.InsertWithInt64IdentityAsync(testData.NewsArticleExample, db.GetTable<Data.Models.Article>().TableName);
         await db.InsertAsync(testData.CreateArticleContentData(ArticleTypeHelper.news, newsId), db.GetTable<ArticleContent>().TableName);
 
-        for (int i = (int)(newsId + 1); i < (int)(newsId + 5); i++)
+        for (int i = (int)(newsId + 1); i < (int)(newsId + 10); i++)
         {
             await db.Articles.InsertAsync(
                 () => new Data.Models.Article
@@ -94,11 +94,11 @@ public class ArticleListingEndpointTests : IClassFixture<ArticleListingFixture>
 
         response.Headers.Should().
             Contain(pair => pair.Name == "articles-count").
-            Which.Value.Should().Be("6");
+            Which.Value.Should().Be("11");
 
         var jsonSerializedResponse = await response.GetJsonAsync<IEnumerable<DashboardArticleData>>();
 
-        jsonSerializedResponse.Should().HaveCount(5);
+        jsonSerializedResponse.Should().HaveCount(10);
     }
 
     [Fact]
@@ -116,7 +116,7 @@ public class ArticleListingEndpointTests : IClassFixture<ArticleListingFixture>
 
         response.Headers.Should().
             Contain(pair => pair.Name == "articles-count").
-            Which.Value.Should().Be("6");
+            Which.Value.Should().Be("11");
 
         var jsonSerializedResponse = await response.GetJsonAsync<IEnumerable<DashboardArticleData>>();
 

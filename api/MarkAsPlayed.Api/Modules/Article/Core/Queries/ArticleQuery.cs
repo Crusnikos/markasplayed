@@ -10,12 +10,13 @@ public sealed class ArticleQuery
 {
     private readonly Database.Factory _databaseFactory;
     private readonly IArticleHelper _articleHelper;
-    private const int DefaultPageSize = 5;
+    private readonly int DefaultPageSize;
 
-    public ArticleQuery(Database.Factory databaseFactory, IArticleHelper articleHelper)
+    public ArticleQuery(Database.Factory databaseFactory, IConfiguration configuration, IArticleHelper articleHelper)
     {
         _databaseFactory = databaseFactory;
         _articleHelper = articleHelper;
+        DefaultPageSize = configuration.GetValue<int>("DefaultPageSize");
     }
 
     public async Task<FullArticleData?> GetSingleArticleAsync(long articleId)
