@@ -1,3 +1,5 @@
+import { tryParseInt } from "../utils/parsing";
+
 if (!process.env.REACT_APP_API_URL) {
   throw new Error("REACT_APP_API_URL environmental variable is missing");
 }
@@ -14,6 +16,8 @@ export const firebaseConfig = {
   messagingSenderId: process.env.REACT_APP_FIREBASE_SENDER_ID,
   appId: process.env.REACT_APP_FIREBASE_APP_ID,
 };
+
+export const defaultPageSize = tryParseInt(process.env.DEFAULT_PAGE_SIZE) ?? 10;
 
 export type Paged<Data> = {
   data: Data;

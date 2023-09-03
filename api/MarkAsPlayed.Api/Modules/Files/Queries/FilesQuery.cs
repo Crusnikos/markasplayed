@@ -13,7 +13,7 @@ public enum Size
 public sealed class FilesQuery
 {
     private readonly Database.Factory _databaseFactory;
-    private const int DefaultPageSize = 5;
+    private const int SliderSize = 5;
     private const string DefaultFrontImageFileName = "Main.webp";
     private const string DefaultSmallFrontImageFileName = "MainSmall.webp";
 
@@ -59,7 +59,7 @@ public sealed class FilesQuery
                 ArticleTitle = q.Title
             }).
             OrderByDescending(q => q.Id).
-            Take(DefaultPageSize).
+            Take(SliderSize).
             ToListAsync(cancellationToken);
     }
 

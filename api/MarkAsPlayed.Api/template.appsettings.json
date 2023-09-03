@@ -30,5 +30,6 @@
       "DescriptionPl": "", //needs to be supplemented
       "DescriptionEn": "" //needs to be supplemented
     }
-  ]
+  ],
+  "DefaultPageSize": "10"
 }

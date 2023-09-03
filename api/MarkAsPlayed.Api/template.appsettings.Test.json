@@ -3,7 +3,7 @@
     "MainDatabase": "Host=db;Database=markasplayed;Username=markasplayed;Password=markasplayed;Pooling=false"
   },
   "Cors": {
-    "ExposedHeaders": ["articles-count", "display-page"]
+    "ExposedHeaders": [ "articles-count", "display-page" ]
   },
   "Logging": {
     "LogLevel": {
@@ -29,5 +29,6 @@
       "DescriptionPl": "Polish Lorem ipsum",
       "DescriptionEn": "English Lorem ipsum"
     }
-  ]
+  ],
+  "DefaultPageSize": "10"
 }
