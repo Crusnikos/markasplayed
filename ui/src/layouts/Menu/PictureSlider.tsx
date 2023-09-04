@@ -1,5 +1,11 @@
 import { Box, Grid, IconButton, Step, Stepper } from "@mui/material";
-import React, { Dispatch, SetStateAction, useEffect, useState } from "react";
+import React, {
+  Dispatch,
+  SetStateAction,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { makeStyles } from "tss-react/mui";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import PauseIcon from "@mui/icons-material/Pause";
@@ -13,6 +19,11 @@ import {
   onBackwardIndexWithLoop,
   onForwardIndexWithLoop,
 } from "../../utils/swipe";
+import {
+  addCookie,
+  deleteCookie,
+  getCookieValue,
+} from "../../utils/cookiesHelper";
 
 const useStyles = makeStyles()((theme) => ({
   mobileComponentHeight: {
@@ -89,8 +100,10 @@ export function PictureSlider(props: {
   const { classes } = useStyles();
   const { images, desktopScreen } = props;
 
+  const isPausedCookieValue =
+    getCookieValue({ name: "sliderPaused" })?.toLowerCase?.() === "true";
   const [currentIndex, setCurrentIndex] = useState<number>(0);
-  const [isPaused, setIsPaused] = useState(false);
+  const [isPaused, setIsPaused] = useState<boolean>(isPausedCookieValue);
   const height = desktopScreen
     ? classes.desktopComponentHeight
     : classes.mobileComponentHeight;
@@ -102,6 +115,8 @@ export function PictureSlider(props: {
     return;
   };
 
+  const prevIsPaused = useRef();
+
   const swipeHandlers = useSwipe({
     onSwipedLeft: () =>
       onForwardIndexWithLoop(images as any[], currentIndex, setCurrentIndex),
@@ -110,6 +125,14 @@ export function PictureSlider(props: {
   });
 
   useEffect(() => {
+    if (prevIsPaused.current !== isPaused) {
+      if (isPaused === true) {
+        addCookie({ name: "sliderPaused", value: "true" });
+      } else {
+        deleteCookie({ name: "sliderPaused" });
+      }
+    }
+
     if (!isPaused) {
       const intervalId = setInterval(() => {
         // displays the last 5 articles
