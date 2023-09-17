@@ -31,19 +31,23 @@ import IconGrouping from "../iconGrouping";
 
 const useStyles = makeStyles()((theme) => ({
   articleItem: {
-    marginBottom: theme.spacing(1.5),
+    marginBottom: theme.spacing(2),
   },
   imageSection: {
     display: "grid",
     gridTemplateColumns: "repeat(5, 20% [col-start])",
     gridTemplateRows: "repeat(5, 20% [row-start])",
+    zIndex: 2,
+  },
+  contentSection: {
+    backgroundColor: theme.palette.background.paper,
+    zIndex: 3,
   },
   imageSectionImageItem: {
     gridRowStart: 1,
     gridRowEnd: 6,
     gridColumnStart: 1,
     gridColumnEnd: 6,
-    zIndex: 1,
   },
   shortDescription: {
     padding: theme.spacing(2),
@@ -54,6 +58,13 @@ const useStyles = makeStyles()((theme) => ({
     display: "inline-block",
     objectFit: "cover",
     objectPosition: "60% 40%",
+    transition: "transform .5s",
+  },
+  imageZoomIn: {
+    transform: "scale(1.2)",
+  },
+  imageZoomOut: {
+    transform: "scale(1)",
   },
   loading: {
     minHeight: "270px",
@@ -71,8 +82,8 @@ const useStyles = makeStyles()((theme) => ({
     gridRowStart: 5,
     gridColumnStart: 4,
     gridColumnEnd: 6,
-    zIndex: 2,
     textShadow: "3px 3px 10px #000000, -2px 1px 20px #000000",
+    zIndex: 1,
   },
   gamingPlatformMinis: {
     height: theme.spacing(3.5),
@@ -120,34 +131,12 @@ export default function ArticleDashboardItem(props: {
   const [frontImage, setFrontImage] = useState<ImageData | undefined>(
     undefined
   );
-  const groupedPlatformIcons = useMemo(
-    () => IconGrouping(data.availableOn),
-    [data]
-  );
-
-  function ArticleIconSelector(): ReactNode {
-    switch (data.articleType.name) {
-      case "review":
-        return (
-          <CardMedia
-            component="img"
-            image={iconSelector(data.playedOn.groupName, "white")}
-            alt={i18next.t("image.missing")}
-            height="64"
-            className={classes.playedOnIcon}
-          />
-        );
-      case "news":
-        return <AnnouncementIcon className={classes.announcementIcon} />;
-      default:
-        return <ArticleIcon className={classes.announcementIcon} />;
-    }
-  }
-  const navigate = useNavigate();
+  const [hover, setHover] = useState<boolean>(false);
 
   const theme = useTheme();
   const desktopScreen = useMediaQuery(theme.breakpoints.up("md"));
 
+  const navigate = useNavigate();
   const handleClick = () => {
     props.setLoading(true);
     navigate(`article/${data.id}`);
@@ -170,134 +159,190 @@ export default function ArticleDashboardItem(props: {
   }, []);
 
   return (
-    <Card className={classes.articleItem} elevation={6}>
+    <Card
+      className={classes.articleItem}
+      elevation={12}
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
+    >
       <CardActionArea onClick={handleClick}>
         <Grid container direction="row">
-          {frontImage ? (
-            <Grid
-              item
-              container
-              lg={4}
-              md={5}
-              sm={6}
-              xs={12}
-              className={classes.imageSection}
-            >
-              <InformationTag
-                text={i18next.t(`dashboard.item.type.${data.articleType.name}`)}
-              />
-              {!desktopScreen && (
-                <Typography
-                  variant="body1"
-                  align="right"
-                  alignSelf="center"
-                  fontWeight="bold"
-                  className={classes.dateMobile}
-                >
-                  {new Date(data.createdAt).toLocaleDateString()}
-                </Typography>
-              )}
-              <Grid item className={classes.imageSectionImageItem}>
-                <CardMedia
-                  className={classes.image}
-                  component="img"
-                  alt={i18next.t("image.missing")}
-                  image={`${frontImage.imagePathName}?${Date.now()}`}
-                />
-              </Grid>
-            </Grid>
-          ) : (
-            <Grid
-              item
-              container
-              lg={4}
-              md={5}
-              sm={6}
-              xs={12}
-              justifyContent="center"
-              alignItems="center"
-              className={classes.loading}
-            >
-              <CircularProgress />
-            </Grid>
-          )}
-          <Grid
-            container
-            item
-            lg={8}
-            md={7}
-            sm={6}
-            xs={12}
-            direction="column"
-            justifyContent="flex-start"
-          >
-            <Grid container direction="row" justifyContent="space-between">
-              <Grid item xl={10} md={9} xs={12} className={classes.header}>
-                <CardHeader
-                  avatar={ArticleIconSelector()}
-                  title={
-                    <Typography variant="h6" noWrap>
-                      {data.title}
-                    </Typography>
-                  }
-                  subheader={
-                    <Typography variant="subtitle2">{data.producer}</Typography>
-                  }
-                  className={classes.cardHeader}
-                />
-              </Grid>
-              {desktopScreen && (
-                <Grid item>
-                  <Typography
-                    variant="subtitle1"
-                    align="right"
-                    fontWeight="bold"
-                    className={classes.dateDesktop}
-                  >
-                    {new Date(data.createdAt).toLocaleDateString()}
-                  </Typography>
-                </Grid>
-              )}
-            </Grid>
-            <Grid item>
-              <Box component="div" className={classes.shortDescriptionTextBox}>
-                <Typography
-                  variant="body1"
-                  textAlign="justify"
-                  className={classes.shortDescription}
-                >
-                  {data.shortDescription}
-                </Typography>
-              </Box>
-            </Grid>
-            {data.availableOn.length > 0 && (
-              <Grid
-                item
-                container
-                wrap="nowrap"
-                justifyContent="flex-end"
-                alignItems="center"
-                className={classes.footerIcons}
-              >
-                {groupedPlatformIcons.map((icon) => (
-                  <Grid
-                    item
-                    className={classes.eachFooterIcons}
-                    key={icon.groupName}
-                  >
-                    <CardMedia
-                      className={classes.gamingPlatformMinis}
-                      component="img"
-                      alt={i18next.t("image.missing")}
-                      image={iconSelector(icon.groupName, "color")}
-                    />
-                  </Grid>
-                ))}
-              </Grid>
-            )}
-          </Grid>
+          <ImageSection
+            frontImage={frontImage}
+            data={data}
+            hover={hover}
+            desktopScreen={desktopScreen}
+          />
+          <ContentSection data={data} desktopScreen={desktopScreen} />
         </Grid>
       </CardActionArea>
     </Card>
+  );
+}
+
+function ImageSection(props: {
+  frontImage: ImageData | undefined;
+  data: DashboardArticleData;
+  hover: boolean;
+  desktopScreen: boolean;
+}): JSX.Element {
+  const { classes } = useStyles();
+  const { frontImage, data, hover, desktopScreen } = props;
+
+  return frontImage ? (
+    <Grid
+      item
+      container
+      lg={4}
+      md={5}
+      sm={6}
+      xs={12}
+      className={classes.imageSection}
+    >
+      <InformationTag
+        text={i18next.t(`dashboard.item.type.${data.articleType.name}`)}
+      />
+      {!desktopScreen && (
+        <Typography
+          variant="body1"
+          align="right"
+          alignSelf="center"
+          fontWeight="bold"
+          className={classes.dateMobile}
+        >
+          {new Date(data.createdAt).toLocaleDateString()}
+        </Typography>
+      )}
+      <Grid item className={classes.imageSectionImageItem}>
+        <CardMedia
+          className={`${classes.image} ${
+            hover ? classes.imageZoomIn : classes.imageZoomOut
+          }`}
+          component="img"
+          alt={i18next.t("image.missing")}
+          image={`${frontImage.imagePathName}?${Date.now()}`}
+        />
+      </Grid>
+    </Grid>
+  ) : (
+    <Grid
+      item
+      container
+      lg={4}
+      md={5}
+      sm={6}
+      xs={12}
+      justifyContent="center"
+      alignItems="center"
+      className={classes.loading}
+    >
+      <CircularProgress />
+    </Grid>
+  );
+}
+
+function ContentSection(props: {
+  data: DashboardArticleData;
+  desktopScreen: boolean;
+}): JSX.Element {
+  const { classes } = useStyles();
+  const { data, desktopScreen } = props;
+
+  function ArticleIconSelector(): ReactNode {
+    switch (data.articleType.name) {
+      case "review":
+        return (
+          <CardMedia
+            component="img"
+            image={iconSelector(data.playedOn.groupName, "white")}
+            alt={i18next.t("image.missing")}
+            height="64"
+            className={classes.playedOnIcon}
+          />
+        );
+      case "news":
+        return <AnnouncementIcon className={classes.announcementIcon} />;
+      default:
+        return <ArticleIcon className={classes.announcementIcon} />;
+    }
+  }
+  const groupedPlatformIcons = useMemo(
+    () => IconGrouping(data.availableOn),
+    [data]
+  );
+
+  return (
+    <Grid
+      container
+      item
+      lg={8}
+      md={7}
+      sm={6}
+      xs={12}
+      direction="column"
+      justifyContent="flex-start"
+      className={classes.contentSection}
+    >
+      <Grid container direction="row" justifyContent="space-between">
+        <Grid item xl={10} md={9} xs={12} className={classes.header}>
+          <CardHeader
+            avatar={ArticleIconSelector()}
+            title={
+              <Typography variant="h6" noWrap>
+                {data.title}
+              </Typography>
+            }
+            subheader={
+              <Typography variant="subtitle2">{data.producer}</Typography>
+            }
+            className={classes.cardHeader}
+          />
+        </Grid>
+        {desktopScreen && (
+          <Grid item>
+            <Typography
+              variant="subtitle1"
+              align="right"
+              fontWeight="bold"
+              className={classes.dateDesktop}
+            >
+              {new Date(data.createdAt).toLocaleDateString()}
+            </Typography>
+          </Grid>
+        )}
+      </Grid>
+      <Grid item>
+        <Box component="div" className={classes.shortDescriptionTextBox}>
+          <Typography
+            variant="body1"
+            textAlign="justify"
+            className={classes.shortDescription}
+          >
+            {data.shortDescription}
+          </Typography>
+        </Box>
+      </Grid>
+      {data.availableOn.length > 0 && (
+        <Grid
+          item
+          container
+          wrap="nowrap"
+          justifyContent="flex-end"
+          alignItems="center"
+          className={classes.footerIcons}
+        >
+          {groupedPlatformIcons.map((icon) => (
+            <Grid item className={classes.eachFooterIcons} key={icon.groupName}>
+              <CardMedia
+                className={classes.gamingPlatformMinis}
+                component="img"
+                alt={i18next.t("image.missing")}
+                image={iconSelector(icon.groupName, "color")}
+              />
+            </Grid>
+          ))}
+        </Grid>
+      )}
+    </Grid>
   );
 }

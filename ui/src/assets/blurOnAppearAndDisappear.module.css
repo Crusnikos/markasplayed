@@ -1,0 +1,20 @@
+.animate {
+  animation-name: blur-on-appear-and-disappear;
+  animation-duration: 5s;
+}
+
+@keyframes blur-on-appear-and-disappear {
+  0% {
+    filter: blur(4px);
+  }
+  20%,
+  30% {
+    filter: blur(0px);
+  }
+  90% {
+    filter: blur(0px);
+  }
+  100% {
+    filter: blur(4px);
+  }
+}
