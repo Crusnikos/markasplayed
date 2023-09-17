@@ -13,7 +13,7 @@ import { useNavigate } from "react-router-dom";
 import { SliderData } from "../../api/files";
 import i18next from "i18next";
 import CustomDecoratedTag from "../../components/InformationTag";
-import fadeIn from "../../assets/fadeIn.module.css";
+import blurOnAppearAndDisappear from "../../assets/blurOnAppearAndDisappear.module.css";
 import useSwipe from "../../hooks/useSwipe";
 import {
   onBackwardIndexWithLoop,
@@ -28,11 +28,13 @@ import {
 const useStyles = makeStyles()((theme) => ({
   mobileComponentHeight: {
     minHeight: "200px",
-    height: "28vh",
+    height: "24vh",
+    maxHeight: "250px",
   },
   desktopComponentHeight: {
     minHeight: "200px",
-    height: "36vh",
+    height: "34vh",
+    maxHeight: "340px",
   },
   image: {
     width: "100%",
@@ -99,30 +101,16 @@ export function PictureSlider(props: {
 }): JSX.Element {
   const { classes } = useStyles();
   const { images, desktopScreen } = props;
-
   const isPausedCookieValue =
     getCookieValue({ name: "sliderPaused" })?.toLowerCase?.() === "true";
-  const [currentIndex, setCurrentIndex] = useState<number>(0);
+
+  const [index, setIndex] = useState<number>(0);
   const [isPaused, setIsPaused] = useState<boolean>(isPausedCookieValue);
   const height = desktopScreen
     ? classes.desktopComponentHeight
     : classes.mobileComponentHeight;
 
-  const navigate = useNavigate();
-  const handleRedirect = () => {
-    props.setLoading(true);
-    images && navigate(`article/${images[currentIndex].id}`);
-    return;
-  };
-
   const prevIsPaused = useRef();
-
-  const swipeHandlers = useSwipe({
-    onSwipedLeft: () =>
-      onForwardIndexWithLoop(images as any[], currentIndex, setCurrentIndex),
-    onSwipedRight: () =>
-      onBackwardIndexWithLoop(images as any[], currentIndex, setCurrentIndex),
-  });
 
   useEffect(() => {
     if (prevIsPaused.current !== isPaused) {
@@ -136,97 +124,185 @@ export function PictureSlider(props: {
     if (!isPaused) {
       const intervalId = setInterval(() => {
         // displays the last 5 articles
-        onForwardIndexWithLoop(images as any[], currentIndex, setCurrentIndex);
+        onForwardIndexWithLoop(images as any[], index, setIndex);
       }, 5000);
 
       return () => clearInterval(intervalId);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentIndex, isPaused, images]);
+  }, [index, isPaused, images]);
 
   return (
     <Grid container className={`${classes.sliderSection} ${height}`}>
-      <Grid item className={classes.sliderSectionImage}>
-        {images && !isPaused && (
-          <Box
-            key={currentIndex}
-            component="img"
-            className={`${classes.image} ${height} ${fadeIn.animate}`}
-            src={`${images[currentIndex].imagePathName}?${Date.now()}`}
-            alt={i18next.t("image.missing")}
-            onClick={handleRedirect}
-            {...swipeHandlers}
-          />
-        )}
-        {(!images || (images && isPaused)) && (
-          <Box
-            component="img"
-            className={`${classes.image} ${height}`}
-            src={`/logo.jpg`}
-            alt={i18next.t("image.missing")}
-          />
-        )}
-      </Grid>
       {images && !isPaused && (
-        <CustomDecoratedTag text={`${images[currentIndex].articleTitle}`} />
+        <ActiveSlider
+          index={index}
+          isPaused={isPaused}
+          height={height}
+          images={images}
+          desktopScreen={desktopScreen}
+          setIndex={setIndex}
+          setIsPaused={setIsPaused}
+          setLoading={props.setLoading}
+        />
       )}
       {(!images || (images && isPaused)) && (
-        <Grid item className={classes.sliderSectionOverlayImage}>
-          <Box
-            component="img"
-            className={`${classes.overlayImage} ${height}`}
-            src={`/logo overlay.png`}
-            alt={i18next.t("image.missing")}
-          />
-        </Grid>
-      )}
-      {images && (
-        <Grid
-          container
-          item
-          direction="row"
-          alignItems="center"
-          className={classes.sliderSectionBottom}
-        >
-          <Grid item>
-            {!isPaused && (
-              <Stepper>
-                {images.map((image, index) => (
-                  <Step key={image.id}>
-                    {currentIndex === index ? (
-                      <React.Fragment>
-                        <IconButton
-                          size="large"
-                          onClick={() => setCurrentIndex(index)}
-                          className={classes.inactiveSlideButton}
-                          disabled={true}
-                        />
-                      </React.Fragment>
-                    ) : (
-                      <IconButton
-                        size="large"
-                        onClick={() => setCurrentIndex(index)}
-                        className={classes.activeSlideButton}
-                      />
-                    )}
-                  </Step>
-                ))}
-              </Stepper>
-            )}
-          </Grid>
-          <Box sx={{ flexGrow: 1 }} />
-          <Grid item>
-            <IconButton
-              size={desktopScreen ? "medium" : "small"}
-              aria-label="play/pause"
-              onClick={() => setIsPaused(!isPaused)}
-              className={classes.playPauseButton}
-            >
-              {isPaused ? <PlayArrowIcon /> : <PauseIcon />}
-            </IconButton>
-          </Grid>
-        </Grid>
+        <PausedSlider
+          isPaused={isPaused}
+          height={height}
+          desktopScreen={desktopScreen}
+          setIsPaused={setIsPaused}
+        />
       )}
     </Grid>
+  );
+}
+
+function ActiveSlider(props: {
+  index: number;
+  isPaused: boolean;
+  height: string;
+  images: SliderData[];
+  desktopScreen: boolean;
+  setIndex: Dispatch<SetStateAction<number>>;
+  setIsPaused: Dispatch<SetStateAction<boolean>>;
+  setLoading: Dispatch<SetStateAction<boolean>>;
+}): JSX.Element {
+  const {
+    index,
+    isPaused,
+    height,
+    images,
+    desktopScreen,
+    setIndex,
+    setIsPaused,
+    setLoading,
+  } = props;
+  const { classes } = useStyles();
+
+  const navigate = useNavigate();
+
+  const swipeHandlers = useSwipe({
+    onSwipedLeft: () =>
+      onForwardIndexWithLoop(images as any[], index, setIndex),
+    onSwipedRight: () =>
+      onBackwardIndexWithLoop(images as any[], index, setIndex),
+  });
+
+  const handleRedirect = () => {
+    setLoading(true);
+    images && navigate(`article/${images[index].id}`);
+    return;
+  };
+
+  return (
+    <React.Fragment>
+      <Grid item className={classes.sliderSectionImage}>
+        <Box
+          key={index}
+          component="img"
+          className={`${classes.image} ${height} ${blurOnAppearAndDisappear.animate}`}
+          src={`${images[index].imagePathName}?${Date.now()}`}
+          alt={i18next.t("image.missing")}
+          onClick={handleRedirect}
+          {...swipeHandlers}
+        />
+      </Grid>
+      <CustomDecoratedTag text={`${images[index].articleTitle}`} />
+      <Grid
+        container
+        item
+        direction="row"
+        alignItems="center"
+        className={classes.sliderSectionBottom}
+      >
+        <Grid item>
+          <Stepper>
+            {images.map((image, i) => (
+              <Step key={image.id}>
+                {index === i ? (
+                  <React.Fragment>
+                    <IconButton
+                      size="large"
+                      onClick={() => setIndex(i)}
+                      className={classes.inactiveSlideButton}
+                      disabled={true}
+                    />
+                  </React.Fragment>
+                ) : (
+                  <IconButton
+                    size="large"
+                    onClick={() => setIndex(i)}
+                    className={classes.activeSlideButton}
+                  />
+                )}
+              </Step>
+            ))}
+          </Stepper>
+        </Grid>
+        <Box sx={{ flexGrow: 1 }} />
+        <Grid item>
+          <IconButton
+            size={desktopScreen ? "medium" : "small"}
+            aria-label="play/pause"
+            onClick={() => setIsPaused(!isPaused)}
+            className={classes.playPauseButton}
+          >
+            {isPaused ? <PlayArrowIcon /> : <PauseIcon />}
+          </IconButton>
+        </Grid>
+      </Grid>
+    </React.Fragment>
+  );
+}
+
+function PausedSlider(props: {
+  isPaused: boolean;
+  height: string;
+  desktopScreen: boolean;
+  setIsPaused: Dispatch<SetStateAction<boolean>>;
+}): JSX.Element {
+  const { isPaused, height, desktopScreen, setIsPaused } = props;
+  const { classes } = useStyles();
+
+  return (
+    <React.Fragment>
+      <Grid item className={classes.sliderSectionImage}>
+        <Box
+          component="img"
+          className={`${classes.image} ${height}`}
+          src={`/logo.jpg`}
+          alt={i18next.t("image.missing")}
+        />
+      </Grid>
+      <Grid item className={classes.sliderSectionOverlayImage}>
+        <Box
+          component="img"
+          className={`${classes.overlayImage} ${height}`}
+          src={`/logo overlay.png`}
+          alt={i18next.t("image.missing")}
+        />
+      </Grid>
+      <Grid
+        container
+        item
+        direction="row"
+        alignItems="center"
+        className={classes.sliderSectionBottom}
+      >
+        <Grid item></Grid>
+        <Box sx={{ flexGrow: 1 }} />
+        <Grid item>
+          <IconButton
+            size={desktopScreen ? "medium" : "small"}
+            aria-label="play/pause"
+            onClick={() => setIsPaused(!isPaused)}
+            className={classes.playPauseButton}
+          >
+            {isPaused ? <PlayArrowIcon /> : <PauseIcon />}
+          </IconButton>
+        </Grid>
+      </Grid>
+    </React.Fragment>
   );
 }
