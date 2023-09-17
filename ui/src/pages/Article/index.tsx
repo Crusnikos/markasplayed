@@ -1,4 +1,10 @@
-import React, { Dispatch, SetStateAction, useEffect, useState } from "react";
+import React, {
+  Dispatch,
+  SetStateAction,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import {
   Box,
   CircularProgress,
@@ -22,11 +28,18 @@ import i18next from "i18next";
 import { DispatchSnackbar } from "../../components/SnackbarDialog";
 import { getArticleTags, LookupTagData } from "../../api/tag";
 import { DialogController } from "../../dialogs";
+import drawRandomNumbers from "../../utils/drawRandomNumbers";
+import ImageWithSoftEdges from "../../components/ImageWithSoftEdges";
 
 const useStyles = makeStyles()((theme) => ({
   paper: {
     margin: "auto",
     marginBottom: theme.spacing(1),
+  },
+  paperDesktopPaddings: {
+    padding: theme.spacing(5),
+  },
+  paperMobilePaddings: {
     padding: theme.spacing(2),
   },
   image: {
@@ -41,7 +54,8 @@ const useStyles = makeStyles()((theme) => ({
     transition: "2s",
   },
   content: {
-    paddingBottom: theme.spacing(2),
+    paddingTop: theme.spacing(1),
+    paddingBottom: theme.spacing(1),
   },
   textBox: {
     overflow: "hidden",
@@ -54,9 +68,10 @@ export default function ArticleDetails(props: {
   setSnackbar: DispatchSnackbar;
   setLoading: Dispatch<SetStateAction<boolean>>;
   loading: boolean;
+  smallerContainer: boolean;
 }): JSX.Element {
   const { classes } = useStyles();
-  const { setSnackbar, setLoading, loading } = props;
+  const { setSnackbar, setLoading, loading, smallerContainer } = props;
 
   const [syncRequired, setSyncRequired] = useState<boolean>(false);
   const [article, setArticle] = useState<FullArticleData | undefined>();
@@ -80,6 +95,23 @@ export default function ArticleDetails(props: {
       element.scrollIntoView({ behavior: "smooth" });
     }
   };
+
+  const randomGallery = useMemo(
+    () => {
+      if (gallery === undefined || gallery.length === 0) return;
+
+      var randoms = drawRandomNumbers({
+        drawFrom: gallery.length,
+        drawThisMany: dividedArticleText?.length
+          ? dividedArticleText?.length / 3 - 1
+          : 0,
+      });
+
+      return gallery.filter((_, index) => randoms.includes(index + 1));
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [gallery]
+  );
 
   async function fetchArticleData() {
     if (parsedId === null) {
@@ -160,7 +192,7 @@ export default function ArticleDetails(props: {
 
     void fetchTags();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [article]);
+  }, [dividedArticleText]);
 
   if (showLoadingSpinner) {
     return (
@@ -178,7 +210,14 @@ export default function ArticleDetails(props: {
 
   return (
     <Container disableGutters={true} id="article-section">
-      <Paper elevation={6} className={classes.paper}>
+      <Paper
+        elevation={8}
+        className={`${classes.paper} ${
+          smallerContainer
+            ? classes.paperMobilePaddings
+            : classes.paperDesktopPaddings
+        }`}
+      >
         <Stack spacing={2} alignItems="center">
           <Grid
             container
@@ -225,16 +264,29 @@ export default function ArticleDetails(props: {
           )}
           <Box component="div" className={classes.textBox}>
             {dividedArticleText?.map((paragraph, index) => (
-              <Typography
-                key={index}
-                variant="body1"
-                textAlign="justify"
-                noWrap
-                whiteSpace="pre-line"
-                className={classes.content}
-              >
-                {paragraph}
-              </Typography>
+              <React.Fragment key={index}>
+                {index !== 0 && index % 3 === 0 && (
+                  <ImageWithSoftEdges
+                    imageUrl={
+                      randomGallery
+                        ? `${
+                            randomGallery[index / 3 - 1]?.imagePathName
+                          }?${Date.now()}`
+                        : undefined
+                    }
+                    maxHeight="320px"
+                  />
+                )}
+                <Typography
+                  variant="body1"
+                  textAlign="justify"
+                  noWrap
+                  whiteSpace="pre-line"
+                  className={classes.content}
+                >
+                  {paragraph}
+                </Typography>
+              </React.Fragment>
             ))}
           </Box>
           {article.articleType.name === "review" && (

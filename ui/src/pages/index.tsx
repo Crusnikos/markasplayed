@@ -47,9 +47,7 @@ export default function MainPanel(props: {
   const pathname = useMemo(() => location.pathname, [location]);
 
   const theme = useTheme();
-  const isAdditionalMarginRequired = useMediaQuery(
-    theme.breakpoints.down(1200)
-  );
+  const smallerContainer = useMediaQuery(theme.breakpoints.down(1200));
 
   useEffect(() => {
     async function fetchRequestedPage() {
@@ -68,7 +66,7 @@ export default function MainPanel(props: {
   return (
     <main
       className={`${classes.main} ${
-        isAdditionalMarginRequired && classes.articleItemAdditionalMargin
+        smallerContainer && classes.articleItemAdditionalMargin
       }`}
     >
       <section>
@@ -100,6 +98,7 @@ export default function MainPanel(props: {
                       setSnackbar={setSnackbar}
                       setLoading={setLoading}
                       loading={loading}
+                      smallerContainer={smallerContainer}
                     />
                   </Suspense>
                 </ErrorBoundary>
