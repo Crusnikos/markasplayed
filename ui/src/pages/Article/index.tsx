@@ -30,6 +30,8 @@ import { getArticleTags, LookupTagData } from "../../api/tag";
 import { DialogController } from "../../dialogs";
 import drawRandomNumbers from "../../utils/drawRandomNumbers";
 import ImageWithSoftEdges from "../../components/ImageWithSoftEdges";
+import { LazyLoadImage } from "react-lazy-load-image-component";
+import { useArticleData } from "../../context/ArticleListProvider";
 
 const useStyles = makeStyles()((theme) => ({
   paper: {
@@ -43,15 +45,12 @@ const useStyles = makeStyles()((theme) => ({
     padding: theme.spacing(2),
   },
   image: {
-    width: "100%",
-    height: "350px",
-    [theme.breakpoints.down("lg")]: {
+    height: "450px",
+    [theme.breakpoints.down("md")]: {
       height: "250px",
     },
-    display: "inline-block",
     objectFit: "cover",
     objectPosition: "60% 40%",
-    transition: "2s",
   },
   content: {
     paddingTop: theme.spacing(1),
@@ -73,7 +72,6 @@ export default function ArticleDetails(props: {
   const { classes } = useStyles();
   const { setSnackbar, setLoading, loading, smallerContainer } = props;
 
-  const [syncRequired, setSyncRequired] = useState<boolean>(false);
   const [article, setArticle] = useState<FullArticleData | undefined>();
   const [dividedArticleText, setDividedArticleText] = useState<
     string[] | undefined
@@ -83,11 +81,10 @@ export default function ArticleDetails(props: {
   );
   const [gallery, setGallery] = useState<ImageData[] | undefined>(undefined);
   const [tags, setTags] = useState<LookupTagData[] | undefined>(undefined);
+  const [, syncDate] = useArticleData();
 
   const params = useParams();
   const parsedId = tryParseInt(params.id);
-
-  const showLoadingSpinner = loading || syncRequired;
 
   const handleScrollToArticleDetails = () => {
     const element = document.getElementById("article-section");
@@ -127,12 +124,11 @@ export default function ArticleDetails(props: {
       setArticle(undefined);
     }
     setLoading(false);
-    setSyncRequired(false);
     handleScrollToArticleDetails();
   }
 
   useEffect(() => {
-    if (loading || syncRequired) {
+    if (loading) {
       return;
     }
 
@@ -146,12 +142,7 @@ export default function ArticleDetails(props: {
   }, [parsedId]);
 
   useEffect(() => {
-    if (!loading && !syncRequired) {
-      return;
-    }
-
-    if (loading && parsedId === article?.id) {
-      setLoading(false);
+    if (!loading) {
       return;
     }
 
@@ -162,7 +153,7 @@ export default function ArticleDetails(props: {
 
     void fetchArticleData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loading, syncRequired]);
+  }, [loading]);
 
   useEffect(() => {
     async function fetchFrontImage() {
@@ -194,7 +185,7 @@ export default function ArticleDetails(props: {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dividedArticleText]);
 
-  if (showLoadingSpinner) {
+  if (loading) {
     return (
       <Container disableGutters={true} sx={{ height: "80vh" }}>
         <LoadingIndicator />
@@ -231,8 +222,8 @@ export default function ArticleDetails(props: {
                 displayDialog="editArticle"
                 data={article}
                 images={{ main: frontImage, gallery: gallery }}
-                setSyncRequired={setSyncRequired}
                 setResponseOnSubmit={setSnackbar}
+                setLoading={setLoading}
               />
             </Typography>
           </Grid>
@@ -247,11 +238,12 @@ export default function ArticleDetails(props: {
           </Grid>
           {frontImage && tags ? (
             <React.Fragment>
-              <Box
-                component="img"
-                className={classes.image}
-                src={`${frontImage?.imagePathName}?${Date.now()}`}
+              <LazyLoadImage
+                src={`${frontImage?.imagePathName}?${syncDate}`}
                 alt={i18next.t("image.missing")}
+                className={classes.image}
+                width="100%"
+                effect="blur"
               />
               <TagPanel
                 tags={tags}
@@ -269,9 +261,7 @@ export default function ArticleDetails(props: {
                   <ImageWithSoftEdges
                     imageUrl={
                       randomGallery
-                        ? `${
-                            randomGallery[index / 3 - 1]?.imagePathName
-                          }?${Date.now()}`
+                        ? randomGallery[index / 3 - 1]?.imagePathName
                         : undefined
                     }
                     maxHeight="320px"
@@ -296,11 +286,7 @@ export default function ArticleDetails(props: {
               availableOn={article.availableOn}
             />
           )}
-          {gallery ? (
-            <Gallery gallery={gallery} step={syncRequired} />
-          ) : (
-            <CircularProgress />
-          )}
+          {gallery ? <Gallery gallery={gallery} /> : <CircularProgress />}
         </Stack>
       </Paper>
     </Container>

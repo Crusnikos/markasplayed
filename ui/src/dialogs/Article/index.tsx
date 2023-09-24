@@ -19,10 +19,9 @@ export default function Article(props: {
     gallery: ImageData[] | undefined;
   };
   maintence: MaintenceState;
-  closeDialog: () => void;
+  closeDialog: (setLoading?: boolean) => void;
   setMaintence: (element: MaintenceState) => void;
   setResponseOnSubmit: DispatchSnackbar;
-  setSyncRequired?: (element: boolean) => void;
 }): JSX.Element {
   const {
     open,
@@ -32,7 +31,6 @@ export default function Article(props: {
     closeDialog,
     setMaintence,
     setResponseOnSubmit,
-    setSyncRequired,
   } = props;
   const [lookups, setLookups] = useState<Lookups | undefined>(undefined);
   const [loadingProgressInfo, setLoadingProgressInfo] = useState<
@@ -119,7 +117,6 @@ export default function Article(props: {
               images={images}
               lookups={lookups}
               setLoadingProgressInfo={setLoadingProgressInfo}
-              setSyncRequired={setSyncRequired}
               setMaintence={setMaintence}
               closeDialog={closeDialog}
             />

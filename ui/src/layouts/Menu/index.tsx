@@ -27,7 +27,7 @@ export default function Menu(props: {
   setLoading: Dispatch<SetStateAction<boolean>>;
 }): JSX.Element {
   const { classes } = useStyles();
-  const [[, count]] = useArticleData();
+  const [[, count], syncDate] = useArticleData();
   const [sliderImages, setSliderImages] = useState<SliderData[] | undefined>(
     undefined
   );
@@ -42,9 +42,9 @@ export default function Menu(props: {
         setSliderImages(images);
       }
     }
-
     void fetchSliderImages();
-  }, [count]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [syncDate]);
 
   return (
     <Fragment>

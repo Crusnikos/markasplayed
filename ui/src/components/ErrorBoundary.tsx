@@ -7,7 +7,7 @@ type Props = DialogProps | PageProps;
 type DialogProps = {
   displayType: "Dialog";
   open: boolean;
-  closeDialog: () => void;
+  closeDialog: (setLoading?: boolean) => void;
 };
 
 type PageProps = {

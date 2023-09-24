@@ -28,6 +28,9 @@ import iconSelector from "../iconSelector";
 import i18next from "i18next";
 import InformationTag from "../../components/InformationTag";
 import IconGrouping from "../iconGrouping";
+import { useArticleData } from "../../context/ArticleListProvider";
+import { LazyLoadImage } from "react-lazy-load-image-component";
+import "react-lazy-load-image-component/src/effects/blur.css";
 
 const useStyles = makeStyles()((theme) => ({
   articleItem: {
@@ -48,17 +51,15 @@ const useStyles = makeStyles()((theme) => ({
     gridRowEnd: 6,
     gridColumnStart: 1,
     gridColumnEnd: 6,
+    minHeight: "290px",
   },
   shortDescription: {
     padding: theme.spacing(2),
   },
   image: {
-    minHeight: "270px",
-    height: "100%",
-    display: "inline-block",
     objectFit: "cover",
     objectPosition: "60% 40%",
-    transition: "transform .5s",
+    transition: "transform .5s !important",
   },
   imageZoomIn: {
     transform: "scale(1.2)",
@@ -132,7 +133,6 @@ export default function ArticleDashboardItem(props: {
     undefined
   );
   const [hover, setHover] = useState<boolean>(false);
-
   const theme = useTheme();
   const desktopScreen = useMediaQuery(theme.breakpoints.up("md"));
 
@@ -161,7 +161,7 @@ export default function ArticleDashboardItem(props: {
   return (
     <Card
       className={classes.articleItem}
-      elevation={12}
+      elevation={hover ? 2 : 12}
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
     >
@@ -188,6 +188,7 @@ function ImageSection(props: {
 }): JSX.Element {
   const { classes } = useStyles();
   const { frontImage, data, hover, desktopScreen } = props;
+  const [, syncDate] = useArticleData();
 
   return frontImage ? (
     <Grid
@@ -214,13 +215,15 @@ function ImageSection(props: {
         </Typography>
       )}
       <Grid item className={classes.imageSectionImageItem}>
-        <CardMedia
+        <LazyLoadImage
+          src={`${frontImage.imagePathName}?${syncDate}`}
           className={`${classes.image} ${
             hover ? classes.imageZoomIn : classes.imageZoomOut
           }`}
-          component="img"
           alt={i18next.t("image.missing")}
-          image={`${frontImage.imagePathName}?${Date.now()}`}
+          effect="blur"
+          width="100%"
+          height="100%"
         />
       </Grid>
     </Grid>

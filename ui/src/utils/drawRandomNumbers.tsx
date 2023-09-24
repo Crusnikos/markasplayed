@@ -15,7 +15,7 @@ export default function drawRandomNumbers(props: {
     if (!arr.includes(randomNumber)) {
       arr.push(randomNumber);
     }
-  } while (arr.length < drawThisMany);
+  } while (arr.length < drawThisMany && arr.length < drawFrom);
 
   return arr;
 }

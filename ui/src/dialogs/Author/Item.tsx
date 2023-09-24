@@ -5,6 +5,7 @@ import { makeStyles } from "tss-react/mui";
 import { ImageData } from "../../api/files";
 import i18next from "i18next";
 import { useTranslation } from "react-i18next";
+import { useArticleData } from "../../context/ArticleListProvider";
 
 const useStyles = makeStyles()((theme) => ({
   avatarBorder: {
@@ -41,6 +42,7 @@ export default function Item(props: { data: AuthorData }): JSX.Element {
   const { classes } = useStyles();
   const { data: author } = props;
   const [authorImage, setAuthorImage] = useState<ImageData | null>(null);
+  const [, syncDate] = useArticleData();
   const { i18n } = useTranslation();
 
   useEffect(() => {
@@ -67,7 +69,7 @@ export default function Item(props: { data: AuthorData }): JSX.Element {
               <Box
                 component="img"
                 className={classes.avatarImage}
-                src={`${authorImage?.imagePathName}?${Date.now()}`}
+                src={`${authorImage?.imagePathName}?${syncDate}`}
                 alt={i18next.t("image.missing")}
               />
             )}

@@ -102,9 +102,8 @@ export default function Content(props: {
   lookups: Lookups | undefined;
   setResponseOnSubmit: DispatchSnackbar;
   setLoadingProgressInfo: (element: string | undefined) => void;
-  setSyncRequired?: (element: boolean) => void;
   setMaintence: (element: MaintenceState) => void;
-  closeDialog: () => void;
+  closeDialog: (setLoading?: boolean) => void;
 }) {
   const { classes } = useStyles();
   const {
@@ -113,7 +112,6 @@ export default function Content(props: {
     lookups,
     setResponseOnSubmit,
     setLoadingProgressInfo,
-    setSyncRequired,
     setMaintence,
     closeDialog,
   } = props;
@@ -125,7 +123,7 @@ export default function Content(props: {
   ]);
 
   const { app, authenticated } = useFirebaseAuth();
-  const [[, , page], getNextPage] = useArticleData();
+  const [[, , page], , sync] = useArticleData();
   const navigate = useNavigate();
 
   const { handleSubmit, control, formState, watch, setValue } =
@@ -234,8 +232,8 @@ export default function Content(props: {
 
           //Handling result
           if (result.status === "success") {
-            if (formData.id === null) await getNextPage({ page: 1 });
-            else await getNextPage({ page });
+            if (formData.id === null) await sync({ page: 1 });
+            else await sync({ page: page });
 
             //Success
             setResponseOnSubmit({
@@ -250,8 +248,7 @@ export default function Content(props: {
 
           //Handling after submit
           if (formData.id === null) navigate("/");
-          closeDialog();
-          return setSyncRequired?.(true);
+          closeDialog(true);
         })}
       >
         <FormControl fullWidth variant="outlined">

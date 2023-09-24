@@ -23,7 +23,7 @@ export default function ArticleDashboard(props: {
 }): JSX.Element {
   const { classes } = useStyles();
   const { loading, setLoading } = props;
-  const [[articleData], getNextPage] = useArticleData();
+  const [[articleData], , sync] = useArticleData();
   const isArticleDataEmpty =
     articleData === undefined ||
     articleData instanceof Error ||
@@ -31,7 +31,7 @@ export default function ArticleDashboard(props: {
 
   const onPageChange = async (page: number) => {
     setLoading(true);
-    await getNextPage({ page });
+    await sync({ page: page });
     window.scrollTo(0, 0);
   };
 

@@ -149,7 +149,7 @@ export type ArticleFormData = {
 };
 
 export type ArticleDataRequest = {
-  page: number;
+  page?: number;
 };
 
 export type ArticleDataResponse = [

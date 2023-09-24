@@ -15,6 +15,7 @@ import { useFirebaseAuth } from "../../context/FirebaseProvider";
 import i18next from "i18next";
 import { DispatchSnackbar } from "../../components/SnackbarDialog";
 import { DialogController } from "../../dialogs";
+import { useArticleData } from "../../context/ArticleListProvider";
 
 const useStyles = makeStyles()((theme) => ({
   toolbar: {
@@ -31,6 +32,7 @@ export default function TopMenu(props: {
   const { classes } = useStyles();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const { app, authenticated } = useFirebaseAuth();
+  const [[, , page]] = useArticleData();
 
   const logo = props.desktopScreen ? "MAPlayed" : "MAP";
 
@@ -57,7 +59,7 @@ export default function TopMenu(props: {
     <AppBar position="sticky">
       <Toolbar className={classes.toolbar}>
         <Typography component="h1" variant="h6" color="inherit" noWrap>
-          <Link to="/" className={classes.logo}>
+          <Link to={page > 1 ? `/?page=${page}` : `/`} className={classes.logo}>
             {logo}
           </Link>
         </Typography>
