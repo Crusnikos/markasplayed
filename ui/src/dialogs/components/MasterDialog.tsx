@@ -59,7 +59,7 @@ export type DialogValues = {
 };
 
 type DialogHelpers = {
-  closeDialog: () => void;
+  closeDialog: (setLoading?: boolean) => void;
 };
 
 export default function MasterDialog({
@@ -131,7 +131,7 @@ export default function MasterDialog({
     <Dialog
       onKeyDown={stopPropagationForTab}
       open={open}
-      onClose={closeDialog}
+      onClose={() => closeDialog()}
       fullWidth={true}
       maxWidth={setDialogWidth()}
     >
@@ -146,7 +146,7 @@ export default function MasterDialog({
           <Grid item>
             <IconButton
               aria-label="close"
-              onClick={closeDialog}
+              onClick={() => closeDialog()}
               className={classes.closeIcon}
             >
               <CloseIcon />

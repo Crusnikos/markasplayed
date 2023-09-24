@@ -24,6 +24,7 @@ import {
   deleteCookie,
   getCookieValue,
 } from "../../utils/cookiesHelper";
+import { useArticleData } from "../../context/ArticleListProvider";
 
 const useStyles = makeStyles()((theme) => ({
   mobileComponentHeight: {
@@ -181,6 +182,7 @@ function ActiveSlider(props: {
   const { classes } = useStyles();
 
   const navigate = useNavigate();
+  const [, syncDate] = useArticleData();
 
   const swipeHandlers = useSwipe({
     onSwipedLeft: () =>
@@ -202,7 +204,7 @@ function ActiveSlider(props: {
           key={index}
           component="img"
           className={`${classes.image} ${height} ${blurOnAppearAndDisappear.animate}`}
-          src={`${images[index].imagePathName}?${Date.now()}`}
+          src={`${images[index].imagePathName}?${syncDate}`}
           alt={i18next.t("image.missing")}
           onClick={handleRedirect}
           {...swipeHandlers}

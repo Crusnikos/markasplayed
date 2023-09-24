@@ -41,7 +41,7 @@ export default function MainPanel(props: {
 }) {
   const { classes } = useStyles();
   const { setSnackbar, setLoading, loading } = props;
-  const [, getNextPage] = useArticleData();
+  const [, , sync] = useArticleData();
   const location = useLocation();
   const qs = new URLSearchParams(location.search);
   const pathname = useMemo(() => location.pathname, [location]);
@@ -53,9 +53,9 @@ export default function MainPanel(props: {
     async function fetchRequestedPage() {
       const page = tryParseInt(qs.get("page"));
       if (page !== null && page !== 1 && pathname === "/") {
-        await getNextPage({ page: page });
+        await sync({ page: page });
       } else {
-        await getNextPage({ page: 1 });
+        await sync({ page: 1 });
       }
     }
 

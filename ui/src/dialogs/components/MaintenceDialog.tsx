@@ -13,7 +13,7 @@ export default function MaintenceDialog(props: MaintenceProps): JSX.Element {
       <Dialog
         open={open}
         fullWidth
-        onClose={props.closeDialog}
+        onClose={() => props.closeDialog()}
         disableEscapeKeyDown={false}
       >
         <DialogContent>

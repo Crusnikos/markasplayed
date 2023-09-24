@@ -12,9 +12,13 @@ export function DialogController(props: DialogProps): JSX.Element {
   const [maintence, setMaintence] = useState<MaintenceState>(undefined);
   const [open, setOpen] = useState<boolean>(false);
 
-  const closeDialog = () => {
+  const closeDialog = (setLoading?: boolean) => {
     setMaintence(undefined);
     setOpen(false);
+
+    if (setLoading && displayDialog === "editArticle") {
+      props.setLoading(true);
+    }
   };
 
   const dialogButtons = useMemo(() => {
@@ -65,7 +69,6 @@ export function DialogController(props: DialogProps): JSX.Element {
         closeDialog={closeDialog}
         setMaintence={setMaintence}
         setResponseOnSubmit={props.setResponseOnSubmit}
-        setSyncRequired={props.setSyncRequired}
       />
     );
   }

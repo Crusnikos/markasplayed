@@ -14,11 +14,13 @@ import {
 
 type ArticleDataContextType = [
   ArticleDataResponse,
+  number,
   (value: ArticleDataRequest) => Promise<void>
 ];
 
 export const ArticleDataContext = createContext<ArticleDataContextType>([
   [undefined, 1, 0],
+  0,
   () => Promise.resolve(),
 ]);
 
@@ -35,22 +37,24 @@ export default function ArticleListProvider({
     0,
     0,
   ]);
+  const [syncDate, setSyncDate] = useState<number>(Date.now());
 
-  const refreshArticlesList = useCallback(
-    async (request?: ArticleDataRequest) => {
-      try {
-        const articles = await getArticlesListing(request ?? { page: 1 });
+  const sync = useCallback(async (request: ArticleDataRequest) => {
+    try {
+      if (request.page) {
+        const articles = await getArticlesListing({ page: request.page });
         setArticles([articles.data, articles.totalCount, articles.page]);
-      } catch (err) {
-        const error = err as AxiosError;
-        setArticles([error, 0, 1]);
       }
-    },
-    []
-  );
+    } catch (err) {
+      const error = err as AxiosError;
+      setArticles([error, 0, 1]);
+    } finally {
+      setSyncDate(Date.now());
+    }
+  }, []);
 
   return (
-    <ArticleDataContext.Provider value={[articles, refreshArticlesList]}>
+    <ArticleDataContext.Provider value={[articles, syncDate, sync]}>
       {children}
     </ArticleDataContext.Provider>
   );

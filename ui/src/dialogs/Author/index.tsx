@@ -17,7 +17,7 @@ const Content = React.lazy(() => import("./Content"));
 export default function Author(props: {
   open: boolean;
   maintence: MaintenceState;
-  closeDialog: () => void;
+  closeDialog: (setLoading?: boolean) => void;
   setMaintence: Dispatch<SetStateAction<MaintenceState>>;
 }): JSX.Element {
   const { open, maintence, closeDialog, setMaintence } = props;

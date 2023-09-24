@@ -34,7 +34,7 @@ type ArticleEditProps = {
     gallery: ImageData[] | undefined;
   };
   setResponseOnSubmit: DispatchSnackbar;
-  setSyncRequired: (element: boolean) => void;
+  setLoading: (element: boolean) => void;
   setAnchorEl?: (element: null | HTMLElement) => void;
 };
 
@@ -51,6 +51,6 @@ type LoadingProps = {
 
 type ErrorProps = {
   displayMaintence: "ErrorState";
-  closeDialog: () => void;
+  closeDialog: (setLoading?: boolean) => void;
   message: string | undefined;
 };
