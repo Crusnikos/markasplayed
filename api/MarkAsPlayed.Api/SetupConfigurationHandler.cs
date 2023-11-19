@@ -68,11 +68,7 @@ public class SetupConfigurationHandler
         }
 
         if (displaySuccessMessages)
-        {
-            Console.ForegroundColor = ConsoleColor.Green;
-            Console.WriteLine("Users inserted correctly");
-            Console.ResetColor();
-        }
+            SetupMonitor.WriteMessage("Users inserted correctly", false, ConsoleColor.Green);
 
         return;
     }
@@ -95,20 +91,12 @@ public class SetupConfigurationHandler
         if (executedScripts.Any(s => s.Contains("1681487562_clear_author_table")))
             await ArticleTableMissingAuthorsFix(connectionString, displaySuccessMessages, cancellationToken);
         else
-        {
-            Console.ForegroundColor = ConsoleColor.Yellow;
-            Console.WriteLine("Article table 'missing authors fix' not required and omitted");
-            Console.ResetColor();
-        }
+            SetupMonitor.WriteMessage("Article table 'missing authors fix' not required and omitted", false, ConsoleColor.Yellow);
 
         if (executedScripts.Any(s => s.Contains("1688144618_add_article_history")))
             await InitialHistoryForExisitingArticlesFix(connectionString, displaySuccessMessages, articleHelper, cancellationToken);
         else
-        {
-            Console.ForegroundColor = ConsoleColor.Yellow;
-            Console.WriteLine("Initial history for existing articles fix not required and omitted");
-            Console.ResetColor();
-        }
+            SetupMonitor.WriteMessage("Initial history for existing articles fix not required and omitted", false, ConsoleColor.Yellow);
     }
 
     private async Task InitialHistoryForExisitingArticlesFix(string connectionString, bool displaySuccessMessages, IArticleHelper articleHelper, CancellationToken cancellationToken = default)
@@ -120,9 +108,7 @@ public class SetupConfigurationHandler
                 var articles = dbConection.Articles.ToList();
                 if (articles.Count == 0)
                 {
-                    Console.ForegroundColor = ConsoleColor.Yellow;
-                    Console.WriteLine("Initial history for existing articles fix not required and omitted");
-                    Console.ResetColor();
+                    SetupMonitor.WriteMessage("Initial history for existing articles fix not required and omitted", false, ConsoleColor.Yellow);
                     return;
                 }
 
@@ -151,9 +137,7 @@ public class SetupConfigurationHandler
 
         if (displaySuccessMessages)
         {
-            Console.ForegroundColor = ConsoleColor.Green;
-            Console.WriteLine("Initial history for existing articles fix run correctly");
-            Console.ResetColor();
+            SetupMonitor.WriteMessage("Initial history for existing articles fix run correctly", false, ConsoleColor.Green);
         }
 
         return;
@@ -184,11 +168,7 @@ public class SetupConfigurationHandler
         }
 
         if (displaySuccessMessages)
-        {
-            Console.ForegroundColor = ConsoleColor.Green;
-            Console.WriteLine("Article table missing authors fix run correctly");
-            Console.ResetColor();
-        }
+            SetupMonitor.WriteMessage("Article table missing authors fix run correctly", false, ConsoleColor.Green);
 
         return;
     }
@@ -202,3 +182,18 @@ public class AdministrationUserData
     public string DescriptionEn { get; set; } = default!;
 }
 
+public static class SetupMonitor
+{
+    public static bool IsSetupCompleted { get; set; }
+
+    public static void WriteMessage(string message, bool addBreakLine = false, ConsoleColor color = ConsoleColor.White)
+    {
+        if (addBreakLine) 
+            Console.WriteLine("--------");
+        Console.ForegroundColor = color;
+
+        Console.WriteLine(message);
+
+        Console.ResetColor();
+    }
+}

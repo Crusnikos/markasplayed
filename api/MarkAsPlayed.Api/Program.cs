@@ -9,7 +9,6 @@ using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
 using Microsoft.Extensions.FileProviders;
-using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -95,26 +94,24 @@ app.MapHealthChecks("/health");
 
 if(isTest is false)
 {
-    Console.WriteLine("-----\nStarting the application");
+    SetupMonitor.WriteMessage("Starting the application");
     var configuration = app.Services.GetService<IConfiguration>();
     if (configuration is null)
     {
         throw new ArgumentNullException("Configuration could not be resolved");
     }
-    Console.ForegroundColor = ConsoleColor.Green;
-    Console.WriteLine("Configuration resolved correctly");
-    Console.ResetColor();
+    SetupMonitor.WriteMessage("Configuration resolved correctly", false, ConsoleColor.Green);
 
-    Console.WriteLine("-----\nStart migrations");
+    SetupMonitor.WriteMessage("Start migrations", true);
     var migrator = new Migrator();
     var executedScripts = await migrator.RunAsync(configuration.GetConnectionString("MainDatabase"));
 
     var administrationUsers = configuration.GetSection("AdministrationUsers").Get<List<AdministrationUserData>>();
     var setupConfigurationHandler = new SetupConfigurationHandler();
-    Console.WriteLine($"-----\nInsert {administrationUsers.Count} administration users");
+    SetupMonitor.WriteMessage($"Insert {administrationUsers.Count} administration users", true);
     await setupConfigurationHandler.InsertAdministrationUsers(administrationUsers, postgresConnection);
 
-    Console.WriteLine("-----\nRun post database fixes");
+    SetupMonitor.WriteMessage("Run post database fixes", true);
     using (var scope = app.Services.CreateScope())
     {
         var services = scope.ServiceProvider;
@@ -122,8 +119,10 @@ if(isTest is false)
         await setupConfigurationHandler.DatabasePostFixer(postgresConnection, executedScripts, articleHelper);
     }
 
-    Console.WriteLine("-----\n");
+    SetupMonitor.WriteMessage(string.Empty, true);
 }
+
+SetupMonitor.IsSetupCompleted = true;
 
 if (app.Environment.IsDevelopment())
 {
